@@ -1,0 +1,43 @@
+// The following lines need to be uncommented to work. In these tests, the GradleRunner does this work for us.
+// Don't forget to look for the latest version of the plugin.
+//buildscript {
+//    dependencies {
+//        classpath('eu.xenit.gradle:xenit-gradle-plugins:2.1.4-7')
+//    }
+//}
+
+
+plugins {
+    id 'xenit-dockerbuild'
+}
+
+repositories {
+    jcenter()
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.3'
+}
+
+dockerFile {
+    dockerFile = file('Dockerfile')
+    dockerBuild {
+        repository = 'example-docker-plugin'
+        tags = ['1','1.0','test',"1${"Gstring"}"]
+    }
+}
+
+task beforeBuild {
+    doLast {
+        println "This runs before build"
+    }
+
+}
+
+buildDockerImage.dependsOn beforeBuild
+
+// Remove this when using the plugin
+task integrationTest {
+    dependsOn 'buildDockerImage'
+    dependsOn 'pushDockerImage'
+}

@@ -1,0 +1,2 @@
+exampledockerplugin:
+ image: example-docker-plugin-local

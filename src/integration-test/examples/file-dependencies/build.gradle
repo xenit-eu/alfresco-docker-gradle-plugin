@@ -1,0 +1,23 @@
+plugins {
+    id  'xenit-applyamps'
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+    }
+}
+
+dependencies {
+    baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
+    alfrescoAmp files("./amps") //Gradle dependencies can be added by file or folder too
+}
+
+dockerAlfresco {
+    baseImage = "tomcat:7-jre8"
+    dockerBuild {
+        repository = 'test-with-file-dependencies'
+    }
+}

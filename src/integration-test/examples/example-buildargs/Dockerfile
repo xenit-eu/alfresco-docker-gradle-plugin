@@ -1,0 +1,4 @@
+FROM alpine:edge
+
+ARG TESTARG
+RUN echo $TESTARG

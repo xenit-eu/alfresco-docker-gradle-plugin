@@ -1,0 +1,26 @@
+plugins {
+    id 'xenit-applyamps'
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+    }
+}
+dependencies {
+    baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
+    baseShareWar "org.alfresco:share:6.0.c@war"
+}
+
+dockerAlfresco {
+    baseImage = {project(':baseImage').getTasks().getByName('buildLabels').getImageId()}
+    dockerBuild {
+        repository = 'dependent'
+    }
+}
+
+afterEvaluate {
+    createDockerFile.dependsOn(':baseImage:buildLabels')
+}

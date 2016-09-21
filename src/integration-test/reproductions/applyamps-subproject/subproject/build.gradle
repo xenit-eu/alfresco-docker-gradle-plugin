@@ -1,0 +1,28 @@
+apply plugin: "java"
+configurations {
+    amps
+}
+
+repositories {
+    jcenter()
+    maven {
+        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+    }
+}
+
+dependencies {
+    compile("de.fmaul:javascript-console-repo:0.6@amp") {
+        transitive = false
+    }
+}
+
+task amp(type: Zip) {
+    from({ zipTree(configurations.compile.singleFile) }) {
+        into "/"
+    }
+    extension = "amp"
+}
+
+artifacts {
+    amps amp
+}

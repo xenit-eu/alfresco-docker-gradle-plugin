@@ -1,0 +1,13 @@
+plugins {
+    id 'xenit-dockerbuild'
+}
+repositories {
+    jcenter()
+}
+
+dockerFile {
+    dockerFile = file('Dockerfile')
+    dockerBuild {
+        repository = 'baseimage'
+    }
+}

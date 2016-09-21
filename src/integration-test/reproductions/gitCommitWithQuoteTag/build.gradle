@@ -1,0 +1,24 @@
+plugins {
+    id 'xenit-dockerbuild'
+}
+
+repositories {
+    jcenter()
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.3'
+}
+
+dockerFile {
+    dockerFile = file('Dockerfile')
+    dockerBuild {
+        repository = 'plugin-reproduce-pushtag'
+        tags = ['1','1.0','test']
+
+        // Test non-default dockerBuild options
+        pull = true
+        noCache = true
+        remove = false
+    }
+}

@@ -1,0 +1,69 @@
+package eu.xenit.gradle.applyamps;
+
+import eu.xenit.gradle.docker.DockerBuildExtension;
+import groovy.lang.Closure;
+
+import java.util.function.Supplier;
+
+/**
+ * Created by thijs on 9/21/16.
+ */
+public class DockerAlfrescoExtension {
+
+    public Supplier<String> getBaseImageSupplier() {
+        return baseImageSupplier;
+    }
+
+    public String getBaseImage() {
+        return baseImageSupplier.get();
+    }
+
+    public void setBaseImage(String baseImage) {
+        setBaseImage(() -> baseImage);
+    }
+
+    public void setBaseImage(Supplier<String> baseImage){
+        this.baseImageSupplierInternal = baseImage;
+    }
+
+    public void setBaseImage(Closure<String> baseImage){
+        setBaseImage(() -> baseImage.call());
+    }
+
+    //Needed to support lazy evaluation
+    private Supplier<String> baseImageSupplierInternal;
+
+    private final Supplier<String> baseImageSupplier = () -> baseImageSupplierInternal.get();
+
+    public DockerBuildExtension getDockerBuild() {
+        return dockerBuild;
+    }
+
+    public void setDockerBuild(DockerBuildExtension dockerBuild) {
+        this.dockerBuild = dockerBuild;
+    }
+
+    private DockerBuildExtension dockerBuild = new DockerBuildExtension();
+
+    public void dockerBuild(Closure closure) {
+        dockerBuild = new DockerBuildExtension();
+        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
+        closure.setDelegate(dockerBuild);
+        closure.call();
+    }
+
+    /**
+     * Don't add the base war, but only the amps, DE, and SM. Use this on images with the correct war already
+     * installed. This will then create an image where the last layer only contains the customizations.
+     */
+    private boolean leanImage = false;
+
+
+    public boolean getLeanImage() {
+        return leanImage;
+    }
+
+    public void setLeanImage(boolean leanImage) {
+        this.leanImage = leanImage;
+    }
+}

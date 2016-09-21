@@ -1,0 +1,27 @@
+plugins {
+    id 'xenit-applyamps'
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+    }
+}
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.3'
+}
+
+dependencies {
+    baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
+}
+
+dockerAlfresco {
+    baseImage = "alfresco/alfresco-content-repository-community:6.0.7-ga"
+    dockerBuild {
+        repository = 'modifydockerfile-test'
+    }
+    leanImage=true
+
+}

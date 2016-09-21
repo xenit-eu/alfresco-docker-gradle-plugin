@@ -1,0 +1,33 @@
+plugins {
+    id 'xenit-applyamps'
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '3.3'
+}
+
+dependencies {
+    baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
+    alfrescoAmp project(path: ':subproject', configuration: 'amps')
+}
+
+dockerAlfresco {
+    baseImage = "tomcat:7-jre8"
+    dockerBuild {
+        repository = 'applyamps-subproject'
+    }
+}
+
+afterEvaluate {
+    createDockerFile {
+        copyFile './build.gradle', '/tmp/some-file.gradle'
+    }
+}
