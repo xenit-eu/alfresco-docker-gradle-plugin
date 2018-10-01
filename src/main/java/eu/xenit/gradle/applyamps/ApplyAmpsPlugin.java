@@ -60,7 +60,6 @@ public class ApplyAmpsPlugin implements Plugin<Project> {
                 DockerfileWithWarsTask.class);
         dockerfile.setDestFile(new File(project1.getBuildDir().getAbsolutePath() + "/docker/Dockerfile"));
         dockerfile.setBaseImage(dockerAlfrescoExtension.getBaseImageSupplier());
-        dockerfile.setLeanImageSupplier(() -> dockerAlfrescoExtension.getLeanImage());
         return dockerfile;
     }
 

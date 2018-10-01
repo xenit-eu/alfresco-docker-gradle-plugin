@@ -4,6 +4,7 @@ import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import de.schlichtherle.truezip.file.TArchiveDetector;
 import de.schlichtherle.truezip.file.TFile;
 import groovy.lang.Closure;
+import java.util.function.BooleanSupplier;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
@@ -66,6 +67,24 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
 
     public void setRemoveExistingWar(boolean removeExistingWar) {
         this.removeExistingWar = removeExistingWar;
+    }
+
+    /**
+     * Check if Alfresco version that is already present in the container matches the Alfresco version of the war that will be added.
+     */
+    private BooleanSupplier checkAlfrescoVersion = () -> !this.getRemoveExistingWar();
+
+    @Input
+    public boolean getCheckAlfrescoVersion() {
+        return checkAlfrescoVersion.getAsBoolean();
+    }
+
+    public void setCheckAlfrescoVersion(boolean checkAlfrescoVersion) {
+        this.checkAlfrescoVersion = () -> checkAlfrescoVersion;
+    }
+
+    public void setCheckAlfrescoVersion(BooleanSupplier checkAlfrescoVersion) {
+        this.checkAlfrescoVersion = checkAlfrescoVersion;
     }
 
     /**
@@ -188,26 +207,12 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
         addWar(name, configuration::getSingleFile);
     }
 
-    @Input
-    public boolean isLeanImage() {
-        if (getLeanImageSupplier != null) {
-            return this.getLeanImageSupplier.get();
-        }
-        return false;
-    }
-
-    private Supplier<Boolean> getLeanImageSupplier;
-
-    public void setLeanImageSupplier(Supplier<Boolean> getLeanImageSupplier) {
-        this.getLeanImageSupplier = getLeanImageSupplier;
-    }
-
     @TaskAction
     @Override
     public void create() {
         // Unpack & COPY into container
         warFiles.forEach((name, wars) -> {
-            File destinationDir = DockerfileWithWarsTask.this.getDestFile().toPath().resolveSibling(name).toFile();
+            File destinationDir = getDestFile().toPath().resolveSibling(name).toFile();
             if (destinationDir.exists()) {
                 try {
                     TFile.rm_r(destinationDir);
@@ -222,11 +227,11 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
             improveLog4j(destinationDir, name.toUpperCase());
 
             // COPY
-            if (removeExistingWar) {
-                DockerfileWithWarsTask.this.runCommand("rm -rf " + getTargetDirectory() + name);
+            if (getRemoveExistingWar()) {
+                runCommand("rm -rf " + getTargetDirectory() + name);
             }
-            if (isLeanImage()) {
-                getCanAddWarsCheckCommands(destinationDir,getTargetDirectory()).forEach(e -> runCommand(e));
+            if(getCheckAlfrescoVersion()) {
+                getCanAddWarsCheckCommands(destinationDir,getTargetDirectory()).forEach(this::runCommand);
             }
             DockerfileWithWarsTask.this.copyFile("./" + name, getTargetDirectory() + name);
         });
