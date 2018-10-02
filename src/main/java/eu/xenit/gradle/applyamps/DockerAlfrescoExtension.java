@@ -4,12 +4,17 @@ import eu.xenit.gradle.docker.DockerBuildExtension;
 import groovy.lang.Closure;
 
 import java.util.function.Supplier;
+import org.gradle.api.Action;
+import org.gradle.api.Project;
 
 /**
  * Created by thijs on 9/21/16.
  */
 public class DockerAlfrescoExtension {
 
+    public DockerAlfrescoExtension(Project project) {
+        dockerBuild = new DockerBuildExtension(project);
+    }
     public Supplier<String> getBaseImageSupplier() {
         return baseImageSupplier;
     }
@@ -43,13 +48,10 @@ public class DockerAlfrescoExtension {
         this.dockerBuild = dockerBuild;
     }
 
-    private DockerBuildExtension dockerBuild = new DockerBuildExtension();
+    private DockerBuildExtension dockerBuild;
 
-    public void dockerBuild(Closure closure) {
-        dockerBuild = new DockerBuildExtension();
-        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
-        closure.setDelegate(dockerBuild);
-        closure.call();
+    public void dockerBuild(Action<? super DockerBuildExtension> closure) {
+        closure.execute(dockerBuild);
     }
 
     /**

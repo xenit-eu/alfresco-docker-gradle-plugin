@@ -12,7 +12,7 @@ public class DockerBuildPlugin implements Plugin<Project> {
     @Override
     public void apply(Project project) {
         project.getPluginManager().apply(DockerPlugin.class);
-        DockerFileExtension dockerFileExtension = project.getExtensions().create("dockerFile", DockerFileExtension.class);
+        DockerFileExtension dockerFileExtension = project.getExtensions().create("dockerFile", DockerFileExtension.class, project);
         DockerBuildBehavior dockerBuildBehavior = new DockerBuildBehavior(dockerFileExtension::getDockerBuild, dockerFileExtension::getDockerFile);
         project.getTasks().create("buildDockerImage", DockerBuildImage.class);
         dockerBuildBehavior.apply(project);

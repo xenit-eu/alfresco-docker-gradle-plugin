@@ -125,8 +125,9 @@ public class DockerBuildBehavior {
 
     private Set<String> getTags() {
         List<String> tags = dockerBuildExtension.get().getTags();
+        boolean automaticTags = dockerBuildExtension.get().getAutomaticTags();
 
-        if(dockerBuildExtension.get().getAutomaticTags()) {
+        if(automaticTags) {
             tags = tags.stream().map(tag -> {
                 if (isMaster()) {
                     return tag;

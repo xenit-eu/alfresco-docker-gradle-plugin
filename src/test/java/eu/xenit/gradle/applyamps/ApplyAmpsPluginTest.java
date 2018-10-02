@@ -80,9 +80,9 @@ public class ApplyAmpsPluginTest {
         project.getDependencies().add("baseAlfrescoWar", project.files(this.getClass().getClassLoader().getResource("test123.war").getFile()));
         project.getDependencies().add("alfrescoAmp", project.files(this.getClass().getClassLoader().getResource("test123.amp").getFile()));
         DockerAlfrescoExtension dockerAlfrescoExtension = (DockerAlfrescoExtension) project.getExtensions().getByName("dockerAlfresco");
-        DockerBuildExtension dockerBuildExtension = new DockerBuildExtension();
-        dockerBuildExtension.setTags(Arrays.asList("hello", "world"));
-        dockerAlfrescoExtension.setDockerBuild(dockerBuildExtension);
+        dockerAlfrescoExtension.dockerBuild((dockerBuildExtension -> {
+            dockerBuildExtension.setTags(Arrays.asList("hello", "world"));
+        }));
         project.evaluate();
 
         if(!"master".equals(JenkinsUtil.getBranch())){
@@ -101,10 +101,10 @@ public class ApplyAmpsPluginTest {
         project.getDependencies().add("baseAlfrescoWar", project.files(this.getClass().getClassLoader().getResource("test123.war").getFile()));
         project.getDependencies().add("alfrescoAmp", project.files(this.getClass().getClassLoader().getResource("test123.amp").getFile()));
         DockerAlfrescoExtension dockerAlfrescoExtension = (DockerAlfrescoExtension) project.getExtensions().getByName("dockerAlfresco");
-        DockerBuildExtension dockerBuildExtension = new DockerBuildExtension();
-        dockerBuildExtension.setTags(Arrays.asList("hello", "world"));
-        dockerBuildExtension.setAutomaticTags(false);
-        dockerAlfrescoExtension.setDockerBuild(dockerBuildExtension);
+        dockerAlfrescoExtension.dockerBuild((dockerBuildExtension) -> {
+            dockerBuildExtension.setTags(Arrays.asList("hello", "world"));
+            dockerBuildExtension.setAutomaticTags(false);
+        });
         project.evaluate();
 
         checkTaskExists(project, "pushTaghello");
@@ -119,8 +119,6 @@ public class ApplyAmpsPluginTest {
         project.getDependencies().add("alfrescoAmp", project.files(this.getClass().getClassLoader().getResource("test123.amp").getFile()));
         DockerAlfrescoExtension dockerAlfrescoExtension = (DockerAlfrescoExtension) project.getExtensions().getByName("dockerAlfresco");
         dockerAlfrescoExtension.setLeanImage(true);
-        DockerBuildExtension dockerBuildExtension = new DockerBuildExtension();
-        dockerAlfrescoExtension.setDockerBuild(dockerBuildExtension);
         project.evaluate();
 
         DockerfileWithWarsTask dockerfileWithWarsTask = (DockerfileWithWarsTask) project.getTasks().getAt("createDockerFile");

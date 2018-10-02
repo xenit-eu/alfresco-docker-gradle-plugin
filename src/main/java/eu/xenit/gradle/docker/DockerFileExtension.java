@@ -3,6 +3,8 @@ package eu.xenit.gradle.docker;
 import groovy.lang.Closure;
 
 import java.io.File;
+import org.gradle.api.Action;
+import org.gradle.api.Project;
 
 /**
  * Created by thijs on 10/25/16.
@@ -10,6 +12,11 @@ import java.io.File;
 public class DockerFileExtension {
     private File dockerFile;
     private DockerBuildExtension dockerBuild;
+
+    public DockerFileExtension(Project project) {
+        dockerFile = project.file("Dockerfile");
+        dockerBuild = new DockerBuildExtension(project);
+    }
 
     public File getDockerFile() {
         return dockerFile;
@@ -27,10 +34,7 @@ public class DockerFileExtension {
         this.dockerBuild = dockerBuild;
     }
 
-    public void dockerBuild(Closure closure) {
-        dockerBuild = new DockerBuildExtension();
-        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
-        closure.setDelegate(dockerBuild);
-        closure.call();
+    public void dockerBuild(Action<? super DockerBuildExtension> closure) {
+        closure.execute(dockerBuild);
     }
 }

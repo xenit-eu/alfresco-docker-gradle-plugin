@@ -1,6 +1,7 @@
 package eu.xenit.gradle.docker;
 
 import groovy.lang.GString;
+import org.gradle.api.Project;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MarkerFactory;
 
@@ -13,6 +14,10 @@ import java.util.List;
 public class DockerBuildExtension {
 
     private String repository;
+
+    public DockerBuildExtension(Project project) {
+        repository = project.getName();
+    }
 
 
     public String getRepository() {

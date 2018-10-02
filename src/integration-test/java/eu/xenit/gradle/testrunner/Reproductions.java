@@ -60,4 +60,9 @@ public class Reproductions extends AbstractIntegrationTest {
                 REPRODUCTIONS.resolve("same-version-properties-between-war-and-image-should-succeed"),
                 ":buildDockerImage");
     }
+
+    @Test
+    public void testDockerPluginWithoutConfiguration() throws IOException {
+        testProjectFolder(REPRODUCTIONS.resolve("docker-plugin-without-config"), ":buildDockerImage");
+    }
 }

@@ -41,7 +41,7 @@ public class ApplyAmpsPlugin implements Plugin<Project> {
 
         project.getPluginManager().apply(DockerPlugin.class);
 
-        DockerAlfrescoExtension dockerAlfrescoExtension = project.getExtensions().create("dockerAlfresco", DockerAlfrescoExtension.class);
+        DockerAlfrescoExtension dockerAlfrescoExtension = project.getExtensions().create("dockerAlfresco", DockerAlfrescoExtension.class, project);
 
         List<WarLabelOutputTask> alfrescoWarEnrichmentTasks = warEnrichmentChain(project, ALFRESCO);
         List<WarLabelOutputTask> shareEnrichmentTasks = warEnrichmentChain(project, SHARE);
