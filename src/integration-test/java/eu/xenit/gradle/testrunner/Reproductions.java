@@ -28,7 +28,7 @@ public class Reproductions extends AbstractIntegrationTest {
 
     @Test
     public void testTagging() throws IOException {
-        testProjectFolder(REPRODUCTIONS.resolve("tagfailing"), ":tagImagetest");
+        testProjectFolder(REPRODUCTIONS.resolve("tagfailing"), ":buildDockerImage");
     }
 
 

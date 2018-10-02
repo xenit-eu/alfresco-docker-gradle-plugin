@@ -86,11 +86,11 @@ public class ApplyAmpsPluginTest {
         project.evaluate();
 
         if(!"master".equals(JenkinsUtil.getBranch())){
-            checkTaskExists(project, "tagImage"+JenkinsUtil.getBranch()+"-hello");
-            checkTaskExists(project, "tagImage"+JenkinsUtil.getBranch()+"-world");
+            checkTaskExists(project, "pushTag"+JenkinsUtil.getBranch()+"-hello");
+            checkTaskExists(project, "pushTag"+JenkinsUtil.getBranch()+"-world");
         } else {
-            checkTaskExists(project, "tagImagehello");
-            checkTaskExists(project, "tagImageworld");
+            checkTaskExists(project, "pushTaghello");
+            checkTaskExists(project, "pushTagworld");
         }
 
     }
@@ -107,9 +107,9 @@ public class ApplyAmpsPluginTest {
         dockerAlfrescoExtension.setDockerBuild(dockerBuildExtension);
         project.evaluate();
 
-        checkTaskExists(project, "tagImagehello");
-        checkTaskExists(project, "tagImageworld");
-        checkTaskNotExists(project, "tagImagelatest");
+        checkTaskExists(project, "pushTaghello");
+        checkTaskExists(project, "pushTagworld");
+        checkTaskNotExists(project, "pushTaglatest");
     }
 
     @Test

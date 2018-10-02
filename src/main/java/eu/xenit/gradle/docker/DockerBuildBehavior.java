@@ -2,23 +2,18 @@ package eu.xenit.gradle.docker;
 
 import com.avast.gradle.dockercompose.ComposeExtension;
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
-import com.bmuschko.gradle.docker.tasks.image.DockerTagImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import eu.xenit.gradle.JenkinsUtil;
+import eu.xenit.gradle.docker.tasks.internal.DeprecatedTask;
 import eu.xenit.gradle.docker.tasks.internal.DockerBuildImage;
 import eu.xenit.gradle.git.CannotConvertToUrlException;
 import eu.xenit.gradle.git.GitInfoProvider;
-import java.util.function.BiConsumer;
-import org.codehaus.groovy.runtime.MethodClosure;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -45,26 +40,10 @@ public class DockerBuildBehavior {
 
     public void apply(Project project) {
         this.execute(project);
-        //project.afterEvaluate(this::execute);
-    }
-
-    /**
-     * Configures a task based on the outputs from an other task that are not yet available at configuration time
-     * @param dependentTask The task to configure
-     * @param sourceTask The task from which configuration is derived
-     * @param configurator Function that is called to configure the task
-     */
-    private <T extends Task, U extends Task> void configureFromTask(T dependentTask, U sourceTask, BiConsumer<T, U> configurator) {
-        dependentTask.dependsOn(sourceTask);
-        sourceTask.doLast("Configure "+dependentTask.getName(), task -> {
-            configurator.accept(dependentTask, sourceTask);
-        });
     }
 
     public void execute(Project project) {
-        Path buildPath = project.getBuildDir().toPath();
-
-        DockerBuildImage buildDockerImage = createDockerBuildImageTask(project,"buildDockerImage", dockerBuildExtension);
+        DockerBuildImage buildDockerImage = createDockerBuildImageTask(project, dockerBuildExtension);
         buildDockerImage.setDescription("Build the docker image");
         if (dockerfileCreator != null) {
             buildDockerImage.setDockerFile(dockerfileCreator::getDestFile);
@@ -72,72 +51,56 @@ public class DockerBuildBehavior {
             buildDockerImage.dependsOn(dockerfileCreator);
         }
 
-
         if(dockerFile != null) {
-            buildDockerImage.setDockerFile(this.dockerFile);
-            buildDockerImage.setInputDir(() -> this.dockerFile.get().getParentFile());
+            buildDockerImage.setDockerFile(dockerFile);
+            buildDockerImage.setInputDir(() -> dockerFile.get().getParentFile());
         }
 
-        Supplier<String> incrementalImageIdSupplier = buildDockerImage::getImageId;
-        Dockerfile labelDockerFile = labelDockerFile(project, buildPath, incrementalImageIdSupplier);
-        labelDockerFile.dependsOn(buildDockerImage);
-        DockerBuildImage buildLabels = createDockerBuildImageTask(project,"buildLabels", dockerBuildExtension);
-        buildLabels.setDockerFile(labelDockerFile::getDestFile);
-        buildLabels.setInputDir(() -> labelDockerFile.getDestFile().getParentFile());
-        buildLabels.dependsOn(labelDockerFile);
+        buildDockerImage.setLabels(this.getLabels(project));
+        buildDockerImage.setTags(() -> this.getTags().stream().map(tag -> getDockerRepository()+":"+tag).collect(
+                Collectors.toSet()));
 
-        // disable pull-image, because the image we are going to label,
-        // was just built here and will not be available in the remote repository
-        project.afterEvaluate((project1) -> {
-            buildLabels.setPull(false);
-        });
-        buildLabels.setDescription("Build the docker image with extra labels to make it easier to identify the image");
-        buildDockerImage.finalizedBy(buildLabels);
-        buildLabels.doLast(task -> {
+        buildDockerImage.doLast(task -> {
                 ComposeExtension composeExtension = (ComposeExtension) project.getExtensions().getByName("dockerCompose");
-                composeExtension.getEnvironment().put("DOCKER_IMAGE", buildLabels.getImageId());
+                composeExtension.getEnvironment().put("DOCKER_IMAGE", buildDockerImage.getImageId());
         });
+
+        project.getTasks().create("labelDockerFile", DeprecatedTask.class).setReplacementTask(buildDockerImage);
+        project.getTasks().create("buildLabels", DeprecatedTask.class).setReplacementTask(buildDockerImage);
 
         DefaultTask dockerPushImage = project.getTasks().create("pushDockerImage", DefaultTask.class);
         dockerPushImage.setGroup("Docker");
         dockerPushImage.setDescription("Collection of all the pushTags");
-        dockerPushImage.dependsOn(buildLabels);
+
 
         project.afterEvaluate((project1 -> {
-            List<DockerTagImage> dockerTagImages = tagDockerImage(project, buildLabels);
-            List<DockerPushImage> pushTags = getPushTags(project, dockerTagImages);
+            List<DockerPushImage> pushTags = getPushTags(project, buildDockerImage);
             dockerPushImage.dependsOn(pushTags);
         }));
 
         Task task = project.getTasks().getAt("composeUp");
-        task.dependsOn(buildLabels);
+        task.dependsOn(buildDockerImage);
     }
 
-    private DockerBuildImage createDockerBuildImageTask(Project project, String name, Supplier<DockerBuildExtension> dockerBuildExtension) {
-        DockerBuildImage dockerBuildImage;
-        if(project.getTasks().findByPath(name) != null){
-            dockerBuildImage = (DockerBuildImage) project.getTasks().getAt(name);
-        } else {
-            dockerBuildImage = project.getTasks().create(name, DockerBuildImage.class);
+    private DockerBuildImage createDockerBuildImageTask(Project project,
+            Supplier<DockerBuildExtension> dockerBuildExtension) {
+        DockerBuildImage dockerBuildImage = (DockerBuildImage)project.getTasks().findByName("buildDockerImage");
+        if(dockerBuildImage == null) {
+            dockerBuildImage = project.getTasks().create("buildDockerImage", DockerBuildImage.class);
         }
-        //incrementalDockerImage.getOutputs().upToDateWhen(task -> true);
 
+        DockerBuildImage finalDockerBuildImage = dockerBuildImage;
         project.afterEvaluate((project1) -> {
             DockerBuildExtension extension = dockerBuildExtension.get();
-            dockerBuildImage.setPull(extension.getPull());
-            dockerBuildImage.setNoCache(extension.getNoCache());
-            dockerBuildImage.setRemove(extension.getRemove());
+            finalDockerBuildImage.setPull(extension.getPull());
+            finalDockerBuildImage.setNoCache(extension.getNoCache());
+            finalDockerBuildImage.setRemove(extension.getRemove());
         });
 
         return dockerBuildImage;
     }
 
-    private Dockerfile labelDockerFile(Project project, Path buildPath, Supplier<String> imageIdSupplier) {
-        List<Consumer<Dockerfile>> instructions = new ArrayList<>();
-        Dockerfile labelDockerFile = project.getTasks().create("labelDockerFile", Dockerfile.class);
-        labelDockerFile.setDestFile(buildPath.resolve(Paths.get("labelDocker", "Dockerfile")).toFile());
-        labelDockerFile.from(new MethodClosure(imageIdSupplier, "get"));
-
+    private Map<String, String> getLabels(Project project) {
         Map<String, String> labels = new HashMap<>();
         GitInfoProvider gitInfoProvider = GetProviderForProject(project);
         String labelPrefix = "eu.xenit.gradle-plugin.git.";
@@ -157,15 +120,10 @@ public class DockerBuildBehavior {
                     .replaceAll("\"", "\\\\\"")
                     .replaceAll("(\r)*\n", "\\\\\n")+'"');
         }
-        if(!labels.isEmpty()) {
-            instructions.add(task -> task.label(labels));
-        }
-        instructions.forEach(instruction -> instruction.accept(labelDockerFile));
-        return labelDockerFile;
+        return labels;
     }
 
-    private List<DockerTagImage> tagDockerImage(Project project, DockerBuildImage dockerBuildImage) {
-        List<DockerTagImage> tagTasks = new ArrayList<>();
+    private Set<String> getTags() {
         List<String> tags = dockerBuildExtension.get().getTags();
 
         if(dockerBuildExtension.get().getAutomaticTags()) {
@@ -192,31 +150,21 @@ public class DockerBuildBehavior {
             }
         }
 
-        for (String tag : tags) {
-            DockerTagImage dockerTagImage = project.getTasks().create("tagImage" + tag, DockerTagImage.class);
-            configureFromTask(dockerTagImage, dockerBuildImage, (tagTask, buildTask) -> {
-                tagTask.setImageId(buildTask.getImageId());
-            });
-            dockerTagImage.setTag(tag);
-            dockerTagImage.setDescription("Tag docker image with tag "+tag);
-            String dockerRepo = getDockerRepository();
-            dockerTagImage.setRepository(dockerRepo);
-            tagTasks.add(dockerTagImage);
-        }
-        return tagTasks;
+        return new HashSet<>(tags);
     }
 
     private boolean isMaster() {
         return "master".equals(JenkinsUtil.getBranch());
     }
 
-    private List<DockerPushImage> getPushTags(Project project, List<DockerTagImage> dockerTagImages){
+    private List<DockerPushImage> getPushTags(Project project, DockerBuildImage dockerBuildImage){
         List<DockerPushImage> result = new ArrayList<>();
-        for (DockerTagImage dockerTagImage: dockerTagImages) {
-            DockerPushImage pushTag = project.getTasks().create("pushTag"+dockerTagImage.getTag(), DockerPushImage.class);
-            pushTag.setImageName(dockerTagImage.getRepository()+":"+dockerTagImage.getTag());
-            pushTag.dependsOn(dockerTagImage);
-            pushTag.setDescription("Push image with tag "+dockerTagImage.getTag());
+        for (String tag: this.getTags()) {
+            DockerPushImage pushTag = project.getTasks().create("pushTag"+tag, DockerPushImage.class);
+            pushTag.setImageName(getDockerRepository());
+            pushTag.setTag(tag);
+            pushTag.dependsOn(dockerBuildImage);
+            pushTag.setDescription("Push image with tag "+tag);
             result.add(pushTag);
         }
         return result;
