@@ -68,8 +68,8 @@ public class DockerBuildExtension {
     public boolean getAutomaticTags() {
         if(!_automaticTagsExplicitlySet) {
             LoggerFactory.getLogger(getClass())
-                    .warn("[dockerBuild] automaticTags currently defaults to true, but this default will change in the future."+
-                            "If you want to continue using the current behavior, explicitly set automaticTags now to avoid surprises in the future.");
+                    .warn("[eu.xenit.docker] automaticTags currently defaults to true, but it will change to false in version 5.0.0."
+                            + "If you want to continue using the current behavior, explicitly set automaticTags now to avoid surprises in the future.");
         }
         return automaticTags;
     }

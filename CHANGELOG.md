@@ -1,5 +1,19 @@
 # XeniT Gradle Plugin - Changelog
 
+## Version 4.0.0 - 2018-10-03
+
+### Changes
+
+ * [DEVEM-325](https://xenitsupport.jira.com/browse/DEVEM-325) - Rename gradle plugins
+    - Gradle plugins have been renamed to eu.xenit.docker-alfresco and eu.xenit.docker
+ * [DEVEM-322](https://xenitsupport.jira.com/browse/DEVEM-322) - Publish to gradle plugin portal
+    - This makes it easier to use the plugins, without setting buildscript repositories and classpath
+ * [DEVEM-324](https://xenitsupport.jira.com/browse/DEVEM-324) - Configure Travis CI builds
+
+### Fixes
+
+ * [DEVEM-147](https://xenitsupport.jira.com/browse/DEVEM-147) - Applying the xenit-dockerbuild gradle plugin without providing a config results in a NullPointerException
+
 ## Version 3.3.1 - 2018-08-24
 
 ### Fixes

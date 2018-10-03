@@ -70,7 +70,8 @@ public class ResolveWarTask extends DefaultTask implements WarEnrichmentTask {
 
     @TaskAction
     public void copyWar() throws IOException {
-        getLogger().warn("The ResolveWarTask type is deprecated and will be removed in xenit-gradle-plugins 3.0. Use StripAlfrescoWarTask instead, or use the Configuration directly.");
+        getLogger()
+                .warn("[eu.xenit.docker] The ResolveWarTask type is deprecated and will be removed in xenit-gradle-plugins 5.0.0. Use StripAlfrescoWarTask instead, or use the Configuration directly.");
         File outputWar = getOutputWar();
         FileUtils.copyFile(getInputWar(), outputWar);
     }

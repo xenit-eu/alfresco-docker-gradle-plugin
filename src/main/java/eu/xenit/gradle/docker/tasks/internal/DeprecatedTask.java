@@ -15,7 +15,10 @@ public class DeprecatedTask extends DefaultTask {
 
     @TaskAction
     public void runTask() {
-        getLogger().warn("The task "+getName()+" is deprecated and will be removed in xenit-gradle-plugins 4.0. Use "+replacementTask.getName()+" instead.");
+        getLogger()
+                .warn("[eu.xenit.docker] The task " + getName()
+                        + " is deprecated and will be removed in xenit-gradle-plugins 5.0.0. Use "
+                        + replacementTask.getName() + " instead.");
     }
 
 }
