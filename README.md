@@ -49,7 +49,7 @@ Activate the plugin:
 
 ```groovy
 plugins {
-    id "eu.xenit.docker-alfresco" version "3.3.1" // Have a look at the releases to find the latest one
+    id "eu.xenit.docker-alfresco" version "4.0.0" // Have a look at the releases to find the latest one
 }
 ```
 
@@ -120,7 +120,7 @@ The code for this example can be found [here](src/test/examples/applyamps-exampl
 In your build.gradle, apply the plugin:
 ```groovy
 plugins {
-    id "eu.xenit.docker" version "3.3.1" // Have a look at the releases to find the latest one
+    id "eu.xenit.docker" version "4.0.0" // Have a look at the releases to find the latest one
 }
 ```
 
