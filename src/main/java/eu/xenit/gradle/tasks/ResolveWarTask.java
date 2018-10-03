@@ -1,26 +1,21 @@
 package eu.xenit.gradle.tasks;
 
-import de.schlichtherle.truezip.file.TFile;
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
-import org.gradle.util.DeprecationLogger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static eu.xenit.gradle.applyamps.ApplyAmpsPlugin.LABEL_PREFIX;
+import static eu.xenit.gradle.alfresco.DockerAlfrescoPlugin.LABEL_PREFIX;
 
 /**
  * Created by thijs on 31/05/17.

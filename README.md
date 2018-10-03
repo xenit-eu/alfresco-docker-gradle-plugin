@@ -1,16 +1,16 @@
-# Xenit Gradle Plugins
+# Alfresco Docker Gradle Plugins
 
-[![Build Status](https://jenkins-2.xenit.eu/buildStatus/icon?job=xenit-bitbucket/xenit-gradle-plugins/master)](https://jenkins-2.xenit.eu/job/xenit-bitbucket/job/xenit-gradle-plugins/job/master/)
+[![Build Status](https://travis-ci.org/xenit-eu/alfresco-docker-gradle-plugin.svg?branch=master)](https://travis-ci.org/xenit-eu/alfresco-docker-gradle-plugin)
 
 This projects contains some gradle plugins that are used within Xenit Projects.
 
 Currently there are 3 plugins:
 
-- xenit-applyamps: Makes it possible to build Alfresco and Share wars with amps installed. A docker
+- docker-alfresco: Makes it possible to build Alfresco and Share wars with amps installed. A docker
 image can be built with the alfresco installed. It is also possible to include Alfresco Dynamic Extensions, and Alfresco
  Simple Modules.
-- xenit-dockerbuild: Build a docker image, starting from a Dockerfile.
-- xenit-docker: Helper plugin that is used to configure the docker environment.
+- docker: Build a docker image, starting from a Dockerfile.
+- docker-config: Helper plugin that is used to configure the docker environment.
 This plugin is automatically applied when using the 2 plugins below.
 
 ## Setup
@@ -41,23 +41,16 @@ eu.xenit.docker.registry.password=
 
 ## Usage
 
-To be able to use one of the plugins, you need to add a buildscript dependency:
-
-```groovy
-buildscript {
-    dependencies {
-        classpath 'eu.xenit.gradle:xenit-gradle-plugins:2.3.0-30' //check the latest version
-    }
-}
-```
-### Apply amps
+### Alfresco docker
 
 The following instructions apply to the build.gradle file in your project.
 
 Activate the plugin:
 
 ```groovy
-apply plugin: 'xenit-applyamps'
+plugins {
+    id "eu.xenit.docker-alfresco" version "3.3.1" // Have a look at the releases to find the latest one
+}
 ```
 
 Then define what base wars you want to use, and what amps to install:
@@ -126,7 +119,9 @@ The code for this example can be found [here](src/test/examples/applyamps-exampl
 
 In your build.gradle, apply the plugin:
 ```groovy
-apply plugin 'xenit-dockerbuild'
+plugins {
+    id "eu.xenit.docker" version "3.3.1" // Have a look at the releases to find the latest one
+}
 ```
 
 The configuration for the Docker build:
@@ -163,6 +158,13 @@ When the branch is not master, this is also prepended.
 
 This tagging behavior can be disabled by adding `automaticTags = false` do the dockerBuild configuration.
 
-## Branching policy
+## Creating a release
 
-We use the git branching policy described in [XEP-6](https://xenitsupport.jira.com/wiki/spaces/XEN/pages/156194476/XEP-6+Git+Workflow). There is one "release" branch only.
+Every git tag is automatically published to the gradle plugins repository by Travis-CI.
+
+This plugin follows SemVer and tags are managed with [Reckon](https://github.com/ajoberstar/reckon).
+
+To create a release from a commit, use `./gradlew reckonTagPush -Preckon.scope=patch -Preckon.stage=final` to create a new patch release.
+
+Tests are required to pass before a new release can be tagged.
+

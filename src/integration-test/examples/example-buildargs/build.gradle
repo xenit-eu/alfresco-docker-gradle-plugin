@@ -1,14 +1,5 @@
-// The following lines need to be uncommented to work. In these tests, the GradleRunner does this work for us.
-// Don't forget to look for the latest version of the plugin.
-//buildscript {
-//    dependencies {
-//        classpath('eu.xenit.gradle:xenit-gradle-plugins:2.1.4-7')
-//    }
-//}
-
-
 plugins {
-    id 'xenit-dockerbuild'
+    id 'eu.xenit.docker'
 }
 
 repositories {

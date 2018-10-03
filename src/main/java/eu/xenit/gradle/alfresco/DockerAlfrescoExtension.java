@@ -1,8 +1,7 @@
-package eu.xenit.gradle.applyamps;
+package eu.xenit.gradle.alfresco;
 
 import eu.xenit.gradle.docker.DockerBuildExtension;
 import groovy.lang.Closure;
-
 import java.util.function.Supplier;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
