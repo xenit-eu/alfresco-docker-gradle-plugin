@@ -6,12 +6,12 @@ This projects contains some gradle plugins that are used within Xenit Projects.
 
 Currently there are 3 plugins:
 
-- xenit-docker: Help plugin that is used to configure the docker environment.
-This plugin is automatically applied when using the 2 plugins below.
 - xenit-applyamps: Makes it possible to build Alfresco and Share wars with amps installed. A docker
 image can be built with the alfresco installed. It is also possible to include Alfresco Dynamic Extensions, and Alfresco
  Simple Modules.
 - xenit-dockerbuild: Build a docker image, starting from a Dockerfile.
+- xenit-docker: Helper plugin that is used to configure the docker environment.
+This plugin is automatically applied when using the 2 plugins below.
 
 ## Setup
 
@@ -21,42 +21,9 @@ do nothing extra for the tcp socket. On Ubuntu, you can follow this guide: https
 
 Install a recent version of Gradle. For your projects, it is a good idea to use the [Gradle Wrapper](https://docs.gradle.org/current/userguide/gradle_wrapper.html).
 The plugins packed in this project expect some configuration to be done at the level of gradle.
-To add the default Xenit repositories, you need to have an init.gradle in your gradle home (~/.gradle):
 
-
-```groovy
-allprojects {
-    buildscript {
-        repositories {
-			jcenter()
-			mavenLocal()
-   
-		  maven {
-            url 'https://artifactory.xenit.eu/artifactory/libs-release'
-            credentials {
-                username property("eu.xenit.artifactory.username")
-                password property("eu.xenit.artifactory.password")
-            }
-        }
-        }
-    }
-	repositories {
-            maven {
-            url 'https://artifactory.xenit.eu/artifactory/libs-release'
-            credentials {
-                username property("eu.xenit.artifactory.username")
-                password property("eu.xenit.artifactory.password")
-            }
-        }
-        }
-	  
-}
-```
-
-Also add a gradle.properties file to your gradle home folder with the following properties:
+You can configure the docker plugin in the gradle.properties file in your gradle home folder:
 ```properties
-eu.xenit.artifactory.username=xenit
-eu.xenit.artifactory.password=****
 # Docker socket (UNIX; default)
 eu.xenit.docker.url=unix:///var/run/docker.sock
 # Your docker socket (TCP)
@@ -66,11 +33,11 @@ eu.xenit.docker.url=tcp://localhost:2375
 eu.xenit.docker.certPath=/home/?/docker-certs
 # The ip address that exposed ports should be bound to. (Sets the value of the DOCKER_IP environment variable)
 eu.xenit.docker.expose.ip=127.0.0.1
+# Registry credentials if you are using a private registry
 eu.xenit.docker.registry.url=https://hub.xenit.eu/v2
-eu.xenit.docker.registry.username=docker
-eu.xenit.docker.registry.password=****
+eu.xenit.docker.registry.username=
+eu.xenit.docker.registry.password=
 ```
-
 
 ## Usage
 
@@ -97,9 +64,8 @@ Then define what base wars you want to use, and what amps to install:
 
 ```groovy
 dependencies {
-    baseAlfrescoWar "eu.xenit.alfresco:alfresco-5.1-de-js:0.0.2-10@war"
-    alfrescoAmp "eu.xenit.alfresco:alfresco2swarm-amp:0.7.1-0@amp"
-    alfrescoAmp "eu.xenit.apix:apix-amp-50-de:1.8.0-30@amp"
+    baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
+    alfrescoAmp "de.fmaul:javascript-console-repo:0.6@amp"
     alfrescoDE(group: 'eu.xenit', name: 'move2alf-backend-de-50', version: '2.9.2-24'){
             transitive=false
         }
@@ -114,7 +80,7 @@ Configure the docker build:
 ```groovy
 dockerAlfresco {
     // Base image used in the FROM of the docker build. Should be a compatible image.
-    baseImage = "hub.xenit.eu/alfresco-enterprise-war-core:5.1"
+    baseImage = "alfresco/alfresco-content-repository-community:6.0.7-ga"
 
     // Putting leanImage on true will only apply the custom modules to
     // image, and not the base war itself. The base war of the original
@@ -123,9 +89,9 @@ dockerAlfresco {
     leanImage = true
 
     dockerBuild {
-        // Repository to publish on.
-        repository = 'hub.xenit.eu/my-example-alfresco'
-        tags = ['some', 'usefull', 'tags']
+        // Repository to publish to.
+        repository = 'my-example-alfresco'
+        tags = ['some', 'useful', 'tags']
 
         // On Jenkins, branches other than master will be appended with -branch.
         // Local build will be appended with -local
@@ -169,7 +135,7 @@ dockerFile {
     dockerFile = file('Dockerfile')
     dockerBuild {
         // Repository to publish on.
-        repository = 'hub.xenit.eu/example-docker-plugin'
+        repository = 'example-docker-plugin'
         tags = ['1','1.0','test'] //optional
         // On Jenkins, branches other than master will be appended with -branch.
         // Local build will be appended with -local
