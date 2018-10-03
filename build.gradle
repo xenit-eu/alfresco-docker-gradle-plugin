@@ -1,19 +1,10 @@
 plugins {
     id "java-gradle-plugin"
     id "com.gradle.plugin-publish" version "0.10.0"
+    id 'org.ajoberstar.reckon' version "0.8.0"
 }
 
 group 'eu.xenit.gradle'
-
-def baseVersion = '3.3.1'
-
-def branchName = System.env.BRANCH_NAME
-
-def isRelease = branchName != null && branchName.startsWith("release")
-if (isRelease)
-    version = "$baseVersion"
-else
-    version = "$baseVersion-SNAPSHOT"
 
 task wrapper(type: Wrapper) {
   gradleVersion = '4.8'
@@ -59,6 +50,9 @@ gradlePlugin {
 
 pluginBundle {
     vcsUrl = "https://github.com/xenit-eu/alfresco-docker-gradle-plugin"
+    website = vcsUrl
+    description = "A gradle plugin to create Alfresco docker images with extensions"
+    tags = ["alfresco", "docker"]
     plugins {
         dockerAlfresco {
             displayName = "Alfresco docker plugin"
@@ -77,6 +71,11 @@ pluginBundle {
         groupId = "eu.xenit.gradle"
         artifactId = "alfresco-docker-plugin"
     }
+}
+
+reckon {
+    scopeFromProp()
+    snapshotFromProp()
 }
 
 repositories {
@@ -109,3 +108,4 @@ task integrationTest(type: Test, group: "verification") {
 }
 
 check.dependsOn(integrationTest)
+reckonTagCreate.dependsOn(check)
