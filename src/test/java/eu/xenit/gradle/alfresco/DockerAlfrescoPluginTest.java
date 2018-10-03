@@ -1,11 +1,16 @@
-package eu.xenit.gradle.applyamps;
+package eu.xenit.gradle.alfresco;
+
+import static org.junit.Assert.assertFalse;
 
 import eu.xenit.gradle.JenkinsUtil;
-import eu.xenit.gradle.docker.DockerBuildExtension;
 import eu.xenit.gradle.tasks.DockerfileWithWarsTask;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Arrays;
 import org.gradle.api.UnknownTaskException;
 import org.gradle.api.internal.project.DefaultProject;
-
 import org.gradle.internal.impldep.org.junit.Assert;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.Before;
@@ -13,23 +18,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Arrays;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
 /**
  * Created by thijs on 9/21/16.
  */
-public class ApplyAmpsPluginTest {
+public class DockerAlfrescoPluginTest {
 
     private DefaultProject getDefaultProject() {
         DefaultProject project = (DefaultProject) ProjectBuilder.builder().build();
-        project.getPluginManager().apply(ApplyAmpsPlugin.class);
+        project.getPluginManager().apply(DockerAlfrescoPlugin.class);
         return project;
     }
 

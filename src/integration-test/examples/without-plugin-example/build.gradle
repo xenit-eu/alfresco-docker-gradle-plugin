@@ -1,18 +1,5 @@
-// The following lines need to be uncommented to work. In these tests, the GradleRunner does this work for us.
-// Don't forget to look for the latest version of the plugin.
-//buildscript {
-//    dependencies {
-//        classpath('eu.xenit.gradle:xenit-gradle-plugins:2.1.4-7')
-//    }
-//}
-
-
-// Applying the plugin sets the correct classpath (gradle testkit works like this). It configures the dependent
-// plugins with the docker socket. This should probably be handled in a separate plugin.
-// Applying the plugin creates the default named tasks, to avoid conflicts, all names have been prefixed with test.
-// This prefix can be left out when not applying the plugin
 plugins {
-    id  'xenit-applyamps'
+    id 'eu.xenit.docker-config'
 }
 
 repositories {
@@ -22,6 +9,7 @@ repositories {
         url "https://artifacts.alfresco.com/nexus/content/groups/public/"
     }
 }
+
 
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 import eu.xenit.gradle.tasks.*

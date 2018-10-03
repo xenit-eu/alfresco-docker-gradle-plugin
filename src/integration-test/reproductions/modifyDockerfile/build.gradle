@@ -4,7 +4,7 @@ buildscript {
     }
 }
 plugins {
-    id 'xenit-applyamps'
+    id 'eu.xenit.docker-alfresco'
 }
 repositories {
     mavenCentral()

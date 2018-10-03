@@ -1,3 +1,8 @@
+plugins {
+    id "java-gradle-plugin"
+    id "com.gradle.plugin-publish" version "0.10.0"
+}
+
 group 'eu.xenit.gradle'
 
 def baseVersion = '3.3.1'
@@ -15,8 +20,6 @@ task wrapper(type: Wrapper) {
   distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
 }
 
-apply plugin: 'java'
-apply plugin: 'java-gradle-plugin'
 
 sourceCompatibility = 1.8
 
@@ -39,18 +42,40 @@ configurations {
 
 gradlePlugin {
     plugins {
-        applyAmps {
-            id = "xenit-applyamps"
-            implementationClass = "eu.xenit.gradle.applyamps.ApplyAmpsPlugin"
+        dockerAlfresco {
+            id = "eu.xenit.docker-alfresco"
+            implementationClass = "eu.xenit.gradle.alfresco.DockerAlfrescoPlugin"
         }
-        xenitDocker {
-            id = "xenit-docker"
+        dockerConfig {
+            id = "eu.xenit.docker-config"
+            implementationClass = "eu.xenit.gradle.docker.DockerConfigPlugin"
+        }
+        docker {
+            id = "eu.xenit.docker"
             implementationClass = "eu.xenit.gradle.docker.DockerPlugin"
         }
-        xenitDockerbuild {
-            id = "xenit-dockerbuild"
-            implementationClass = "eu.xenit.gradle.docker.DockerBuildPlugin"
+    }
+}
+
+pluginBundle {
+    vcsUrl = "https://github.com/xenit-eu/alfresco-docker-gradle-plugin"
+    plugins {
+        dockerAlfresco {
+            displayName = "Alfresco docker plugin"
         }
+
+        dockerConfig {
+            displayName = "Docker configuration plugin"
+        }
+
+        docker {
+            displayName = "Docker plugin"
+        }
+    }
+
+    mavenCoordinates {
+        groupId = "eu.xenit.gradle"
+        artifactId = "alfresco-docker-plugin"
     }
 }
 
@@ -75,36 +100,6 @@ dependencies {
     testCompile "org.mockito:mockito-core:2.+"
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
         exclude module: 'groovy-all'
-    }
-}
-
-apply plugin: 'maven-publish'
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
-    if(project.hasProperty('eu.xenit.artifactory.username')) {
-        repositories {
-            maven {
-                name 'snapshot'
-                url 'https://artifactory.xenit.eu/artifactory/libs-snapshot-local'
-                credentials {
-                    username property("eu.xenit.artifactory.username")
-                    password property("eu.xenit.artifactory.password")
-                }
-            }
-            maven {
-                name 'release'
-                url 'https://artifactory.xenit.eu/artifactory/libs-release-local'
-                credentials {
-                    username property("eu.xenit.artifactory.username")
-                    password property("eu.xenit.artifactory.password")
-                }
-            }
-
-        }
     }
 }
 

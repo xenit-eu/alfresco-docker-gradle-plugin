@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static eu.xenit.gradle.applyamps.ApplyAmpsPlugin.LABEL_PREFIX;
+import static eu.xenit.gradle.alfresco.DockerAlfrescoPlugin.LABEL_PREFIX;
 
 public class InjectFilesInWarTask extends DefaultTask implements WarEnrichmentTask {
 

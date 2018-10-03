@@ -1,22 +1,28 @@
-package eu.xenit.gradle.applyamps;
+package eu.xenit.gradle.alfresco;
 
 import eu.xenit.gradle.docker.DockerBuildBehavior;
-import eu.xenit.gradle.docker.DockerPlugin;
-import eu.xenit.gradle.tasks.*;
+import eu.xenit.gradle.docker.DockerConfigPlugin;
+import eu.xenit.gradle.tasks.DockerfileWithWarsTask;
+import eu.xenit.gradle.tasks.InjectFilesInWarTask;
+import eu.xenit.gradle.tasks.InstallAmpsInWarTask;
+import eu.xenit.gradle.tasks.MergeWarsTask;
+import eu.xenit.gradle.tasks.StripAlfrescoWarTask;
+import eu.xenit.gradle.tasks.WarEnrichmentTask;
+import eu.xenit.gradle.tasks.WarLabelOutputTask;
+import eu.xenit.gradle.tasks.WarOutputTask;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.alfresco.repo.module.tool.WarHelperImpl;
-import org.apache.log4j.Logger;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 
-import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
-
 /**
  * Created by thijs on 9/20/16.
  */
-public class ApplyAmpsPlugin implements Plugin<Project> {
+public class DockerAlfrescoPlugin implements Plugin<Project> {
 
     public static final String BASE_ALFRESCO_WAR = "baseAlfrescoWar";
     public static final String ALFRESCO_AMP = "alfrescoAmp";
@@ -39,7 +45,7 @@ public class ApplyAmpsPlugin implements Plugin<Project> {
         project.getConfigurations().create(ALFRESCO_SM);
         project.getConfigurations().create(SHARE_SM);
 
-        project.getPluginManager().apply(DockerPlugin.class);
+        project.getPluginManager().apply(DockerConfigPlugin.class);
 
         DockerAlfrescoExtension dockerAlfrescoExtension = project.getExtensions().create("dockerAlfresco", DockerAlfrescoExtension.class, project);
 

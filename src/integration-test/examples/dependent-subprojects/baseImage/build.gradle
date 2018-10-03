@@ -1,5 +1,5 @@
 plugins {
-    id 'xenit-dockerbuild'
+    id 'eu.xenit.docker'
 }
 repositories {
     jcenter()

@@ -1,13 +1,7 @@
-////Buildscript dependencies are added by the Gradle test runner. When using this example, you should uncomment this.
-//buildscript {
-//    dependencies {
-//        classpath 'eu.xenit.gradle:xenit-gradle-plugins:2.1.4-7'
-//    }
-//}
-
 plugins {
-    id 'xenit-applyamps'
+    id 'eu.xenit.docker-alfresco'
 }
+
 repositories {
     mavenCentral()
     jcenter()

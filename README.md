@@ -1,4 +1,4 @@
-# Xenit Gradle Plugins
+# Alfresco Docker Gradle Plugins
 
 [![Build Status](https://jenkins-2.xenit.eu/buildStatus/icon?job=xenit-bitbucket/xenit-gradle-plugins/master)](https://jenkins-2.xenit.eu/job/xenit-bitbucket/job/xenit-gradle-plugins/job/master/)
 
@@ -6,11 +6,11 @@ This projects contains some gradle plugins that are used within Xenit Projects.
 
 Currently there are 3 plugins:
 
-- xenit-applyamps: Makes it possible to build Alfresco and Share wars with amps installed. A docker
+- docker-alfresco: Makes it possible to build Alfresco and Share wars with amps installed. A docker
 image can be built with the alfresco installed. It is also possible to include Alfresco Dynamic Extensions, and Alfresco
  Simple Modules.
-- xenit-dockerbuild: Build a docker image, starting from a Dockerfile.
-- xenit-docker: Helper plugin that is used to configure the docker environment.
+- docker: Build a docker image, starting from a Dockerfile.
+- docker-config: Helper plugin that is used to configure the docker environment.
 This plugin is automatically applied when using the 2 plugins below.
 
 ## Setup
