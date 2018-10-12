@@ -4,14 +4,14 @@ plugins {
 
 repositories {
     mavenCentral()
-    jcenter()
     maven {
         url "https://artifacts.alfresco.com/nexus/content/groups/public/"
     }
+    jcenter()
 }
 
 dependencies {
-    baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
+    baseAlfrescoWar "org.alfresco:content-services-community:6.0.7-ga@war"
     alfrescoAmp "de.fmaul:javascript-console-repo:0.6@amp"
     baseShareWar "org.alfresco:share:6.0.c@war"
     shareAmp "de.fmaul:javascript-console-share:0.6@amp"
@@ -27,10 +27,3 @@ dockerAlfresco {
         repository = 'my-lean-image'
     }
 }
-
-// Hack to make alfresco version.properties match the expected.
-// DO NOT DO THIS
-createDockerFile {
-    runCommand('sed s/version.revision=7/version.revision=0/ -i /usr/local/tomcat/webapps/alfresco/WEB-INF/classes/alfresco/version.properties')
-}
-
