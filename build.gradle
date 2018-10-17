@@ -95,11 +95,6 @@ repositories {
     }
 }
 
-shadowJar {
-    configurations = [project.configurations.packaged]
-}
-
-
 dependencies {
     packaged 'org.alfresco:alfresco-mmt:5.2.g'
     compile 'com.bmuschko:gradle-docker-plugin:3.2.5'
@@ -115,6 +110,16 @@ dependencies {
     }
 }
 
+shadowJar {
+    configurations = [project.configurations.packaged]
+    classifier = "" // Change classifier so gradle plugin portal accepts our plugin
+}
+
+jar {
+    // Changes classifier, because no classifier is already taken by shadowJar, and we don't want to overwrite
+    classifier = "unbundled"
+}
+
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.main.allSource
@@ -124,6 +129,8 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
 }
+
+configurations.archives.artifacts.clear() // Remove jar task output that is present by default
 
 artifacts {
     add("archives", shadowJar)
