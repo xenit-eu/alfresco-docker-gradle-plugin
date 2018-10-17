@@ -2,6 +2,7 @@ plugins {
     id "java-gradle-plugin"
     id "com.gradle.plugin-publish" version "0.10.0"
     id 'org.ajoberstar.reckon' version "0.8.0"
+    id 'com.github.johnrengelman.shadow' version '4.0.1'
 }
 
 group 'eu.xenit.gradle'
@@ -11,10 +12,22 @@ task wrapper(type: Wrapper) {
   distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
 }
 
-
 sourceCompatibility = 1.8
 
+configurations {
+    packaged
+    compileOnly.extendsFrom(packaged)
+    testCompile.extendsFrom(packaged)
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom testRuntime
+}
+
 sourceSets {
+    main {
+        java {
+            runtimeClasspath += configurations.packaged
+        }
+    }
     integrationTest {
         java {
             compileClasspath += main.output + test.output
@@ -26,10 +39,6 @@ sourceSets {
     }
 }
 
-configurations {
-    integrationTestCompile.extendsFrom testCompile
-    integrationTestRuntime.extendsFrom testRuntime
-}
 
 gradlePlugin {
     plugins {
@@ -86,9 +95,13 @@ repositories {
     }
 }
 
+shadowJar {
+    configurations = [project.configurations.packaged]
+}
+
+
 dependencies {
-    compile gradleApi()
-    compile 'org.alfresco:alfresco-mmt:5.2.g'
+    packaged 'org.alfresco:alfresco-mmt:5.2.g'
     compile 'com.bmuschko:gradle-docker-plugin:3.2.5'
     compile group: 'commons-io', name: 'commons-io', version: '2.5'
     compile 'com.avast.gradle:gradle-docker-compose-plugin:0.8.8'
@@ -100,6 +113,22 @@ dependencies {
     testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
         exclude module: 'groovy-all'
     }
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    add("archives", shadowJar)
+    add("archives", sourcesJar)
+    add("archives", javadocJar)
 }
 
 task integrationTest(type: Test, group: "verification") {
