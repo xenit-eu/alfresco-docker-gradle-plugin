@@ -21,6 +21,4 @@ dockerAlfresco {
     }
 }
 
-afterEvaluate {
-    createDockerFile.dependsOn(':baseImage:buildLabels')
-}
+createDockerFile.dependsOn(':baseImage:buildDockerImage')
