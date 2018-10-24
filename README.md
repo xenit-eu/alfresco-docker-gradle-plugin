@@ -154,10 +154,8 @@ Lean image is a flag to optimize the build. This will optimize the build speed, 
 |               | With Lean image | Without Lean image | 
 | ------------- | ------------- | ------------- |
 | Alfresco from war is unpacked over image|No | Yes |
-| Base war must contain Alfresco  | No  | Yes |
-| Base war can contain Alfresco  | Yes, but will be thrown away  | Yes |
 | Base image must contain Alfresco   | Yes  | No |
-| Base image can contain Alfresco   | Yes  | Yes |
+| Base image can contain Alfresco | Yes | Yes, but it will be removed. |
 | Build speed   | Fast  | Slow |
 | Image layer size   | Small  | Big |
 | Gradle build folder size   | Small  | Big |
