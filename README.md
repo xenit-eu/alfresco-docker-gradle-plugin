@@ -78,7 +78,7 @@ dockerAlfresco {
     // Putting leanImage on true will only apply the custom modules to
     // image, and not the base war itself. The base war of the original
     // image is therefor not overwritten/removed. Speeds up build times.
-    // Smaller last layer of the image.
+    // Smaller last layer of the image. See documentation of lean image below.
     leanImage = true
 
     dockerBuild {
@@ -146,6 +146,25 @@ gradle buildDockerImage
 ```
 
 The code for this example can be found [here](src/test/examples/example-docker-plugin)
+
+### Lean image
+
+Lean image is a flag to optimize the build. This will optimize the build speed, gradle build folder size and docker image size. The following table explains the difference.
+
+|               | With Lean image | Without Lean image | 
+| ------------- | ------------- | ------------- |
+| Alfresco from war is unpacked over image|No | Yes |
+| Base image must contain Alfresco   | Yes  | No |
+| Base image can contain Alfresco | Yes | Yes, but it will be removed. |
+| Build speed   | Fast  | Slow |
+| Image layer size   | Small  | Big |
+| Gradle build folder size   | Small  | Big |
+
+```groovy
+dockerAlfresco {
+    leanImage = true
+}
+```
 
 ## Tagging behavior
 
