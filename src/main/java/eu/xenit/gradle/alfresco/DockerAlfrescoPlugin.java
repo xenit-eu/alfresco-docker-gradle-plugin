@@ -16,8 +16,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.alfresco.repo.module.tool.WarHelperImpl;
+import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.ConfigurablePublishArtifact;
 import org.gradle.api.artifacts.Configuration;
 
 /**
@@ -142,6 +144,12 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         mergeWarsTask.setInputWars(
                 () -> Stream.concat(Stream.of(baseWar.getSingleFile()),
                         outputTasks.stream().map(WarOutputTask::getOutputWar)).collect(Collectors.toList()));
+        
+        // Mark merged war as artifact
+        final String artifactConfiguration = "artifact" + warName + "War";
+        project.getConfigurations().create(artifactConfiguration);
+        project.getArtifacts().add(artifactConfiguration, mergeWarsTask,
+                configurablePublishArtifact -> configurablePublishArtifact.setName(warName.toLowerCase()));
 
         return outputTasks;
     }
