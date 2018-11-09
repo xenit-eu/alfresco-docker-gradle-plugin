@@ -148,7 +148,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         // Mark merged war as artifact
         final String artifactConfiguration = "artifact" + warName + "War";
         project.getConfigurations().create(artifactConfiguration);
-        project.getArtifacts().add(artifactConfiguration, mergeWarsTask,
+        project.getArtifacts().add(artifactConfiguration, mergeWarsTask.getOutputWar(),
                 configurablePublishArtifact -> configurablePublishArtifact.setName(warName.toLowerCase()));
 
         return outputTasks;
