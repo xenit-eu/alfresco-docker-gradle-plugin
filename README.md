@@ -166,6 +166,18 @@ dockerAlfresco {
 }
 ```
 
+### Building standalone war artifacts
+Next to building docker images, this plugin can be used to build fully
+functional Alfresco and Share war's that can be deployed on an application
+server.  
+To assemble a standalone war, following tasks can be used: 
+`mergeAlfrescoWar` or `mergeShareWar`. These tasks merge the AMP, DE and SM 
+customizations with the base war to create a fully functional standalone 
+war.
+
+For simplicity, the output of these tasks is automatically marked as 
+artifact when the plugin is applied.
+
 ## Tagging behavior
 
 On Jenkins, the branch is set with the environment variable `BRANCH_NAME`. When it is set, all manually tags will be
