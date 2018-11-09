@@ -14,6 +14,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.alfresco.repo.module.tool.WarHelperImpl;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -138,7 +139,9 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         for(WarLabelOutputTask task: outputTasks) {
             mergeWarsTask.withLabels(task);
         }
-        mergeWarsTask.setInputWars(() -> outputTasks.stream().map(WarOutputTask::getOutputWar).collect(Collectors.toList()));
+        mergeWarsTask.setInputWars(
+                () -> Stream.concat(Stream.of(baseWar.getSingleFile()),
+                        outputTasks.stream().map(WarOutputTask::getOutputWar)).collect(Collectors.toList()));
 
         return outputTasks;
     }
