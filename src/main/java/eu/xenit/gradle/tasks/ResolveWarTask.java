@@ -47,11 +47,6 @@ public class ResolveWarTask extends DefaultTask implements WarEnrichmentTask {
     }
 
     @Override
-    public void setOutputWar(Supplier<File> outputWar) {
-        throw new UnsupportedOperationException("outputWar is required to be the same as inputWar");
-    }
-
-    @Override
     public void withLabels(Supplier<Map<String, String>> labels) {
         this.labels.add(labels);
     }
