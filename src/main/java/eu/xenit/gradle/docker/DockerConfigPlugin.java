@@ -49,7 +49,6 @@ public class DockerConfigPlugin implements Plugin<Project> {
         composeExtension.getEnvironment().put("DOCKER_IP", dockerConfig.getExposeIp());
         if(dockerConfig.getCertPath()!=null) {
             composeExtension.getEnvironment().put("DOCKER_CERT_PATH", dockerConfig.getCertPath());
-            composeExtension.getEnvironment().put("DOCKER_TLS_VERIFY", "0");
         }
 
         composeExtension.getEnvironment().put("COMPOSE_PROJECT_NAME", project.getName() + "-" + branch);
