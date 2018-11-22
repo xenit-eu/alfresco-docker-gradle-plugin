@@ -29,6 +29,12 @@ public class ExampleRunner extends AbstractIntegrationTest {
     }
 
     @Test
+    public void testComposeUp() throws IOException {
+        testProjectFolder(EXAMPLES.resolve("example-docker-plugin"), ":composeUp");
+    }
+
+
+    @Test
     public void testFileDependencies() throws IOException {
         testProjectFolder(EXAMPLES.resolve("file-dependencies"));
     }

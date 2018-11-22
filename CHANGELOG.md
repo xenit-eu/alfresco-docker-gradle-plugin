@@ -1,5 +1,14 @@
 # XeniT Gradle Plugin - Changelog
 
+## Version 4.0.3 - (Unreleased)
+
+### Fixes
+
+ * [DEVEM-342](https://xenitsupport.jira.com/browse/DEVEM-342) - Update dependency `com.avast.gradle:gradle-docker-compose-plugin`
+to version 0.8.12 to solve failing `composeUp` when there is output on stderr
+
+## Version 4.0.2
+## Version 4.0.1
 ## Version 4.0.0 - 2018-10-03
 
 ### Changes
