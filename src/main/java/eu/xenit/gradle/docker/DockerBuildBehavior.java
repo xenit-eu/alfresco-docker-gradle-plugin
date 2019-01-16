@@ -16,6 +16,8 @@ import java.io.File;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 
 import static eu.xenit.gradle.git.JGitInfoProvider.GetProviderForProject;
 
@@ -23,6 +25,8 @@ import static eu.xenit.gradle.git.JGitInfoProvider.GetProviderForProject;
  * Created by thijs on 10/25/16.
  */
 public class DockerBuildBehavior {
+
+    private static final Logger LOGGER = Logging.getLogger(DockerBuildBehavior.class);
 
     private Supplier<DockerBuildExtension> dockerBuildExtension;
     private Supplier<File> dockerFile;
@@ -110,7 +114,8 @@ public class DockerBuildBehavior {
                 try {
                     labels.put(labelPrefix+"commit.url", gitInfoProvider.getCommitURL().toExternalForm());
                 } catch (CannotConvertToUrlException e) {
-                    e.printStackTrace();
+                    LOGGER.info("Cannot create commit url");
+                    LOGGER.debug("Stacktrace for the above info", e);
                 }
             }
             labels.put(labelPrefix+"branch", gitInfoProvider.getBranch());
