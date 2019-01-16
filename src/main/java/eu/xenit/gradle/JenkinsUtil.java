@@ -9,6 +9,8 @@ import java.util.Date;
  */
 public class JenkinsUtil {
 
+    private static final Date buildDate = new Date();
+
     /*
 Returns an id with the date - the jenkins build number
  */
@@ -17,9 +19,8 @@ Returns an id with the date - the jenkins build number
         if(buildNumber == null){
             return null;
         }
-        Date now = new Date();
         DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
-        String dateText = dateFormat.format(now);
+        String dateText = dateFormat.format(buildDate);
         return dateText+"-"+buildNumber;
     }
 

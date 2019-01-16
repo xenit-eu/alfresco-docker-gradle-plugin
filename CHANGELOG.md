@@ -6,6 +6,7 @@
 
  * [DEVEM-342](https://xenitsupport.jira.com/browse/DEVEM-342) - Update dependency `com.avast.gradle:gradle-docker-compose-plugin`
 to version 0.8.12 to solve failing `composeUp` when there is output on stderr
+ * [DEVEM-351](https://xenitsupport.jira.com/browse/DEVEM-342) - Ensure that the push tasks pushes the correct tags.
 
 ## Version 4.0.2
 ## Version 4.0.1
