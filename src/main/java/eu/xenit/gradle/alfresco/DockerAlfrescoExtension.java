@@ -34,7 +34,7 @@ public class DockerAlfrescoExtension {
     }
 
     public void setBaseImage(Closure<String> baseImage){
-        setBaseImage(() -> baseImage.call());
+        setBaseImage(baseImage::call);
     }
 
     //Needed to support lazy evaluation
