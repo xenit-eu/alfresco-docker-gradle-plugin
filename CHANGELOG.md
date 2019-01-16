@@ -6,9 +6,27 @@
 
  * [DEVEM-342](https://xenitsupport.jira.com/browse/DEVEM-342) - Update dependency `com.avast.gradle:gradle-docker-compose-plugin`
 to version 0.8.12 to solve failing `composeUp` when there is output on stderr
+ * [DEVEM-351](https://xenitsupport.jira.com/browse/DEVEM-342) - Ensure that the push tasks pushes the correct tags.
+ * [#25](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/25) - Info and debug logging instead of stacktrace when not able to 
+ create URL for commit.
 
-## Version 4.0.2
-## Version 4.0.1
+## Version 4.0.2 - 2018-10-17
+
+# Fixes
+
+* [#9](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/9) - Broken version published to the plugin portal
+
+## Version 4.0.1 (YANKED) - 2018-10-17
+
+### Fixes
+
+ * [#5](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/5) - Alfresco repository required to resolve classpath artifacts
+ * [#6](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/6) - `DockerException: Bind address needs a port: null` when using docker-compose
+ 
+### Changes
+
+ * Update avast docker-compose plugin to 0.8.8
+
 ## Version 4.0.0 - 2018-10-03
 
 ### Changes
