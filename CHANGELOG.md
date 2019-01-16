@@ -6,9 +6,10 @@
 
  * [DEVEM-342](https://xenitsupport.jira.com/browse/DEVEM-342) - Update dependency `com.avast.gradle:gradle-docker-compose-plugin`
 to version 0.8.12 to solve failing `composeUp` when there is output on stderr
- * [DEVEM-351](https://xenitsupport.jira.com/browse/DEVEM-342) - Ensure that the push tasks pushes the correct tags.
+ * [DEVEM-351](https://xenitsupport.jira.com/browse/DEVEM-351) - Ensure that the push tasks pushes the correct tags.
  * [#25](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/25) - Info and debug logging instead of stacktrace when not able to 
  create URL for commit.
+ * [DEVEM-352](https://xenitsupport.jira.com/browse/DEVEM-352) - Clear error message when base image is not set.
 
 ## Version 4.0.2 - 2018-10-17
 

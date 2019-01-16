@@ -4,6 +4,7 @@ plugins {
     id "com.gradle.plugin-publish" version "0.10.0"
     id 'org.ajoberstar.reckon' version "0.8.0"
     id 'com.github.johnrengelman.shadow' version '4.0.1'
+    id "org.sonarqube" version "2.7"
 }
 
 group 'eu.xenit.gradle'
@@ -33,10 +34,7 @@ sourceSets {
         java {
             compileClasspath += main.output + test.output
             runtimeClasspath += main.output + test.output
-            srcDir file('src/integration-test/java')
         }
-
-        resources.srcDir file('src/integration-test/resources')
     }
 }
 
@@ -96,6 +94,7 @@ repositories {
     }
 }
 
+
 dependencies {
     packaged 'org.alfresco:alfresco-mmt:5.2.g'
     compile 'com.bmuschko:gradle-docker-plugin:3.2.5'
@@ -142,6 +141,15 @@ artifacts {
 task integrationTest(type: Test, group: "verification") {
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
+}
+
+
+tasks.sonarqube.dependsOn(integrationTest)
+
+sonarqube {
+    properties {
+        properties["sonar.tests"] += sourceSets.integrationTest.java.srcDirs
+    }
 }
 
 check.dependsOn(integrationTest)

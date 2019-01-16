@@ -1,5 +1,6 @@
 package eu.xenit.gradle.testrunner;
 
+import eu.xenit.gradle.alfresco.DockerAlfrescoExtension;
 import org.apache.commons.io.FileUtils;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
@@ -19,7 +20,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class Reproductions extends AbstractIntegrationTest {
 
-    private static Path REPRODUCTIONS = Paths.get("src", "integration-test", "reproductions");
+    private static Path REPRODUCTIONS = Paths.get("src", "integrationTest", "reproductions");
 
     @Test
     public void testalfrescDeDoubleTask() throws IOException {
@@ -64,5 +65,11 @@ public class Reproductions extends AbstractIntegrationTest {
     @Test
     public void testDockerPluginWithoutConfiguration() throws IOException {
         testProjectFolder(REPRODUCTIONS.resolve("docker-plugin-without-config"), ":buildDockerImage");
+    }
+
+    @Test
+    public void testDockerAlfrescoPluginWithoutConfiguration() throws IOException {
+        testProjectFolderExpectFailure(REPRODUCTIONS.resolve("docker-alfresco-plugin-without-config"), ":buildDockerImage",
+                DockerAlfrescoExtension.MESSAGE_BASE_IMAGE_NOT_SET);
     }
 }
