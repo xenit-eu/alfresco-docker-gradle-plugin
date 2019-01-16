@@ -4,12 +4,15 @@ import eu.xenit.gradle.docker.DockerBuildExtension;
 import groovy.lang.Closure;
 import java.util.function.Supplier;
 import org.gradle.api.Action;
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 
 /**
  * Created by thijs on 9/21/16.
  */
 public class DockerAlfrescoExtension {
+
+    public static final String MESSAGE_BASE_IMAGE_NOT_SET = "Base image not set. You need to configure your base image in the 'dockerAlfresco' extension block";
 
     public DockerAlfrescoExtension(Project project) {
         dockerBuild = new DockerBuildExtension(project);
@@ -37,7 +40,12 @@ public class DockerAlfrescoExtension {
     //Needed to support lazy evaluation
     private Supplier<String> baseImageSupplierInternal;
 
-    private final Supplier<String> baseImageSupplier = () -> baseImageSupplierInternal.get();
+    private final Supplier<String> baseImageSupplier = () -> {
+        if (baseImageSupplierInternal == null) {
+            throw new GradleException(MESSAGE_BASE_IMAGE_NOT_SET);
+        }
+        return baseImageSupplierInternal.get();
+    };
 
     public DockerBuildExtension getDockerBuild() {
         return dockerBuild;
