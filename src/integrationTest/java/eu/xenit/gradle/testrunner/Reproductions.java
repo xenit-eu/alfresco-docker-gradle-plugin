@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class Reproductions extends AbstractIntegrationTest {
 
-    private static Path REPRODUCTIONS = Paths.get("src", "integration-test", "reproductions");
+    private static Path REPRODUCTIONS = Paths.get("src", "integrationTest", "reproductions");
 
     @Test
     public void testalfrescDeDoubleTask() throws IOException {

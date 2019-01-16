@@ -11,7 +11,7 @@ import java.nio.file.Paths;
  */
 public class ExampleRunner extends AbstractIntegrationTest {
 
-    private static Path EXAMPLES = Paths.get("src", "integration-test", "examples");
+    private static Path EXAMPLES = Paths.get("src", "integrationTest", "examples");
 
     @Test
     public void testAlfrescoWarOnly() throws IOException {
