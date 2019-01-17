@@ -1,4 +1,4 @@
-# XeniT Gradle Plugin - Changelog
+# Alfresco Docker Gradle Plugin - Changelog
 
 ## Version 4.0.3 - 2019-01-17
 
@@ -10,6 +10,7 @@ to version 0.8.12 to solve failing `composeUp` when there is output on stderr
  * [#25](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/25) - Info and debug logging instead of stacktrace when not able to 
  create URL for commit.
  * [DEVEM-352](https://xenitsupport.jira.com/browse/DEVEM-352) - Clear error message when base image is not set.
+ * [DEVEM-342](https://xenitsupport.jira.com/browse/DEVEM-342) - composeUp fails when anything is printed on stderr
 
 ## Version 4.0.2 - 2018-10-17
 
