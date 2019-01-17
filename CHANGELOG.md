@@ -1,6 +1,6 @@
 # XeniT Gradle Plugin - Changelog
 
-## Version 4.0.3 - (Unreleased)
+## Version 4.0.3 - 2019-01-17
 
 ### Fixes
 
