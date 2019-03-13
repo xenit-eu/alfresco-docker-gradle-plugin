@@ -69,4 +69,9 @@ public class ExampleRunner extends AbstractIntegrationTest {
         testProjectFolder(EXAMPLES.resolve("lean-example"));
     }
 
+    @Test
+    public void publishWar() throws IOException {
+        testProjectFolder(EXAMPLES.resolve("publish-war"), ":publishToMavenLocal");
+    }
+
 }

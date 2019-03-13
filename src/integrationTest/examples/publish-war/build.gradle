@@ -1,0 +1,35 @@
+plugins {
+    id 'eu.xenit.docker-alfresco'
+    id 'maven-publish'
+}
+
+group "eu.xenit.gradle.docker-alfresco.test.publish-war"
+version "1.0.0"
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+    }
+}
+
+dependencies {
+    baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
+    alfrescoAmp "de.fmaul:javascript-console-repo:0.6@amp"
+    baseShareWar "org.alfresco:share:6.0.c@war"
+    shareAmp "de.fmaul:javascript-console-share:0.6@amp"
+}
+
+publishing.publications {
+    alfresco(MavenPublication) {
+        artifactId "repository"
+        artifact mergeAlfrescoWar
+    }
+
+    share(MavenPublication) {
+        artifactId "share"
+        artifact mergeShareWar
+    }
+}
+
