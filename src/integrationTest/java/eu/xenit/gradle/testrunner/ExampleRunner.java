@@ -30,7 +30,7 @@ public class ExampleRunner extends AbstractIntegrationTest {
 
     @Test
     public void testComposeUp() throws IOException {
-        testProjectFolder(EXAMPLES.resolve("example-docker-plugin"), ":composeUp");
+        testProjectFolder(EXAMPLES.resolve("example-docker-plugin"), ":integrationTest");
     }
 
 

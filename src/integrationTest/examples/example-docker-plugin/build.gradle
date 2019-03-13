@@ -29,6 +29,7 @@ buildDockerImage.dependsOn beforeBuild
 
 // Remove this when using the plugin
 task integrationTest {
-    dependsOn 'buildDockerImage'
-    dependsOn 'pushDockerImage'
 }
+
+dockerCompose.isRequiredBy(integrationTest)
+
