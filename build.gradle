@@ -1,6 +1,7 @@
 plugins {
     id "java-gradle-plugin"
     id "maven-publish"
+    id "idea"
     id "com.gradle.plugin-publish" version "0.10.0"
     id 'org.ajoberstar.reckon' version "0.8.0"
     id 'com.github.johnrengelman.shadow' version '4.0.1'
@@ -8,11 +9,6 @@ plugins {
 }
 
 group 'eu.xenit.gradle'
-
-task wrapper(type: Wrapper) {
-  gradleVersion = '4.8'
-  distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
-}
 
 sourceCompatibility = 1.8
 
@@ -32,9 +28,17 @@ sourceSets {
     }
     integrationTest {
         java {
-            compileClasspath += main.output + test.output
-            runtimeClasspath += main.output + test.output
+            compileClasspath += main.compileClasspath + test.output
+            runtimeClasspath += main.runtimeClasspath + test.output
+            srcDir file('src/integration-test/java')
         }
+    }
+}
+
+idea {
+    module {
+        testSourceDirs += sourceSets.integrationTest.java.sourceDirectories
+        testResourceDirs += sourceSets.integrationTest.resources.srcDirs
     }
 }
 
