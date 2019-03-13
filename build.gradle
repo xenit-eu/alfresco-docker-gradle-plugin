@@ -28,9 +28,8 @@ sourceSets {
     }
     integrationTest {
         java {
-            compileClasspath += main.compileClasspath + test.output
-            runtimeClasspath += main.runtimeClasspath + test.output
-            srcDir file('src/integration-test/java')
+            compileClasspath += main.output
+            runtimeClasspath += main.output
         }
     }
 }

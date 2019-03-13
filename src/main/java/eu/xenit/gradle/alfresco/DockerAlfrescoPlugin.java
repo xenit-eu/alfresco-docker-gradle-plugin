@@ -1,5 +1,6 @@
 package eu.xenit.gradle.alfresco;
 
+import eu.xenit.gradle.alfresco.tasks.internal.DeprecatedMergeWarTask;
 import eu.xenit.gradle.docker.DockerBuildBehavior;
 import eu.xenit.gradle.docker.DockerConfigPlugin;
 import eu.xenit.gradle.tasks.DockerfileWithWarsTask;
@@ -133,8 +134,12 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         List<WarLabelOutputTask> outputTasks = new ArrayList<>(tasks);
         outputTasks.add(0, resolveTask);
 
-        MergeWarsTask mergeWarsTask = project.getTasks().create("merge"+warName+"War", MergeWarsTask.class);
+        MergeWarsTask mergeWarsTask = project.getTasks().create(warName.toLowerCase()+"War", MergeWarsTask.class);
         mergeWarsTask.setGroup(TASK_GROUP);
+
+        DeprecatedMergeWarTask oldMergeWarsTask = project.getTasks().create("merge"+warName+"War", DeprecatedMergeWarTask.class);
+        oldMergeWarsTask.setGroup(TASK_GROUP);
+        oldMergeWarsTask.setReplacementTask(mergeWarsTask);
 
         for(WarLabelOutputTask task: outputTasks) {
             mergeWarsTask.withLabels(task);

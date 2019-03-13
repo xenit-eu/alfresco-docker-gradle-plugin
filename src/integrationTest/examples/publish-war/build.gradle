@@ -24,12 +24,12 @@ dependencies {
 publishing.publications {
     alfresco(MavenPublication) {
         artifactId "repository"
-        artifact mergeAlfrescoWar
+        artifact alfrescoWar
     }
 
     share(MavenPublication) {
         artifactId "share"
-        artifact mergeShareWar
+        artifact shareWar
     }
 }
 
