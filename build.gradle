@@ -142,6 +142,21 @@ artifacts {
 }
 
 task integrationTest(type: Test, group: "verification") {
+    useJUnit()
+    if (project.hasProperty("integrationTestGradleVersions")) {
+        // This is used for sharding integration tests across different gradle versions
+        // to avoid a timeout on travis because the total build takes too long.
+        // See also the .travis.yml file
+        project.property("integrationTestGradleVersions").tokenize(",").forEach({ version ->
+            // The versions specified in `integrationTestGradleVersions` are major.minor.
+            // We only want it to match those, and eventual patches to those versions.
+            // In particular, we want 4.1 to match 4.1.2, but not 4.10.
+            // Since there is only one test parameter for every version, either the first
+            // pattern matches major.minor, or the second pattern matches major.minor.patch
+            filter.includeTestsMatching("*[Gradle v${version}]")
+            filter.includeTestsMatching("*[Gradle v${version}.*]")
+        })
+    }
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
 }
