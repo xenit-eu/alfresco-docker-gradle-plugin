@@ -162,7 +162,6 @@ task integrationTest(type: Test, group: "verification") {
 }
 
 
-tasks.sonarqube.dependsOn(integrationTest)
 
 sonarqube {
     properties {
@@ -172,6 +171,7 @@ sonarqube {
 
 check.dependsOn(integrationTest)
 reckonTagCreate.dependsOn(check)
+tasks.sonarqube.dependsOn(check)
 
 publishing {
     publications {
