@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import org.gradle.api.DefaultTask;
-import org.gradle.api.Task;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;

@@ -16,11 +16,6 @@ import org.gradle.api.tasks.bundling.Zip;
 
 public class MergeWarsTask extends Zip implements LabelConsumerTask, WarLabelOutputTask {
 
-    /**
-     * WAR file used as output (is created from inputWar)
-     */
-    private Supplier<File> outputWar = () -> { return getProject().getBuildDir().toPath().resolve("xenit-gradle-plugins").resolve(getName()).resolve(getName()+".war").toFile(); };
-
     private List<Supplier<Map<String, String>>> labels = new ArrayList<>();
 
     private final CopySpec childWars;
