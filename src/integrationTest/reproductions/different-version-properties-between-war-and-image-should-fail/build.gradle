@@ -9,9 +9,6 @@ repositories {
         url "https://artifacts.alfresco.com/nexus/content/groups/public/"
     }
 }
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.3'
-}
 
 dependencies {
     baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
