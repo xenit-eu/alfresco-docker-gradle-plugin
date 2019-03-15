@@ -57,11 +57,6 @@ public class InjectFilesInWarTask extends DefaultTask implements WarEnrichmentTa
         return outputWar.get();
     }
 
-    @Override
-    public void setOutputWar(Supplier<File> outputWar) {
-        this.outputWar = outputWar;
-    }
-
     @InputFiles
     public Set<File> getSourceFiles()
     {

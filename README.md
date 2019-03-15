@@ -166,6 +166,26 @@ dockerAlfresco {
 }
 ```
 
+## Publishing wars with extensions
+
+Instead of creating a docker image with Alfresco and Share embedded, it is also possible to publish
+the Alfresco or Share war file with all AMPs, Dynamic Extensions and Simple Modules applied to it.
+
+The tasks `alfrescoWar` and `shareWar` create respectively an Alfresco and a Share war that can be published.
+
+```gradle
+publishing.publications {
+    alfresco(MavenPublication) {
+        artifactId "repo"
+        artifact alfrescoWar
+    }
+    share(MavenPublication) {
+        artifactId "share"
+        artifact shareWar
+    }
+}
+```
+
 ## Tagging behavior
 
 On Jenkins, the branch is set with the environment variable `BRANCH_NAME`. When it is set, all manually tags will be
@@ -176,6 +196,8 @@ When an environment variable `BUILD_NUMBER` is set, an extra tag is added: `buil
 When the branch is not master, this is also prepended.
 
 This tagging behavior can be disabled by adding `automaticTags = false` do the dockerBuild configuration.
+
+# Plugin development
 
 ## Creating a release
 

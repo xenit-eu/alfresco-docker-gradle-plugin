@@ -30,7 +30,7 @@ public class ExampleRunner extends AbstractIntegrationTest {
 
     @Test
     public void testComposeUp() throws IOException {
-        testProjectFolder(EXAMPLES.resolve("example-docker-plugin"), ":composeUp");
+        testProjectFolder(EXAMPLES.resolve("example-docker-plugin"), ":integrationTest");
     }
 
 
@@ -67,6 +67,11 @@ public class ExampleRunner extends AbstractIntegrationTest {
     @Test
     public void leanExample() throws IOException {
         testProjectFolder(EXAMPLES.resolve("lean-example"));
+    }
+
+    @Test
+    public void publishWar() throws IOException {
+        testProjectFolder(EXAMPLES.resolve("publish-war"), ":publishToMavenLocal");
     }
 
 }

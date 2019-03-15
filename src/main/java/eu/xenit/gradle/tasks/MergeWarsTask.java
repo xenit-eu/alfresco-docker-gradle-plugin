@@ -1,29 +1,33 @@
 package eu.xenit.gradle.tasks;
 
-import de.schlichtherle.truezip.file.TFile;
-import org.gradle.api.DefaultTask;
-import org.gradle.api.tasks.*;
-
 import java.io.File;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import org.gradle.api.file.CopySpec;
+import org.gradle.api.file.FileTree;
+import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.OutputFile;
+import org.gradle.api.tasks.bundling.Zip;
 
-public class MergeWarsTask extends DefaultTask implements LabelConsumerTask, WarLabelOutputTask {
-    /**
-     * WAR files used as input (are not modified)
-     *
-     * Later files overwrite earlier files
-     */
-    private Supplier<List<File>> inputWars;
-
-    /**
-     * WAR file used as output (is created from inputWar)
-     */
-    private Supplier<File> outputWar = () -> { return getProject().getBuildDir().toPath().resolve("xenit-gradle-plugins").resolve(getName()).resolve(getName()+".war").toFile(); };
+public class MergeWarsTask extends Zip implements LabelConsumerTask, WarLabelOutputTask {
 
     private List<Supplier<Map<String, String>>> labels = new ArrayList<>();
+
+    private final CopySpec childWars;
+
+    public MergeWarsTask() {
+        super();
+        setExtension("war");
+        setDestinationDir(
+                getProject().getBuildDir().toPath().resolve("xenit-gradle-plugins").resolve(getName()).toFile());
+        setBaseName(getName());
+        childWars = getRootSpec().addChildBeforeSpec(getMainSpec());
+    }
 
     @Override
     public void withLabels(Supplier<Map<String, String>> labels) {
@@ -40,39 +44,22 @@ public class MergeWarsTask extends DefaultTask implements LabelConsumerTask, War
         return accumulator;
     }
 
-    @InputFiles
-    public List<File> getInputWars() {
-        return inputWars.get();
-    }
-
+    /**
+     * WAR files used as input (are not modified)
+     * <p>
+     * Later files overwrite earlier files
+     */
     public void setInputWars(Supplier<List<File>> inputWars) {
-        this.inputWars = inputWars;
+        childWars.from((Callable<List<FileTree>>) () -> inputWars.get()
+                .stream()
+                .map(war -> getProject().zipTree(war))
+                .collect(Collectors.toList()));
     }
 
     @Override
     @OutputFile
     public File getOutputWar() {
-        return outputWar.get();
-    }
-
-    @Override
-    public void setOutputWar(Supplier<File> outputWar) {
-        this.outputWar = outputWar;
-    }
-
-    @TaskAction
-    public void stripWar() {
-        for(File file: getInputWars()) {
-            Util.withWar(file, inputWar -> {
-                Util.withWar(getOutputWar(), outputWar -> {
-                    try {
-                        TFile.cp_rp(inputWar, outputWar, inputWar.getArchiveDetector(), outputWar.getArchiveDetector());
-                    } catch (IOException e) {
-                        throw new UncheckedIOException(e);
-                    }
-                });
-            });
-        }
+        return getDestinationDir().toPath().resolve(getName()).toFile();
     }
 
 }
