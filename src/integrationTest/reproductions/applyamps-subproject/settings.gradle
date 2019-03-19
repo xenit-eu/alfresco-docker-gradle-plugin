@@ -1,2 +1,2 @@
-include './build.gradle'
+include ':'
 include 'subproject'

@@ -6,15 +6,11 @@ repositories {
     jcenter()
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '3.3'
-}
-
 dockerFile {
     dockerFile = file('Dockerfile')
     dockerBuild {
         repository = 'plugin-reproduce-pushtag'
-        tags = ['1','1.0','test']
+        tags = ['1', '1.0', 'test']
         automaticTags = false
     }
 }
