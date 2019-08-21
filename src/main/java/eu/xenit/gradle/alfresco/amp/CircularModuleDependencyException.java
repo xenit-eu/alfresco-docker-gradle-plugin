@@ -12,6 +12,9 @@ public class CircularModuleDependencyException extends RuntimeException {
     }
 
     private static String createLoopMessage(Set<ModuleInformation> modules) {
+        if(modules.isEmpty()) {
+            return "<unknown>";
+        }
         StringBuilder stringBuilder = new StringBuilder();
         ModuleInformation firstModule = null;
         for (ModuleInformation module : modules) {
