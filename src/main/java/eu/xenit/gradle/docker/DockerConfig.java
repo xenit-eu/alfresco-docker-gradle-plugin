@@ -1,9 +1,11 @@
 package eu.xenit.gradle.docker;
 
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import org.gradle.util.GradleVersion;
 
 /**
  * Created by thijs on 10/24/16.
@@ -49,6 +51,9 @@ public class DockerConfig {
     private String registryPassword;
 
     public DockerConfig(Project project){
+        if(GradleVersion.current().compareTo(GradleVersion.version("4.10.3")) < 0) {
+            throw new GradleException("The Xenit alfresco-docker Gradle plugin requires at least Gradle 4.10.3. You are running "+GradleVersion.current());
+        }
         this.url = (String) project.getProperties().get(EU_XENIT_DOCKER_URL);
 
         if(project.getProperties().containsKey(EU_XENIT_DOCKER_EXPOSE_IP)) {
