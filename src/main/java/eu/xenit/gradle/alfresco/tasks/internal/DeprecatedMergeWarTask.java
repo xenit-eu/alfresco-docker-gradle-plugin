@@ -12,6 +12,10 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
 
+/**
+ * @deprecated since 4.1.0, will be removed in 5.0.0
+ */
+@Deprecated
 public class DeprecatedMergeWarTask extends DefaultTask implements LabelConsumerTask, WarLabelOutputTask {
 
     private MergeWarsTask replacementTask;
