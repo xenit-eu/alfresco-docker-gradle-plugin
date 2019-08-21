@@ -2,6 +2,7 @@ plugins {
     id "java-gradle-plugin"
     id "maven-publish"
     id "idea"
+    id "jacoco"
     id "com.gradle.plugin-publish" version "0.10.1"
     id 'org.ajoberstar.reckon' version "0.9.0"
     id 'com.github.johnrengelman.shadow' version '4.0.4'
@@ -161,7 +162,12 @@ task integrationTest(type: Test, group: "verification") {
     classpath = sourceSets.integrationTest.runtimeClasspath
 }
 
-
+jacocoTestReport {
+    dependsOn(test)
+    mustRunAfter(integrationTest)
+    executionData(test, integrationTest)
+}
+check.dependsOn(jacocoTestReport)
 
 sonarqube {
     properties {
