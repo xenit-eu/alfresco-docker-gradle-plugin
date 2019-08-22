@@ -71,30 +71,27 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         return dockerfile;
     }
 
-    private void updateDockerFileTask(Project project1, DockerfileWithWarsTask dockerfile, List<WarLabelOutputTask> alfrescoTasks, List<WarLabelOutputTask> shareTasks, DockerAlfrescoExtension dockerAlfrescoExtension) {
-        if(dockerAlfrescoExtension.getLeanImage()){
+    private void updateDockerFileTask(Project project1, DockerfileWithWarsTask dockerfile,
+            List<WarLabelOutputTask> alfrescoTasks, List<WarLabelOutputTask> shareTasks,
+            DockerAlfrescoExtension dockerAlfrescoExtension) {
+        if (dockerAlfrescoExtension.getLeanImage()) {
             dockerfile.setRemoveExistingWar(false);
         }
         Configuration alfrescoBaseWar = project1.getConfigurations().getByName(BASE_ALFRESCO_WAR);
-        if(!alfrescoBaseWar.isEmpty()) {
-            //don't add base Alfresco war when making lean image
-            if(!dockerAlfrescoExtension.getLeanImage()) {
-                dockerfile.addWar("alfresco", alfrescoBaseWar);
-            }
-            for (WarLabelOutputTask task : alfrescoTasks) {
-                dockerfile.addWar("alfresco", task);
-            }
+        if (!dockerAlfrescoExtension.getLeanImage()) {
+            dockerfile.addWar("alfresco", () -> alfrescoBaseWar.isEmpty() ? null : alfrescoBaseWar.getSingleFile());
         }
+        alfrescoTasks.forEach(t -> {
+            dockerfile.addWar("alfresco", t);
+        });
+
         Configuration shareBaseWar = project1.getConfigurations().getByName(BASE_SHARE_WAR);
-        if(!shareBaseWar.isEmpty()) {
-            //don't add base Share war when making lean image
-            if(!dockerAlfrescoExtension.getLeanImage()){
-                dockerfile.addWar("share", shareBaseWar);
-            }
-            for (WarLabelOutputTask task : shareTasks) {
-                dockerfile.addWar("share", task);
-            }
+        if (!dockerAlfrescoExtension.getLeanImage()) {
+            dockerfile.addWar("share", () -> shareBaseWar.isEmpty() ? null : shareBaseWar.getSingleFile());
         }
+        shareTasks.forEach(t -> {
+            dockerfile.addWar("share", t);
+        });
     }
 
     private List<WarLabelOutputTask> warEnrichmentChain(Project project, final String warName) {

@@ -1,30 +1,38 @@
 package eu.xenit.gradle.tasks;
 
 import groovy.lang.Closure;
-import org.gradle.api.Task;
-import org.gradle.api.file.FileCollection;
-import org.gradle.api.tasks.InputFile;
-
 import java.io.File;
 import java.util.function.Supplier;
+import org.gradle.api.Task;
+import org.gradle.api.file.FileCollection;
+import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.SkipWhenEmpty;
 
 public interface WarInputTask extends Task {
-    @InputFile
-    File getInputWar();
 
-    default void setInputWar(FileCollection configuration)
-    {
-        dependsOn(configuration);
-        setInputWar(configuration::getSingleFile);
+    @InputFiles
+    @SkipWhenEmpty
+    FileCollection getInputFiles_();
+
+    void setInputFiles_(FileCollection fileCollection);
+
+    @Internal
+    default File getInputWar() {
+        return getInputFiles_().getSingleFile();
     }
 
-    default void setInputWar(WarOutputTask task)
-    {
-        dependsOn(task);
-        setInputWar(task::getOutputWar);
+    default void setInputWar(FileCollection configuration) {
+        setInputFiles_(configuration);
     }
 
-    void setInputWar(Supplier<File> inputWar);
+    default void setInputWar(WarOutputTask task) {
+        setInputFiles_(getProject().files(task));
+    }
+
+    default void setInputWar(Supplier<File> inputWar) {
+        setInputFiles_(getProject().files(inputWar));
+    }
 
     default void setInputWar(File inputWar) {
         setInputWar(() -> inputWar);

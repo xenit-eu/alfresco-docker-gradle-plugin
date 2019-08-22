@@ -8,14 +8,17 @@ import de.schlichtherle.truezip.fs.FsSyncException;
 import de.schlichtherle.truezip.fs.archive.zip.JarDriver;
 import de.schlichtherle.truezip.socket.sl.IOPoolLocator;
 import java.io.File;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 class Util {
 
     static void withWar(File warFile, Consumer<TFile> closure) {
-        TConfig config = TConfig.get();
-        config.setArchiveDetector(new TArchiveDetector("war|amp", new JarDriver(IOPoolLocator.SINGLETON)));
-        TFile archive = new TFile(warFile);
+        Objects.requireNonNull(warFile, "warFile");
+        Objects.requireNonNull(closure, "closure");
+            TConfig config = TConfig.get();
+            config.setArchiveDetector(new TArchiveDetector("war|amp", new JarDriver(IOPoolLocator.SINGLETON)));
+            TFile archive = new TFile(warFile);
         try {
             closure.accept(archive);
         } finally {

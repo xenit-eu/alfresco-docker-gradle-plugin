@@ -1,32 +1,35 @@
 package eu.xenit.gradle.tasks;
 
+import static eu.xenit.gradle.alfresco.DockerAlfrescoPlugin.LABEL_PREFIX;
+
 import de.schlichtherle.truezip.file.TFile;
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Task;
 import org.gradle.api.file.FileCollection;
-import org.gradle.api.tasks.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import static eu.xenit.gradle.alfresco.DockerAlfrescoPlugin.LABEL_PREFIX;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.OutputFile;
+import org.gradle.api.tasks.SkipWhenEmpty;
+import org.gradle.api.tasks.TaskAction;
 
 public class InjectFilesInWarTask extends DefaultTask implements WarEnrichmentTask {
 
     /**
      * WAR file used as input (is not modified)
      */
-    private Supplier<File> inputWar;
-
-    /**
-     * WAR file used as output (is created from inputWar, and files from sourceFiles placed at targetDirectory)
-     */
-    private Supplier<File> outputWar = () -> { return getProject().getBuildDir().toPath().resolve("xenit-gradle-plugins").resolve(getName()).resolve(getName()+".war").toFile(); };
+    private FileCollection inputWar;
 
     /**
      * Files to inject in the war
@@ -40,26 +43,30 @@ public class InjectFilesInWarTask extends DefaultTask implements WarEnrichmentTa
 
     private List<Supplier<Map<String, String>>> labels = new ArrayList<>();
 
-    @InputFile
-    @Override
-    public File getInputWar() {
-        return inputWar.get();
+    @InputFiles
+    @SkipWhenEmpty
+    public FileCollection getInputFiles_() {
+        return inputWar;
     }
 
     @Override
-    public void setInputWar(Supplier<File> inputWar) {
-        this.inputWar = inputWar;
+    public void setInputFiles_(FileCollection fileCollection) {
+        inputWar = fileCollection;
     }
 
     @OutputFile
     @Override
     public File getOutputWar() {
-        return outputWar.get();
+        if(inputWar.isEmpty()) {
+            return null;
+        }
+        return getProject().getBuildDir().toPath().resolve("xenit-gradle-plugins").resolve(getName())
+                .resolve(getName() + ".war").toFile();
     }
 
     @InputFiles
-    public Set<File> getSourceFiles()
-    {
+    @SkipWhenEmpty
+    public Set<File> getSourceFiles() {
         return sourceFiles.get();
     }
 

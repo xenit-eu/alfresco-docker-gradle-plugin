@@ -11,9 +11,11 @@ import java.util.Map;
 import java.util.function.Supplier;
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.DefaultTask;
-import org.gradle.api.tasks.InputFile;
+import org.gradle.api.file.FileCollection;
+import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
+import org.gradle.api.tasks.SkipWhenEmpty;
 import org.gradle.api.tasks.TaskAction;
 
 /**
@@ -26,26 +28,32 @@ import org.gradle.api.tasks.TaskAction;
 @Deprecated
 public class ResolveWarTask extends DefaultTask implements WarEnrichmentTask {
 
-    private Supplier<File> war;
+    private FileCollection war;
     private List<Supplier<Map<String, String>>> labels = new ArrayList<>();
 
-    @Override
-    @InputFile
-    public File getInputWar() {
-        return war.get();
+    /**
+     * Internal function so the task can be skipped with no-source when no war is given
+     */
+    @InputFiles
+    @SkipWhenEmpty
+    public FileCollection getInputFiles_() {
+        return war;
     }
 
     @Override
-    public void setInputWar(Supplier<File> inputWar) {
-        war = inputWar;
+    public void setInputFiles_(FileCollection fileCollection) {
+        war = fileCollection;
     }
-
-    private Supplier<File> outputWar = () -> { return getProject().getBuildDir().toPath().resolve("xenit-gradle-plugins").resolve(getName()).resolve(getName()+".war").toFile(); };
 
     @Override
     @OutputFile
     public File getOutputWar() {
-        return outputWar.get();
+        if(war.isEmpty()) {
+            return null;
+        }
+        return getProject().getBuildDir().toPath()
+                .resolve("xenit-gradle-plugins").resolve(getName())
+                .resolve(getName() + ".war").toFile();
     }
 
     @Override
@@ -57,7 +65,9 @@ public class ResolveWarTask extends DefaultTask implements WarEnrichmentTask {
     @Internal
     public Map<String, String> getLabels() {
         Map<String, String> accumulator = new HashMap<>();
-        accumulator.put(LABEL_PREFIX+getName(), getInputWar().getName());
+        if(!war.isEmpty()) {
+            accumulator.put(LABEL_PREFIX + getName(), getInputWar().getName());
+        }
         for (Supplier<Map<String, String>> supplier : labels) {
             accumulator.putAll(supplier.get());
         }
