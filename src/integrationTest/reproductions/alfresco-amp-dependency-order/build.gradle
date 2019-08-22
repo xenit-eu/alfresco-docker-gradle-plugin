@@ -1,0 +1,73 @@
+plugins {
+    id "eu.xenit.amp" version "0.2.0"
+    id "eu.xenit.alfresco" version "0.2.0"
+    id "eu.xenit.docker-alfresco"
+}
+
+import eu.xenit.gradle.tasks.InstallAmpsInWarTask
+
+sourceSets {
+    moduleA {
+        amp {
+            module([
+                    "module.id"         : "module.a",
+                    "module.version"    : "1.0.0",
+                    "module.title"      : "module.a",
+                    "module.description": "module.a",
+            ])
+        }
+    }
+    moduleB {
+        amp {
+            module([
+                    "module.id"              : "module.b",
+                    "module.version"         : "1.0.0",
+                    "module.title"           : "module.b",
+                    "module.description"     : "module.b",
+                    "module.depends.module.a": "*",
+            ])
+        }
+    }
+    moduleC {
+        amp {
+            module([
+                    "module.id"              : "module.c",
+                    "module.version"         : "1.0.0",
+                    "module.title"           : "module.c",
+                    "module.description"     : "module.c",
+                    "module.depends.module.a": "*",
+                    "module.depends.module.d": "*",
+            ])
+        }
+    }
+    moduleD {
+        amp {
+            module([
+                    "module.id"         : "module.d",
+                    "module.version"    : "1.0.0",
+                    "module.title"      : "module.d",
+                    "module.description": "module.d",
+            ])
+        }
+    }
+}
+
+repositories {
+    alfrescoPublic()
+}
+
+task applyFirstAmp(type: InstallAmpsInWarTask) {
+    inputWar = resolveAlfrescoWar
+    sourceFiles = files(moduleDAmp)
+    dependsOn(moduleDAmp)
+}
+
+applyAlfrescoAmp {
+    inputWar = applyFirstAmp.outputWar
+    dependsOn(applyFirstAmp)
+}
+
+dependencies {
+    baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
+    alfrescoAmp files(moduleAAmp, moduleBAmp, moduleCAmp)
+}
