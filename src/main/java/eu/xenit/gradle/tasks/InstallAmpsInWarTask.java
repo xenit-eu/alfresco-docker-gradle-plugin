@@ -44,8 +44,7 @@ public class InstallAmpsInWarTask extends InjectFilesInWarTask {
         List<File> filesInInstallationOrder = ModuleDependencySorter.sortByInstallOrder(sourceFiles);
 
         for (File file : filesInInstallationOrder) {
-            getLogger().debug("installing amp from " + file.getAbsolutePath() + " in war " + getOutputWar()
-                    .getAbsolutePath());
+            getLogger().debug("installing amp from {} in war {}",file.getAbsolutePath(), getOutputWar().getAbsolutePath());
             moduleManagmentTool
                     .installModule(file.getAbsolutePath(), getOutputWar().getAbsolutePath(), false, true, false);
         }

@@ -6,7 +6,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ModuleDependencySorter {
+public final class ModuleDependencySorter {
+
+    private ModuleDependencySorter() {
+    }
 
     static List<ModuleWithDependencies> sortByDependencies(Set<ModuleWithDependencies> modules) {
         List<ModuleWithDependencies> orderedDependencyList = new ArrayList<>();
