@@ -11,6 +11,7 @@
 ### Fixes
 
  * [#38](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/38) - DockerfileWithWarsTask is not threadsafe
+ * [#33](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/33) - Warning messages when building with Java 11
 
 ## Version 4.0.3 - 2019-01-17
 
