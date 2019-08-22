@@ -9,20 +9,16 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.alfresco.repo.module.tool.ModuleDetailsHelper;
-import org.alfresco.service.cmr.module.ModuleDependency;
 import org.alfresco.service.cmr.module.ModuleDetails;
 
-class ModuleInformationImpl implements ModuleInformation {
+class ModuleInformationAmp extends ModuleInformationFromModuleDetails {
 
     private final File file;
     private ModuleDetails moduleDetails;
 
-    public ModuleInformationImpl(File file) {
+    public ModuleInformationAmp(File file) {
         this.file = file;
     }
 
@@ -50,6 +46,7 @@ class ModuleInformationImpl implements ModuleInformation {
         });
     }
 
+    @Override
     public ModuleDetails getModuleDetails() {
         if (moduleDetails == null) {
             moduleDetails = withModuleProperties(is -> {
@@ -63,22 +60,4 @@ class ModuleInformationImpl implements ModuleInformation {
         return moduleDetails;
     }
 
-    @Override
-    public String getId() {
-        return getModuleDetails().getId();
-    }
-
-    @Override
-    public Set<String> getIds() {
-        Set<String> moduleIds = new HashSet<>(getModuleDetails().getAliases());
-        moduleIds.add(getId());
-        return Collections.unmodifiableSet(moduleIds);
-    }
-
-    @Override
-    public Set<String> getDependencyModuleIds() {
-        return getModuleDetails().getDependencies().stream()
-                .map(ModuleDependency::getDependencyId)
-                .collect(Collectors.toSet());
-    }
 }

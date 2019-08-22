@@ -63,8 +63,7 @@ task applyFirstAmp(type: InstallAmpsInWarTask) {
 }
 
 applyAlfrescoAmp {
-    inputWar = applyFirstAmp.outputWar
-    dependsOn(applyFirstAmp)
+    inputWar = applyFirstAmp
 }
 
 dependencies {

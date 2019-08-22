@@ -35,17 +35,17 @@ public class InstallAmpsInWarTask extends InjectFilesInWarTask {
 
     @Override
     public void injectFiles() throws IOException {
-        ModuleManagementTool moduleManagmentTool = new ModuleManagementTool();
+        ModuleManagementTool moduleManagementTool = new ModuleManagementTool();
         FileUtils.copyFile(getInputWar(), getOutputWar());
 
         Set<File> sourceFiles = getSourceFiles().stream()
                 .flatMap(InstallAmpsInWarTask::listFilesRecursively)
                 .collect(Collectors.toSet());
-        List<File> filesInInstallationOrder = ModuleDependencySorter.sortByInstallOrder(sourceFiles);
+        List<File> filesInInstallationOrder = ModuleDependencySorter.sortByInstallOrder(sourceFiles, getOutputWar());
 
         for (File file : filesInInstallationOrder) {
             getLogger().debug("installing amp from {} in war {}",file.getAbsolutePath(), getOutputWar().getAbsolutePath());
-            moduleManagmentTool
+            moduleManagementTool
                     .installModule(file.getAbsolutePath(), getOutputWar().getAbsolutePath(), false, true, false);
         }
     }
