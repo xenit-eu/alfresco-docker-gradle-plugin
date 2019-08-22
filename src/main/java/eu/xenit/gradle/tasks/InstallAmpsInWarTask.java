@@ -1,11 +1,16 @@
 package eu.xenit.gradle.tasks;
 
+import eu.xenit.gradle.alfresco.amp.ModuleDependencySorter;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.alfresco.repo.module.tool.ModuleManagementTool;
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.tasks.Optional;
-
-import java.io.File;
-import java.io.IOException;
 
 public class InstallAmpsInWarTask extends InjectFilesInWarTask {
 
@@ -20,18 +25,28 @@ public class InstallAmpsInWarTask extends InjectFilesInWarTask {
         throw new UnsupportedOperationException("Target directory is not supported for InstallAmps");
     }
 
+    private static Stream<File> listFilesRecursively(File file) {
+        if (file.isDirectory()) {
+            return Arrays.stream(file.listFiles()).flatMap(InstallAmpsInWarTask::listFilesRecursively);
+        } else {
+            return Stream.of(file);
+        }
+    }
+
     @Override
     public void injectFiles() throws IOException {
-        ModuleManagementTool moduleManagmentTool = new ModuleManagementTool();
+        ModuleManagementTool moduleManagementTool = new ModuleManagementTool();
         FileUtils.copyFile(getInputWar(), getOutputWar());
-        for (File file : getSourceFiles()) {
-            if(file.isDirectory()) {
-                getLogger().debug("installing amps from "+file.getAbsolutePath()+" in war "+getOutputWar().getAbsolutePath());
-                moduleManagmentTool.installModules(file.getAbsolutePath(), getOutputWar().getAbsolutePath(), false, true, false);
-            } else {
-                getLogger().debug("installing amp from "+file.getAbsolutePath()+" in war "+getOutputWar().getAbsolutePath());
-                moduleManagmentTool.installModule(file.getAbsolutePath(), getOutputWar().getAbsolutePath(), false, true, false);
-            }
+
+        Set<File> sourceFiles = getSourceFiles().stream()
+                .flatMap(InstallAmpsInWarTask::listFilesRecursively)
+                .collect(Collectors.toSet());
+        List<File> filesInInstallationOrder = ModuleDependencySorter.sortByInstallOrder(sourceFiles, getOutputWar());
+
+        for (File file : filesInInstallationOrder) {
+            getLogger().debug("installing amp from {} in war {}",file.getAbsolutePath(), getOutputWar().getAbsolutePath());
+            moduleManagementTool
+                    .installModule(file.getAbsolutePath(), getOutputWar().getAbsolutePath(), false, true, false);
         }
     }
 }

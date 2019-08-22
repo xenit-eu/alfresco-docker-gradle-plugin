@@ -72,4 +72,10 @@ public class Reproductions extends AbstractIntegrationTest {
         testProjectFolderExpectFailure(REPRODUCTIONS.resolve("docker-alfresco-plugin-without-config"), ":buildDockerImage",
                 DockerAlfrescoExtension.MESSAGE_BASE_IMAGE_NOT_SET);
     }
+
+    @Test
+    public void testAlfrescoAmpDependencyOrder() throws IOException {
+        testProjectFolder(REPRODUCTIONS.resolve("alfresco-amp-dependency-order"), ":applyAlfrescoAmp");
+
+    }
 }

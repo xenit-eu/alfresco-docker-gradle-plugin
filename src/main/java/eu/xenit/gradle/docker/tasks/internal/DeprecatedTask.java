@@ -2,10 +2,14 @@ package eu.xenit.gradle.docker.tasks.internal;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Task;
-import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.TaskAction;
 
+/**
+ * @deprecated since 4.0.0, will be removed in 5.0.0
+ */
+@Deprecated
 public class DeprecatedTask extends DefaultTask {
+
     private Task replacementTask;
 
     public void setReplacementTask(Task replacementTask) {

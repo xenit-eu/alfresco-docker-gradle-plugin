@@ -20,27 +20,29 @@ cache:
 
 jobs:
   include:
-    - stage: unittest
-      script:
-        - ./gradlew test -i
-        - if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then export SONAR_BRANCH="$TRAVIS_BRANCH"; else export SONAR_BRANCH="$TRAVIS_PULL_REQUEST_BRANCH"; fi;
-          ./gradlew sonarqube -Dsonar.projectKey=xenit-eu_alfresco-docker-gradle-plugin -Dsonar.organization=xenit-eu -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.branch.name=$SONAR_BRANCH -x check
     - stage: deploy
       if: tag IS present AND env(TRAVIS_SECURE_ENV_VARS)
       script: ./gradlew publishPlugins -Pgradle.publish.key=$GRADLE_PUBLISH_KEY -Pgradle.publish.secret=$GRADLE_PUBLISH_SECRET -x check
 
 stages:
-  - unittest
   - test
   - deploy
 
 env:
-  - GRADLE_INTEGRATION_TEST_VERSIONS=4.0,4.1,4.2
-  - GRADLE_INTEGRATION_TEST_VERSIONS=4.3,4.4,4.5
-  - GRADLE_INTEGRATION_TEST_VERSIONS=4.6,4.7,4.8
-  - GRADLE_INTEGRATION_TEST_VERSIONS=4.9,4.10
-  - GRADLE_INTEGRATION_TEST_VERSIONS=5.0,5.1
+  - GRADLE_INTEGRATION_TEST_VERSIONS=4.10,5.0,5.1 PUBLISH_SONAR=true
+  - GRADLE_INTEGRATION_TEST_VERSIONS=5.1,5.2,5.3
+  - GRADLE_INTEGRATION_TEST_VERSIONS=5.4,5.5,5.6
 
 script:
-  - ./gradlew integrationTest -i -PintegrationTestGradleVersions=$GRADLE_INTEGRATION_TEST_VERSIONS
+  - >
+    if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
+      export SONAR_BRANCH="$TRAVIS_BRANCH";
+    else
+      export SONAR_BRANCH="$TRAVIS_PULL_REQUEST_BRANCH";
+    fi;
+    GRADLE_ARGS="check -i -PintegrationTestGradleVersions=$GRADLE_INTEGRATION_TEST_VERSIONS";
+    if [[ "$PUBLISH_SONAR" == "true" && "$TRAVIS_SECURE_ENV_VARS" == "true" ]]; then
+      GRADLE_ARGS="${GRADLE_ARGS} sonarqube -Dsonar.projectKey=xenit-eu_alfresco-docker-gradle-plugin -Dsonar.organization=xenit-eu -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.branch.name=$SONAR_BRANCH"
+    fi;
+    ./gradlew $GRADLE_ARGS;
 
