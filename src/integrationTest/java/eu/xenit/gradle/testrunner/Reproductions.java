@@ -1,19 +1,10 @@
 package eu.xenit.gradle.testrunner;
 
 import eu.xenit.gradle.alfresco.DockerAlfrescoExtension;
-import org.apache.commons.io.FileUtils;
-import org.gradle.testkit.runner.BuildResult;
-import org.gradle.testkit.runner.GradleRunner;
-import org.gradle.testkit.runner.TaskOutcome;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * Created by thijs on 1/25/17.
@@ -41,6 +32,11 @@ public class Reproductions extends AbstractIntegrationTest {
     @Test
     public void testModifyDockerfile() throws IOException {
         testProjectFolder(REPRODUCTIONS.resolve("modifyDockerfile"), ":createDockerFile");
+    }
+
+    @Test
+    public void testGitWithoutCommits() throws IOException {
+        testProjectFolder(REPRODUCTIONS.resolve("git-without-commits"), ":buildDockerImage");
     }
 
     @Test

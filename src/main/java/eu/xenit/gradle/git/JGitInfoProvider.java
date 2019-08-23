@@ -1,8 +1,15 @@
 package eu.xenit.gradle.git;
 
 import eu.xenit.gradle.JenkinsUtil;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
@@ -10,35 +17,29 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.transport.URIish;
 import org.gradle.api.Project;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 /**
  * Created by thijs on 1/23/17.
  */
 public class JGitInfoProvider implements GitInfoProvider {
-    public static JGitInfoProvider GetProviderForProject(Project project){
+
+    public static JGitInfoProvider GetProviderForProject(Project project) {
         Path projectFolder = project.getProjectDir().toPath().toAbsolutePath();
-        Path gitFolder = Paths.get(".git");
-        while(Files.notExists(projectFolder.resolve(gitFolder))){
+        Path gitFolder = projectFolder.resolve(".git");
+        while (Files.notExists(gitFolder)) {
             projectFolder = projectFolder.getParent();
-            if(projectFolder == null){
+            if (projectFolder == null) {
                 return null;
             }
+            gitFolder = projectFolder.resolve(".git");
         }
 
         try {
-            JGitInfoProvider gitInfoProvider = new JGitInfoProvider(projectFolder.resolve(gitFolder).toFile());
-            return gitInfoProvider;
+            return new JGitInfoProvider(gitFolder.toFile());
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
     }
+
     private Repository gitRepo;
     private Git git;
 
@@ -48,9 +49,9 @@ public class JGitInfoProvider implements GitInfoProvider {
     }
 
     @Override
-    public String getBranch(){
+    public String getBranch() {
         //workaround because Jenkins uses git in detached head state
-        if(!"local".equals(JenkinsUtil.getBranch())){
+        if (!"local".equals(JenkinsUtil.getBranch())) {
             return JenkinsUtil.getBranch();
         }
         try {
@@ -62,16 +63,21 @@ public class JGitInfoProvider implements GitInfoProvider {
 
     @Override
     public String getCommitChecksum() {
-        final RevCommit commit = getLastRevCommit();
-        return commit.getName();
+        try {
+            return getLastRevCommit().getName();
+        } catch (NoHeadException e) {
+            return "<none>";
+        }
     }
 
-    private RevCommit getLastRevCommit() {
+    private RevCommit getLastRevCommit() throws NoHeadException {
         final RevCommit[] commit = new RevCommit[1];
         try {
             git.log().setMaxCount(1).call().forEach(revCommit -> {
                 commit[0] = revCommit;
             });
+        } catch (NoHeadException e) {
+            throw e;
         } catch (GitAPIException e) {
             throw new IllegalStateException(e);
         }
@@ -79,10 +85,11 @@ public class JGitInfoProvider implements GitInfoProvider {
     }
 
     @Override
-    public String getOrigin(){
+    public String getOrigin() {
         final URIish origin = getUrIish();
-        if(origin == null)
+        if (origin == null) {
             return null;
+        }
         return origin.toString();
     }
 
@@ -90,7 +97,7 @@ public class JGitInfoProvider implements GitInfoProvider {
         final URIish[] origin = new URIish[1];
         try {
             git.remoteList().call().forEach(remoteConfig -> {
-                if("origin".equals(remoteConfig.getName())){
+                if ("origin".equals(remoteConfig.getName())) {
                     origin[0] = remoteConfig.getURIs().get(0);
                 }
             });
@@ -103,34 +110,43 @@ public class JGitInfoProvider implements GitInfoProvider {
     @Override
     public URL getCommitURL() throws CannotConvertToUrlException {
         final URIish origin = getUrIish();
-        final URL url;
+        if(origin == null) {
+            throw new CannotConvertToUrlException("No origin is set");
+        }
         String path = origin.getPath().split("\\.git\\z")[0];
-        if(path.startsWith("/")){
+        if (path.startsWith("/")) {
             path = path.substring(1);
         }
         try {
-            if("bitbucket.org".equals(origin.getHost())) {
-                url = new URL("https", origin.getHost(), "/" + path + "/commits/" + getCommitChecksum());
-            } else if("github.com".equals(origin.getHost())) {
-                url = new URL("https", origin.getHost(), "/" + path + "/commit/" + getCommitChecksum());
+            if ("bitbucket.org".equals(origin.getHost())) {
+                return new URL("https", origin.getHost(), "/" + path + "/commits/" + getCommitChecksum());
+            } else if ("github.com".equals(origin.getHost())) {
+                return new URL("https", origin.getHost(), "/" + path + "/commit/" + getCommitChecksum());
             } else {
                 throw new CannotConvertToUrlException("The host is unknown");
             }
         } catch (MalformedURLException e) {
             throw new IllegalStateException(e);
         }
-        return url;
     }
 
     @Override
     public String getCommitAuthor() {
-        PersonIdent person = getLastRevCommit().getAuthorIdent();
-        return person.getName()+" <"+person.getEmailAddress()+">";
+        try {
+            PersonIdent person = getLastRevCommit().getAuthorIdent();
+            return person.getName() + " <" + person.getEmailAddress() + ">";
+        } catch (NoHeadException e) {
+            return System.getProperty("user.name");
+        }
     }
 
     @Override
     public String getCommitMessage() {
-        return getLastRevCommit().getFullMessage().trim();
+        try {
+            return getLastRevCommit().getFullMessage().trim();
+        } catch(NoHeadException e) {
+            return "<none>";
+        }
     }
 
 }

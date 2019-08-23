@@ -7,11 +7,12 @@
  * [DEVEM-344](https://xenitsupport.jira.com/browse/DEVEM-344) - Make MergeWarTask extend the Zip task
     - Make it easier to publish WAR files with extensions applied
  * [#44](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/44) - Automatically apply amps in the correct order
-
+ 
 ### Fixes
 
  * [#38](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/38) - DockerfileWithWarsTask is not threadsafe
  * [#33](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/33) - Warning messages when building with Java 11
+ * [#45](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/45) - Handle initialized git repository without commits
 
 ## Version 4.0.3 - 2019-01-17
 
