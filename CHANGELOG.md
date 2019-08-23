@@ -8,6 +8,10 @@
     - Make it easier to publish WAR files with extensions applied
  * [#44](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/44) - Automatically apply amps in the correct order
 
+### Fixes
+
+ * [#38](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/38) - DockerfileWithWarsTask is not threadsafe
+
 ## Version 4.0.3 - 2019-01-17
 
 ### Fixes
