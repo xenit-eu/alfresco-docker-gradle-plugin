@@ -1,0 +1,15 @@
+plugins {
+    id 'eu.xenit.docker'
+}
+
+repositories {
+    jcenter()
+}
+
+dockerFile {
+    dockerFile = file('Dockerfile')
+    dockerBuild {
+        repository = 'plugin-reproduce-without-commits'
+        tags = ['1','1.0','test']
+    }
+}
