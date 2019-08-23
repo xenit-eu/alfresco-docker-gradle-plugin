@@ -45,19 +45,19 @@ public class InjectFilesInWarTask extends DefaultTask implements WarEnrichmentTa
 
     @InputFiles
     @SkipWhenEmpty
-    public FileCollection getInputFiles_() {
+    public FileCollection get_internal_inputFiles() {
         return inputWar;
     }
 
     @Override
-    public void setInputFiles_(FileCollection fileCollection) {
+    public void set_internal_inputFiles(FileCollection fileCollection) {
         inputWar = fileCollection;
     }
 
     @OutputFile
     @Override
     public File getOutputWar() {
-        if(inputWar.isEmpty()) {
+        if (inputWar.isEmpty()) {
             return null;
         }
         return getProject().getBuildDir().toPath().resolve("xenit-gradle-plugins").resolve(getName())
@@ -70,25 +70,21 @@ public class InjectFilesInWarTask extends DefaultTask implements WarEnrichmentTa
         return sourceFiles.get();
     }
 
-    public void setSourceFiles(FileCollection fileCollection)
-    {
+    public void setSourceFiles(FileCollection fileCollection) {
         dependsOn(fileCollection);
         setSourceFiles(fileCollection::getFiles);
     }
 
-    public void setSourceFiles(Task task)
-    {
+    public void setSourceFiles(Task task) {
         dependsOn(task);
         setSourceFiles(() -> task.getOutputs().getFiles().getFiles());
     }
 
-    public void setSourceFiles(Supplier<Set<File>> files)
-    {
+    public void setSourceFiles(Supplier<Set<File>> files) {
         sourceFiles = files;
     }
 
-    public void setSourceFiles(Set<File> files)
-    {
+    public void setSourceFiles(Set<File> files) {
         setSourceFiles(() -> files);
     }
 

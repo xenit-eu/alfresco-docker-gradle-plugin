@@ -31,17 +31,14 @@ public class ResolveWarTask extends DefaultTask implements WarEnrichmentTask {
     private FileCollection war;
     private List<Supplier<Map<String, String>>> labels = new ArrayList<>();
 
-    /**
-     * Internal function so the task can be skipped with no-source when no war is given
-     */
     @InputFiles
     @SkipWhenEmpty
-    public FileCollection getInputFiles_() {
+    public FileCollection get_internal_inputFiles() {
         return war;
     }
 
     @Override
-    public void setInputFiles_(FileCollection fileCollection) {
+    public void set_internal_inputFiles(FileCollection fileCollection) {
         war = fileCollection;
     }
 

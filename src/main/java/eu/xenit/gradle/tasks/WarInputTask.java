@@ -11,27 +11,33 @@ import org.gradle.api.tasks.SkipWhenEmpty;
 
 public interface WarInputTask extends Task {
 
+    /**
+     * Internal function so the task can be skipped with no-source when no war is given
+     */
     @InputFiles
     @SkipWhenEmpty
-    FileCollection getInputFiles_();
+    FileCollection get_internal_inputFiles();
 
-    void setInputFiles_(FileCollection fileCollection);
+    /**
+     * Internal function so the file collection can be set from default methods
+     */
+    void set_internal_inputFiles(FileCollection fileCollection);
 
     @Internal
     default File getInputWar() {
-        return getInputFiles_().getSingleFile();
+        return get_internal_inputFiles().getSingleFile();
     }
 
     default void setInputWar(FileCollection configuration) {
-        setInputFiles_(configuration);
+        set_internal_inputFiles(configuration);
     }
 
     default void setInputWar(WarOutputTask task) {
-        setInputFiles_(getProject().files(task));
+        set_internal_inputFiles(getProject().files(task));
     }
 
     default void setInputWar(Supplier<File> inputWar) {
-        setInputFiles_(getProject().files(inputWar));
+        set_internal_inputFiles(getProject().files(inputWar));
     }
 
     default void setInputWar(File inputWar) {
