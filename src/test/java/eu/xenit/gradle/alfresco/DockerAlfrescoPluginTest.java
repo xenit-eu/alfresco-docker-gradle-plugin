@@ -1,5 +1,6 @@
 package eu.xenit.gradle.alfresco;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import eu.xenit.gradle.JenkinsUtil;
@@ -10,6 +11,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import org.gradle.api.UnknownTaskException;
+import org.gradle.api.internal.artifacts.configurations.ConfigurationInternal.InternalState;
+import org.gradle.api.internal.artifacts.configurations.DefaultConfiguration;
 import org.gradle.api.internal.project.DefaultProject;
 import org.gradle.internal.impldep.org.junit.Assert;
 import org.gradle.testfixtures.ProjectBuilder;
@@ -131,6 +134,24 @@ public class DockerAlfrescoPluginTest {
         project.evaluate();
         checkTaskExists(project, "applyAlfrescoSM");
         checkTaskExists(project, "applyShareSM");
+    }
+
+    @Test
+    public void testLazyResolve() {
+        DefaultProject project = getDefaultProject();
+        project.getDependencies().add("baseAlfrescoWar",
+                project.files(this.getClass().getClassLoader().getResource("test123.war").getFile()));
+        project.getDependencies().add("baseShareWar",
+                project.files(this.getClass().getClassLoader().getResource("test123.war").getFile()));
+
+        project.evaluate();
+
+        DefaultConfiguration alfrescoConfiguration = (DefaultConfiguration) project.getConfigurations()
+                .getByName("baseAlfrescoWar");
+        assertEquals(InternalState.UNRESOLVED, alfrescoConfiguration.getResolvedState());
+        DefaultConfiguration shareConfiguration = (DefaultConfiguration) project.getConfigurations()
+                .getByName("baseShareWar");
+        assertEquals(InternalState.UNRESOLVED, shareConfiguration.getResolvedState());
     }
 
 //    @Test
