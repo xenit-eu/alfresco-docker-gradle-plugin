@@ -15,7 +15,7 @@ dependencies {
 }
 
 dockerAlfresco {
-    baseImage = {project(':baseImage').getTasks().getByName('buildDockerImage').getImageId()}
+    baseImage = project(':baseImage').getTasks().getByName('buildDockerImage').getImageId()
     dockerBuild {
         repository = 'dependent'
     }

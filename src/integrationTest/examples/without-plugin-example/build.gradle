@@ -41,6 +41,6 @@ task testcreateDockerFile(type: DockerfileWithWarsTask) {
 }
 
 task testbuildDockerImage(type: DockerBuildImage, dependsOn: testcreateDockerFile) {
-    inputDir = testcreateDockerFile.destFile.parentFile
+    inputDir = testcreateDockerFile.destFile.asFile.get().parentFile
     dockerFile = testcreateDockerFile.destFile
 }

@@ -23,8 +23,10 @@ public class DockerConfigPlugin implements Plugin<Project> {
     public void apply(Project project) {
         // Set up deprecation warnings
         Deprecation.setStartParameter(project.getGradle().getStartParameter());
-        project.getGradle().buildFinished(buildResult -> {
-            Deprecation.printSummary();
+        project.getGradle().projectsEvaluated(g -> {
+            g.buildFinished(buildResult -> {
+                Deprecation.printSummary();
+            });
         });
 
         // Rest of the configuration
