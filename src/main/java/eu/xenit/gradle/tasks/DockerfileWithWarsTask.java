@@ -53,6 +53,10 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
      */
     private String targetDirectory = "/usr/local/tomcat/webapps/";
 
+    public DockerfileWithWarsTask() {
+        from(baseImage.map(From::new));
+    }
+
     @Input
     public String getTargetDirectory() {
         return targetDirectory;
@@ -135,7 +139,7 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
      * @param destinationDir
      */
     private static void unzipWar(java.io.File warFile, java.io.File destinationDir) {
-        if(warFile == null) {
+        if (warFile == null) {
             return;
         }
         Util.withWar(warFile, archive -> {
@@ -236,7 +240,6 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
     @TaskAction
     @Override
     public void create() {
-        from(baseImage.map(From::new));
         // Unpack & COPY into container
         warFiles.forEach((name, wars) -> {
             java.io.File destinationDir = getDestFile().getAsFile().get().toPath().resolveSibling(name).toFile();
@@ -252,17 +255,17 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
                 unzipWar(war.get(), destinationDir);
             });
 
-            if(destinationDir.exists()) {
-            improveLog4j(destinationDir, name.toUpperCase());
+            if (destinationDir.exists()) {
+                improveLog4j(destinationDir, name.toUpperCase());
 
-            // COPY
-            if (getRemoveExistingWar()) {
-                runCommand("rm -rf " + getTargetDirectory() + name);
-            }
-            if (getCheckAlfrescoVersion()) {
-                getCanAddWarsCheckCommands(destinationDir, getTargetDirectory()).forEach(this::runCommand);
-            }
-            DockerfileWithWarsTask.this.copyFile("./" + name, getTargetDirectory() + name);
+                // COPY
+                if (getRemoveExistingWar()) {
+                    runCommand("rm -rf " + getTargetDirectory() + name);
+                }
+                if (getCheckAlfrescoVersion()) {
+                    getCanAddWarsCheckCommands(destinationDir, getTargetDirectory()).forEach(this::runCommand);
+                }
+                DockerfileWithWarsTask.this.copyFile("./" + name, getTargetDirectory() + name);
             }
         });
 

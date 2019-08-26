@@ -43,8 +43,8 @@ public class Deprecation {
 
     public static void warnDeprecatedReplacedBy(String newMethod) {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        String oldMethod = stackTraceElements[1].getMethodName();
-        String oldClass = stackTraceElements[1].getClassName();
+        String oldMethod = stackTraceElements[2].getMethodName();
+        String oldClass = stackTraceElements[2].getClassName();
         createWarning(
                 oldClass + "#" + oldMethod + " is deprecated and will be removed in the next version. Use " + newMethod
                         + " instead.", 1);
