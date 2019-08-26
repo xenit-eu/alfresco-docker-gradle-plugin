@@ -25,6 +25,7 @@ import org.gradle.api.Task;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
+import org.gradle.util.GradleVersion;
 
 /**
  * Created by thijs on 10/25/16.
@@ -51,6 +52,14 @@ public class DockerBuildBehavior {
         this.execute(project);
     }
 
+    private DirectoryProperty createDirectoryProperty(Project project) {
+        if(GradleVersion.current().compareTo(GradleVersion.version("5.0")) >= 0) {
+            return project.getObjects().directoryProperty();
+        } else {
+            return project.getLayout().directoryProperty();
+        }
+    }
+
     public void execute(Project project) {
         DockerBuildImage buildDockerImage = createDockerBuildImageTask(project, dockerBuildExtension);
         buildDockerImage.setDescription("Build the docker image");
@@ -64,7 +73,7 @@ public class DockerBuildBehavior {
         }
 
         buildDockerImage.getInputDir().set(project.provider(() -> {
-            DirectoryProperty directoryProperty = project.getObjects().directoryProperty();
+            DirectoryProperty directoryProperty = createDirectoryProperty(project);
             directoryProperty.set(buildDockerImage.getDockerFile().getAsFile().get().getParentFile());
             return directoryProperty.get();
         }));
