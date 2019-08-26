@@ -160,8 +160,8 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
     public void setBaseImage(Provider<String> baseImage) {
         if (this.baseImage.isPresent()) {
             throw new IllegalStateException("Base image can only be set once.");
-            }
-        this.baseImage.value(baseImage);
+        }
+        this.baseImage.set(baseImage);
     }
 
     /**
@@ -258,8 +258,8 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
             if (getRemoveExistingWar()) {
                 runCommand("rm -rf " + getTargetDirectory() + name);
             }
-            if(getCheckAlfrescoVersion()) {
-                getCanAddWarsCheckCommands(destinationDir,getTargetDirectory()).forEach(this::runCommand);
+            if (getCheckAlfrescoVersion()) {
+                getCanAddWarsCheckCommands(destinationDir, getTargetDirectory()).forEach(this::runCommand);
             }
             DockerfileWithWarsTask.this.copyFile("./" + name, getTargetDirectory() + name);
             }

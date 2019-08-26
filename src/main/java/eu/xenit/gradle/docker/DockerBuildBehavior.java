@@ -55,23 +55,24 @@ public class DockerBuildBehavior {
         DockerBuildImage buildDockerImage = createDockerBuildImageTask(project, dockerBuildExtension);
         buildDockerImage.setDescription("Build the docker image");
         if (dockerfileCreator != null) {
-            buildDockerImage.getDockerFile().value(dockerfileCreator.getDestFile());
+            buildDockerImage.getDockerFile().set(dockerfileCreator.getDestFile());
             buildDockerImage.dependsOn(dockerfileCreator);
         }
 
         if (dockerFile != null) {
-            buildDockerImage.getDockerFile().value(dockerFile::get);
+            buildDockerImage.getDockerFile().set(dockerFile::get);
         }
 
-        buildDockerImage.getInputDir().value(project.provider(() -> {
+        buildDockerImage.getInputDir().set(project.provider(() -> {
             DirectoryProperty directoryProperty = project.getObjects().directoryProperty();
             directoryProperty.set(buildDockerImage.getDockerFile().getAsFile().get().getParentFile());
             return directoryProperty.get();
         }));
 
-        buildDockerImage.getLabels().value(project.provider(() -> this.getLabels(project)));
-        buildDockerImage.getTags().value(project.provider(() -> this.getTags().stream().map(tag -> getDockerRepository() + ":" + tag).collect(
-                Collectors.toSet())));
+        buildDockerImage.getLabels().set(project.provider(() -> this.getLabels(project)));
+        buildDockerImage.getTags().set(project
+                .provider(() -> this.getTags().stream().map(tag -> getDockerRepository() + ":" + tag).collect(
+                        Collectors.toSet())));
 
         buildDockerImage.doLast(task -> {
             ComposeExtension composeExtension = (ComposeExtension) project.getExtensions().getByName("dockerCompose");
@@ -104,9 +105,9 @@ public class DockerBuildBehavior {
         DockerBuildImage finalDockerBuildImage = dockerBuildImage;
         project.afterEvaluate((project1) -> {
             DockerBuildExtension extension = dockerBuildExtension.get();
-            finalDockerBuildImage.getPull().value(extension.getPull());
-            finalDockerBuildImage.getNoCache().value(extension.getNoCache());
-            finalDockerBuildImage.getRemove().value(extension.getRemove());
+            finalDockerBuildImage.getPull().set(extension.getPull());
+            finalDockerBuildImage.getNoCache().set(extension.getNoCache());
+            finalDockerBuildImage.getRemove().set(extension.getRemove());
         });
 
         return dockerBuildImage;
@@ -175,8 +176,8 @@ public class DockerBuildBehavior {
         List<DockerPushImage> result = new ArrayList<>();
         for (String tag : this.getTags()) {
             DockerPushImage pushTag = project.getTasks().create("pushTag" + tag, DockerPushImage.class);
-            pushTag.getImageName().value(getDockerRepository());
-            pushTag.getTag().value(tag);
+            pushTag.getImageName().set(getDockerRepository());
+            pushTag.getTag().set(tag);
             pushTag.dependsOn(dockerBuildImage);
             pushTag.setDescription("Push image with tag " + tag);
             result.add(pushTag);

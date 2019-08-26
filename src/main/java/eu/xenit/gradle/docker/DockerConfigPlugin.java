@@ -24,7 +24,7 @@ public class DockerConfigPlugin implements Plugin<Project> {
         project.getPluginManager().apply(DockerRemoteApiPlugin.class);
         DockerExtension dockerExtension = (DockerExtension) project.getExtensions().getByName("docker");
         if (dockerConfig.getUrl() != null) {
-            dockerExtension.getUrl().value(dockerConfig.getUrl());
+            dockerExtension.getUrl().set(dockerConfig.getUrl());
         }
 
         if (dockerConfig.getCertPath() != null) {
@@ -34,9 +34,9 @@ public class DockerConfigPlugin implements Plugin<Project> {
         if (dockerConfig.getRegistryUrl() != null) {
             DockerRegistryCredentials registryCredentials = (DockerRegistryCredentials) ((ExtensionAware) dockerExtension)
                     .getExtensions().getByName("registryCredentials");
-            registryCredentials.getUrl().value(dockerConfig.getRegistryUrl());
-            registryCredentials.getUsername().value(dockerConfig.getRegistryUsername());
-            registryCredentials.getPassword().value(dockerConfig.getRegistryPassword());
+            registryCredentials.getUrl().set(dockerConfig.getRegistryUrl());
+            registryCredentials.getUsername().set(dockerConfig.getRegistryUsername());
+            registryCredentials.getPassword().set(dockerConfig.getRegistryPassword());
         }
         GitInfoProvider provider = JGitInfoProvider.GetProviderForProject(project);
         String branch = provider == null ? "no_branch" : provider.getBranch();
