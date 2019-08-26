@@ -101,7 +101,7 @@ repositories {
 
 dependencies {
     packaged 'org.alfresco:alfresco-mmt:5.2.g'
-    compile 'com.bmuschko:gradle-docker-plugin:3.6.2'
+    compile 'com.bmuschko:gradle-docker-plugin:4.1.0'
     compile group: 'commons-io', name: 'commons-io', version: '2.5'
     compile 'com.avast.gradle:gradle-docker-compose-plugin:0.8.12'
     compile group: 'org.apache.commons', name: 'commons-compress', version: '1.5'
