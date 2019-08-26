@@ -1,5 +1,6 @@
 package eu.xenit.gradle.docker;
 
+import eu.xenit.gradle.docker.internal.Deprecation;
 import groovy.lang.GString;
 import org.gradle.api.Project;
 import org.slf4j.LoggerFactory;
@@ -29,11 +30,12 @@ public class DockerBuildExtension {
     }
 
     /**
-     * @deprecated As of release 2.2.0, replaced by {@link #setRepository(String)}
+     * @deprecated As of release 2.2.0, will be removed in 5.0.0. Replaced by {@link #setRepository(String)}
      * @param repository
      */
     @Deprecated
     public void setRepositoryBase(String repository){
+        Deprecation.warnDeprecatedReplacedBy("setRepository(String)");
         setRepository(repository);
     }
 
@@ -67,8 +69,7 @@ public class DockerBuildExtension {
 
     public boolean getAutomaticTags() {
         if(!_automaticTagsExplicitlySet) {
-            LoggerFactory.getLogger(getClass())
-                    .warn("[eu.xenit.docker] automaticTags currently defaults to true, but it will change to false in version 5.0.0."
+            Deprecation.warnDeprecation("automaticTags currently defaults to true, but it will change to false in version 5.0.0."
                             + "If you want to continue using the current behavior, explicitly set automaticTags now to avoid surprises in the future.");
         }
         return automaticTags;

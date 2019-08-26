@@ -5,6 +5,7 @@ import static eu.xenit.gradle.tasks.VersionMatchChecking.getCanAddWarsCheckComma
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import de.schlichtherle.truezip.file.TArchiveDetector;
 import de.schlichtherle.truezip.file.TFile;
+import eu.xenit.gradle.docker.internal.Deprecation;
 import groovy.lang.Closure;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -169,8 +170,7 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
      */
     @Deprecated
     public void setBaseImage(Supplier<String> baseImage) {
-        getLogger()
-                .warn("DockerfileWithWarsTask.setBaseImage(Supplier<String>) is deprecated and will be removed in 5.0.0. Use setBaseImage(Provider<String>) instead.");
+        Deprecation.warnDeprecatedReplacedBy("setBaseImage(Provider<String>)");
         setBaseImage(getProject().provider(baseImage::get));
     }
 
@@ -179,8 +179,7 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
      */
     @Deprecated
     public void setBaseImage(Closure<String> baseImage) {
-        getLogger()
-                .warn("DockerfileWithWarsTask.setBaseImage(Closure<String>) is deprecated and will be removed in 5.0.0. Use setBaseImage(Provider<String>) instead.");
+        Deprecation.warnDeprecatedReplacedBy("setBaseImage(Provider<String>)");
         setBaseImage(getProject().provider(baseImage::call));
     }
 
@@ -190,7 +189,7 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
      */
     @Deprecated
     public void setAlfrescoWar(java.io.File alfrescoWar) {
-        getLogger().warn("setAlfrescoWar(alfrescoWar) is deprecated and will be removed in xenit-gradle-plugins 5.0.0. Use addWar(\"alfresco\", alfrescoWar) instead.");
+        Deprecation.warnDeprecatedReplacedBy("addWar(\"alfresco\", alfrescoWar)");
         addWar("alfresco", alfrescoWar);
     }
 
@@ -199,7 +198,7 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
      */
     @Deprecated
     public void setShareWar(java.io.File shareWar) {
-        getLogger().warn("setShareWar(shareWar) is deprecated and will be removed in xenit-gradle-plugins 5.0.0. Use addWar(\"share\", shareWar) instead.");
+        Deprecation.warnDeprecatedReplacedBy("addWar(\"alfresco\", alfrescoWar)");
         addWar("share", shareWar);
     }
 
@@ -255,6 +254,8 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
 
             if(destinationDir.exists()) {
             improveLog4j(destinationDir, name.toUpperCase());
+
+            // COPY
             if (getRemoveExistingWar()) {
                 runCommand("rm -rf " + getTargetDirectory() + name);
             }

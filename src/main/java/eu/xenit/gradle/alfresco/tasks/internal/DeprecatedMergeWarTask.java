@@ -1,5 +1,6 @@
 package eu.xenit.gradle.alfresco.tasks.internal;
 
+import eu.xenit.gradle.docker.internal.Deprecation;
 import eu.xenit.gradle.tasks.LabelConsumerTask;
 import eu.xenit.gradle.tasks.MergeWarsTask;
 import eu.xenit.gradle.tasks.WarLabelOutputTask;
@@ -27,10 +28,7 @@ public class DeprecatedMergeWarTask extends DefaultTask implements LabelConsumer
 
     @TaskAction
     public void runTask() {
-        getLogger()
-                .warn("[eu.xenit.docker-alfresco] The task " + getName()
-                        + " is deprecated and will be removed in alfresco-docker-gradle-plugin 5.0.0. Use "
-                        + replacementTask.getName() + " instead.");
+        Deprecation.warnDeprecation("The task "+getName()+" is deprecated and will be removed in 5.0.0. Use "+replacementTask.getName()+" instead.");
     }
 
     @Override

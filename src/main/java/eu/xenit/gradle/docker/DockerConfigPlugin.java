@@ -5,6 +5,7 @@ import com.avast.gradle.dockercompose.DockerComposePlugin;
 import com.bmuschko.gradle.docker.DockerExtension;
 import com.bmuschko.gradle.docker.DockerRegistryCredentials;
 import com.bmuschko.gradle.docker.DockerRemoteApiPlugin;
+import eu.xenit.gradle.docker.internal.Deprecation;
 import eu.xenit.gradle.git.GitInfoProvider;
 import eu.xenit.gradle.git.JGitInfoProvider;
 import java.io.File;
@@ -20,6 +21,13 @@ public class DockerConfigPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
+        // Set up deprecation warnings
+        Deprecation.setStartParameter(project.getGradle().getStartParameter());
+        project.getGradle().buildFinished(buildResult -> {
+            Deprecation.printSummary();
+        });
+
+        // Rest of the configuration
         DockerConfig dockerConfig = new DockerConfig(project);
         project.getPluginManager().apply(DockerRemoteApiPlugin.class);
         DockerExtension dockerExtension = (DockerExtension) project.getExtensions().getByName("docker");
@@ -53,5 +61,6 @@ public class DockerConfigPlugin implements Plugin<Project> {
         }
 
         composeExtension.getEnvironment().put("COMPOSE_PROJECT_NAME", project.getName() + "-" + branch);
+
     }
 }
