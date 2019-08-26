@@ -13,6 +13,7 @@
  * [#38](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/38) - DockerfileWithWarsTask is not threadsafe
  * [#33](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/33) - Warning messages when building with Java 11
  * [#45](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/45) - Handle initialized git repository without commits
+ * [#36](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/36) - Dependencies are resolved during the configuration phase
 
 ## Version 4.0.3 - 2019-01-17
 

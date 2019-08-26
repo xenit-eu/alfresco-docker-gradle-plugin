@@ -120,6 +120,9 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
      * @param destinationDir
      */
     private static void unzipWar(File warFile, File destinationDir) {
+        if(warFile == null) {
+            return;
+        }
         Util.withWar(warFile, archive -> {
             TFile directory = new TFile(destinationDir);
             directory.mkdirs();
@@ -165,15 +168,21 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
     }
 
 
+    /**
+     * @deprecated in 3.x, will be removed in 5.0.0
+     */
     @Deprecated
     public void setAlfrescoWar(File alfrescoWar) {
-        getLogger().warn("setAlfrescoWar(alfrescoWar) is deprecated and will be removed in xenit-gradle-plugins 4.0. Use addWar(\"alfresco\", alfrescoWar) instead.");
+        getLogger().warn("setAlfrescoWar(alfrescoWar) is deprecated and will be removed in xenit-gradle-plugins 5.0.0. Use addWar(\"alfresco\", alfrescoWar) instead.");
         addWar("alfresco", alfrescoWar);
     }
 
+    /**
+     * @deprecated in 3.x, will be removed in 5.0.0
+     */
     @Deprecated
     public void setShareWar(File shareWar) {
-        getLogger().warn("setShareWar(shareWar) is deprecated and will be removed in xenit-gradle-plugins 4.0. Use addWar(\"share\", shareWar) instead.");
+        getLogger().warn("setShareWar(shareWar) is deprecated and will be removed in xenit-gradle-plugins 5.0.0. Use addWar(\"share\", shareWar) instead.");
         addWar("share", shareWar);
     }
 
@@ -182,6 +191,7 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
         return warFiles.values().stream()
                 .flatMap(Collection::stream)
                 .map(Supplier::get)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
@@ -224,16 +234,17 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
                 // Unpack war
                 unzipWar(war.get(), destinationDir);
             });
-            improveLog4j(destinationDir, name.toUpperCase());
 
-            // COPY
-            if (getRemoveExistingWar()) {
-                runCommand("rm -rf " + getTargetDirectory() + name);
+            if(destinationDir.exists()) {
+                improveLog4j(destinationDir, name.toUpperCase());
+                if (getRemoveExistingWar()) {
+                    runCommand("rm -rf " + getTargetDirectory() + name);
+                }
+                if(getCheckAlfrescoVersion()) {
+                    getCanAddWarsCheckCommands(destinationDir,getTargetDirectory()).forEach(this::runCommand);
+                }
+                DockerfileWithWarsTask.this.copyFile("./" + name, getTargetDirectory() + name);
             }
-            if(getCheckAlfrescoVersion()) {
-                getCanAddWarsCheckCommands(destinationDir,getTargetDirectory()).forEach(this::runCommand);
-            }
-            DockerfileWithWarsTask.this.copyFile("./" + name, getTargetDirectory() + name);
         });
 
         // LABEL
