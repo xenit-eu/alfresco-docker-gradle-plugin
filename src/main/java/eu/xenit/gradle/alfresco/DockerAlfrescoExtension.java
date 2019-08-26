@@ -14,8 +14,6 @@ import org.gradle.api.provider.Provider;
  */
 public class DockerAlfrescoExtension {
 
-    public static final String MESSAGE_BASE_IMAGE_NOT_SET = "Base image not set. You need to configure your base image in the 'dockerAlfresco' extension block";
-
     private final Project project;
 
     private final Property<String> baseImage;
@@ -26,12 +24,12 @@ public class DockerAlfrescoExtension {
         baseImage = project.getObjects().property(String.class);
     }
 
-    Supplier<String> getBaseImageSupplier() {
-        return baseImage::get;
+    Provider<String> getBaseImageProperty() {
+        return baseImage;
     }
 
     public String getBaseImage() {
-        return baseImage.get();
+        return baseImage.getOrNull();
     }
 
     public void setBaseImage(String baseImage) {

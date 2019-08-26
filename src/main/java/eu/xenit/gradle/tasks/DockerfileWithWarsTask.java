@@ -30,9 +30,11 @@ import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.util.GradleVersion;
 
 public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerTask {
 
+    public static final String MESSAGE_BASE_IMAGE_NOT_SET = "Base image not set. You need to configure your base image to build docker images.";
     /**
      * Base image used to build the dockerfile
      */
@@ -54,7 +56,14 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
     private String targetDirectory = "/usr/local/tomcat/webapps/";
 
     public DockerfileWithWarsTask() {
-        from(baseImage.map(From::new));
+        if (GradleVersion.current().compareTo(GradleVersion.version("5.6")) >= 0) {
+            from(baseImage.orElse(getProject().provider(() -> {
+                throw new IllegalStateException(MESSAGE_BASE_IMAGE_NOT_SET);
+            })).map(From::new));
+        } else {
+            from(baseImage.map(From::new));
+        }
+        baseImage.set((String) null);
     }
 
     @Input
@@ -155,6 +164,9 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
 
     @Input
     public String getBaseImage() {
+        if (!baseImage.isPresent() || baseImage.getOrNull() == null) {
+            throw new IllegalStateException(MESSAGE_BASE_IMAGE_NOT_SET);
+        }
         return baseImage.get();
     }
 
@@ -163,9 +175,6 @@ public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerT
     }
 
     public void setBaseImage(Provider<String> baseImage) {
-        if (this.baseImage.isPresent()) {
-            throw new IllegalStateException("Base image can only be set once.");
-        }
         this.baseImage.set(baseImage);
     }
 

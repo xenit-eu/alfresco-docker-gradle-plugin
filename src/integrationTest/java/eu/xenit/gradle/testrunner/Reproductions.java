@@ -1,9 +1,10 @@
 package eu.xenit.gradle.testrunner;
 
-import eu.xenit.gradle.alfresco.DockerAlfrescoExtension;
+import eu.xenit.gradle.tasks.DockerfileWithWarsTask;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.gradle.util.GradleVersion;
 import org.junit.Test;
 
 /**
@@ -66,7 +67,7 @@ public class Reproductions extends AbstractIntegrationTest {
     @Test
     public void testDockerAlfrescoPluginWithoutConfiguration() throws IOException {
         testProjectFolderExpectFailure(REPRODUCTIONS.resolve("docker-alfresco-plugin-without-config"), ":buildDockerImage",
-                DockerAlfrescoExtension.MESSAGE_BASE_IMAGE_NOT_SET);
+                DockerfileWithWarsTask.MESSAGE_BASE_IMAGE_NOT_SET);
     }
 
     @Test

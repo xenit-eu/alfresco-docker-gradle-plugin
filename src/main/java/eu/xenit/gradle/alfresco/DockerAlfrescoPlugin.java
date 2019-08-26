@@ -11,7 +11,6 @@ import eu.xenit.gradle.tasks.StripAlfrescoWarTask;
 import eu.xenit.gradle.tasks.WarEnrichmentTask;
 import eu.xenit.gradle.tasks.WarLabelOutputTask;
 import eu.xenit.gradle.tasks.WarOutputTask;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -66,7 +65,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
     private DockerfileWithWarsTask getDockerFileTask(DockerAlfrescoExtension dockerAlfrescoExtension, Project project1) {
         DockerfileWithWarsTask dockerfile = project1.getTasks().create("createDockerFile",
                 DockerfileWithWarsTask.class);
-        dockerfile.setBaseImage(dockerAlfrescoExtension.getBaseImageSupplier());
+        dockerfile.setBaseImage(dockerAlfrescoExtension.getBaseImageProperty());
         return dockerfile;
     }
 
