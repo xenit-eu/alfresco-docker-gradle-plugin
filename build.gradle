@@ -5,9 +5,11 @@ plugins {
     id "jacoco"
     id "com.gradle.plugin-publish" version "0.10.1"
     id 'org.ajoberstar.reckon' version "0.9.0"
-    id 'com.github.johnrengelman.shadow' version '4.0.4'
+    id 'com.github.johnrengelman.shadow' version '4.0.4' apply false
     id "org.sonarqube" version "2.7.1"
 }
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 group 'eu.xenit.gradle'
 
@@ -114,32 +116,19 @@ dependencies {
     }
 }
 
-shadowJar {
+task classesJar(type: Jar) {
+    from sourceSets.main.output
+    classifier = "classes"
+}
+
+task shadowJar(type: ShadowJar, dependsOn: classesJar) {
     configurations = [project.configurations.packaged]
-    classifier = "" // Change classifier so gradle plugin portal accepts our plugin
+    classifier = "shadow"
 }
 
 jar {
-    // Changes classifier, because no classifier is already taken by shadowJar, and we don't want to overwrite
-    classifier = "unbundled"
-}
-
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-configurations.archives.artifacts.clear() // Remove jar task output that is present by default
-
-artifacts {
-    add("archives", shadowJar)
-    add("archives", sourcesJar)
-    add("archives", javadocJar)
+    from zipTree(shadowJar.outputs.files.singleFile)
+    dependsOn(shadowJar)
 }
 
 task integrationTest(type: Test, group: "verification") {
@@ -182,13 +171,3 @@ check.dependsOn(integrationTest)
 reckonTagCreate.dependsOn(check)
 tasks.sonarqube.dependsOn(check)
 
-publishing {
-    publications {
-        plugin(MavenPublication) {
-            from components.java
-            artifact shadowJar
-            artifact sourcesJar
-            artifact javadocJar
-        }
-    }
-}
