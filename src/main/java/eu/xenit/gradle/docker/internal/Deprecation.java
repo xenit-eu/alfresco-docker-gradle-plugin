@@ -9,9 +9,9 @@ import org.gradle.api.logging.Logging;
 import org.gradle.api.logging.configuration.ShowStacktrace;
 import org.gradle.api.logging.configuration.WarningMode;
 
-public class Deprecation {
+public final class Deprecation {
 
-    private static class Warning extends RuntimeException {
+    static class Warning extends RuntimeException {
 
         public Warning(String message) {
             super(message);
@@ -22,7 +22,7 @@ public class Deprecation {
     private static ShowStacktrace printStacktrace = ShowStacktrace.INTERNAL_EXCEPTIONS;
     private static List<Warning> warnings = new LinkedList<>();
 
-    private static final Logger LOGGER = Logging.getLogger(Deprecation.class);
+    static Logger LOGGER = Logging.getLogger(Deprecation.class);
 
     private Deprecation() {
     }
@@ -63,6 +63,9 @@ public class Deprecation {
         try {
             throw new Warning(message);
         } catch (Warning warning) {
+            if (warningMode.name().equals("Fail")) {
+                throw warning;
+            }
             StackTraceElement[] stackTraceElements = warning.getStackTrace();
             warning.setStackTrace(
                     Arrays.copyOfRange(stackTraceElements, stripTraces + 1, stackTraceElements.length - stripTraces));
@@ -70,16 +73,14 @@ public class Deprecation {
                 printWarning(warning);
             }
             warnings.add(warning);
-            if (warningMode.name().equals("Fail")) {
-                throw warning;
-            }
         }
     }
 
     public static void printSummary() {
         if (warningMode == WarningMode.Summary && !warnings.isEmpty()) {
             LOGGER.warn(
-                    "Deprecated features were used in this build, making it incompatible with alfresco-docker-plugin 5.0.\n"+
+                    "Deprecated features were used in this build, making it incompatible with alfresco-docker-plugin 5.0.\n"
+                            +
                             "Use --warning-mode all to show individual deprecation warnings.");
         }
     }
