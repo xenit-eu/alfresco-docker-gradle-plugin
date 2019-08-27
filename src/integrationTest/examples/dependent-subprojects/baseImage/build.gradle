@@ -11,3 +11,9 @@ dockerFile {
         repository = 'baseimage'
     }
 }
+
+buildDockerImage {
+    doLast {
+        project(':dependent').dockerAlfresco.baseImage = getImageId()
+    }
+}
