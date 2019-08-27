@@ -32,7 +32,7 @@ import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.util.GradleVersion;
 
-public class DockerfileWithWarsTask extends Dockerfile implements LabelConsumerTask {
+public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements LabelConsumerTask {
 
     public static final String MESSAGE_BASE_IMAGE_NOT_SET = "Base image not set. You need to configure your base image to build docker images.";
     /**
