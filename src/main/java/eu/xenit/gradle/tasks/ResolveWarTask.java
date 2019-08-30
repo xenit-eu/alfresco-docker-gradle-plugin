@@ -2,6 +2,7 @@ package eu.xenit.gradle.tasks;
 
 import static eu.xenit.gradle.alfresco.DockerAlfrescoPlugin.LABEL_PREFIX;
 
+import eu.xenit.gradle.docker.internal.Deprecation;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,7 +64,7 @@ public class ResolveWarTask extends DefaultTask implements WarEnrichmentTask {
     public Map<String, String> getLabels() {
         Map<String, String> accumulator = new HashMap<>();
         if(!war.isEmpty()) {
-            accumulator.put(LABEL_PREFIX + getName(), getInputWar().getName());
+        accumulator.put(LABEL_PREFIX+getName(), getInputWar().getName());
         }
         for (Supplier<Map<String, String>> supplier : labels) {
             accumulator.putAll(supplier.get());
@@ -74,8 +75,7 @@ public class ResolveWarTask extends DefaultTask implements WarEnrichmentTask {
 
     @TaskAction
     public void copyWar() throws IOException {
-        getLogger()
-                .warn("[eu.xenit.docker] The ResolveWarTask type is deprecated and will be removed in xenit-gradle-plugins 5.0.0. Use StripAlfrescoWarTask instead, or use the Configuration directly.");
+        Deprecation.warnDeprecation("The ResolveWarTask type is deprecated and will be removed in xenit-gradle-plugins 5.0.0. Use StripAlfrescoWarTask instead, or use the Configuration directly.");
         File outputWar = getOutputWar();
         FileUtils.copyFile(getInputWar(), outputWar);
     }
