@@ -17,6 +17,7 @@ dependencies {
 dockerAlfresco {
     dockerBuild {
         repository = 'dependent'
+        pull = false
     }
 }
 

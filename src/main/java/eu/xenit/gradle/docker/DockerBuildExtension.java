@@ -3,8 +3,6 @@ package eu.xenit.gradle.docker;
 import eu.xenit.gradle.docker.internal.Deprecation;
 import groovy.lang.GString;
 import org.gradle.api.Project;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MarkerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,11 +28,11 @@ public class DockerBuildExtension {
     }
 
     /**
-     * @deprecated As of release 2.2.0, will be removed in 5.0.0. Replaced by {@link #setRepository(String)}
      * @param repository
+     * @deprecated As of release 2.2.0, will be removed in 5.0.0. Replaced by {@link #setRepository(String)}
      */
     @Deprecated
-    public void setRepositoryBase(String repository){
+    public void setRepositoryBase(String repository) {
         Deprecation.warnDeprecatedReplacedBy("setRepository(String)");
         setRepository(repository);
     }
@@ -50,13 +48,14 @@ public class DockerBuildExtension {
         List<String> converted = new ArrayList<String>();
         for (int i = 0; i < tags.size(); i++) {
             Object tag = tags.get(i);
-            if(!(tag instanceof String) && !(tag instanceof GString)){
+            if (!(tag instanceof String) && !(tag instanceof GString)) {
                 throw new Error("Only strings and gstrings are supported.");
             }
             converted.add(tag.toString());
         }
         this.tags = converted;
     }
+
     /**
      * Do not modify tags before tagging the docker image
      */
@@ -68,9 +67,9 @@ public class DockerBuildExtension {
     private boolean _automaticTagsExplicitlySet = false;
 
     public boolean getAutomaticTags() {
-        if(!_automaticTagsExplicitlySet) {
+        if (!_automaticTagsExplicitlySet) {
             Deprecation.warnDeprecation("automaticTags currently defaults to true, but it will change to false in version 5.0.0."
-                            + "If you want to continue using the current behavior, explicitly set automaticTags now to avoid surprises in the future.");
+                    + "If you want to continue using the current behavior, explicitly set automaticTags now to avoid surprises in the future.");
         }
         return automaticTags;
     }
@@ -81,10 +80,8 @@ public class DockerBuildExtension {
     }
 
 
-    /**
-     * Always attempt to pull a newer version of the image (default false)
-     */
-    private boolean pull;
+
+    private boolean pull = true;
 
     public boolean getPull() {
         return pull;
