@@ -42,7 +42,6 @@ task startContainer(type: DockerStartContainer) {
 
 task waitContainer(type: DockerWaitContainer) {
     targetContainerId { createContainer.containerId }
-    timeout = 10
     dependsOn(startContainer)
 
     doLast {
