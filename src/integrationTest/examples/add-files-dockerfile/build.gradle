@@ -1,0 +1,53 @@
+plugins {
+    id 'eu.xenit.docker-alfresco'
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+    }
+}
+dependencies {
+    baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
+}
+dockerAlfresco {
+    baseImage = "tomcat:7-jre8"
+    dockerBuild {
+        repository = 'hellotest'
+    }
+}
+
+createDockerFile {
+    copyFile file("build.gradle"), "/opt/build.gradle"
+    runCommand "mkdir -p /opt/gradle/test-src"
+    copyFile files("directory"), "/opt/gradle/test-src"
+    copyFile file("test.sh"), "/"
+    runCommand "chmod +x /test.sh"
+}
+
+import com.bmuschko.gradle.docker.tasks.container.*
+
+task createContainer(type: DockerCreateContainer) {
+    targetImageId { buildDockerImage.imageId }
+    cmd = ["/test.sh"]
+    dependsOn(buildDockerImage)
+}
+
+task startContainer(type: DockerStartContainer) {
+    targetContainerId { createContainer.containerId }
+    dependsOn(createContainer)
+}
+
+task waitContainer(type: DockerWaitContainer) {
+    targetContainerId { createContainer.containerId }
+    timeout = 10
+    dependsOn(startContainer)
+
+    doLast {
+        if (exitCode != 0) {
+            throw new GradleException("Container did not exit with code 0");
+        }
+    }
+}

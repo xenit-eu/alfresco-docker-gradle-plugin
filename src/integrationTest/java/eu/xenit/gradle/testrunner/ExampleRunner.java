@@ -14,6 +14,11 @@ public class ExampleRunner extends AbstractIntegrationTest {
     private static Path EXAMPLES = Paths.get("src", "integrationTest", "examples");
 
     @Test
+    public void testAddFilesDockerfile() throws IOException {
+        testProjectFolder(EXAMPLES.resolve("add-files-dockerfile"), ":waitContainer");
+    }
+
+    @Test
     public void testAlfrescoWarOnly() throws IOException {
         testProjectFolder(EXAMPLES.resolve("alfresco-war-only"));
     }

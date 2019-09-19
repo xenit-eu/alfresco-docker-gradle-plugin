@@ -2,122 +2,55 @@ package eu.xenit.gradle.tasks;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
+import java.nio.file.Path;
+import org.gradle.api.Action;
 import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.TaskAction;
 
 public class DockerfileWithCopyTask extends Dockerfile {
+    private int copyFileCounter = 0;
 
-    private abstract class DockerCopyAction {
+    private final CopySpec copyFileCopySpec;
 
-        abstract public CopySpec getCopySpec();
-
-        public CopyFileInstruction getCopyInstruction() {
-            return new CopyFileInstruction(getTemporaryDirectory(), destinationInImage);
-        }
-
-        abstract public boolean isEmpty();
-
-        protected final String destinationInImage;
-        protected final int copyActionIndex;
-
-        DockerCopyAction(String destinationInImage) {
-            this.destinationInImage = destinationInImage;
-            copyActionIndex = ++copyActionCounter;
-            getInputs().property("dockerCopyAction." + copyActionIndex + ".dest", destinationInImage);
-        }
-
-        public String getTemporaryDirectory() {
-            return "copyAction" + copyActionIndex;
-        }
+    private String createCopyFileStagingDirectory() {
+        copyFileCounter++;
+        return "copyFile/"+copyFileCounter;
     }
-
-    private class DockerCopyCollectionAction extends DockerCopyAction {
-
-        private final FileCollection files;
-
-        private DockerCopyCollectionAction(FileCollection files, String destinationInImage) {
-            super(destinationInImage);
-            this.files = files;
-            getInputs().files(files)
-                    .withPropertyName("dockerCopyAction." + copyActionIndex + ".files");
-        }
-
-        @Override
-        public CopySpec getCopySpec() {
-            return getProject().copySpec(copySpec -> {
-                copySpec.from(files);
-                copySpec.into(getTemporaryDirectory());
-            });
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return files.isEmpty();
-        }
-
-    }
-
-    private class DockerCopyFileAction extends DockerCopyAction {
-
-        private final File file;
-
-        private DockerCopyFileAction(File file, String destinationInImage) {
-            super(destinationInImage);
-            this.file = file;
-            getInputs().file(file)
-                    .withPropertyName("dockerCopyAction." + copyActionIndex + ".file");
-        }
-
-
-        @Override
-        public CopySpec getCopySpec() {
-            return getProject().copySpec(copySpec -> {
-                copySpec.from(file);
-                copySpec.into(getTemporaryDirectory());
-            });
-        }
-
-        @Override
-        public CopyFileInstruction getCopyInstruction() {
-            return new CopyFileInstruction(getTemporaryDirectory() + "/" + file.getName(),
-                    destinationInImage);
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return false;
-        }
-    }
-
-    private int copyActionCounter = 0;
-
-    private final List<DockerCopyAction> copyActions = new LinkedList<>();
 
     public void copyFile(File file, String destinationInImage) {
-        copyActions.add(new DockerCopyFileAction(file, destinationInImage));
+        String stagingDirectory = createCopyFileStagingDirectory();
+        copyFileCopySpec.into(stagingDirectory, copySpec -> {
+            copySpec.from(file);
+        });
+        getInstructions().add(new CopyFileInstruction(stagingDirectory+"/"+file.getName(), destinationInImage));
+        getInputs().files(file).withPropertyName("copyFile."+copyFileCounter);
     }
 
     public void copyFile(FileCollection files, String destinationInImage) {
-        copyActions.add(new DockerCopyCollectionAction(files, destinationInImage));
+        String stagingDirectory = createCopyFileStagingDirectory();
+        copyFileCopySpec.into(stagingDirectory, copySpec -> {
+            copySpec.from(files);
+        });
+        getInstructions().add(new CopyFileInstruction(stagingDirectory, destinationInImage));
+        getInputs().files(files).withPropertyName("copyFile."+copyFileCounter);
+    }
+
+    public DockerfileWithCopyTask() {
+        super();
+        copyFileCopySpec = getProject().copySpec();
     }
 
     @TaskAction
     @Override
     public void create() {
-        for (DockerCopyAction copyAction : copyActions) {
-            if (!copyAction.isEmpty()) {
-                getProject().delete(getDestFile().getParentFile().toPath().resolve(copyAction.getTemporaryDirectory())
-                        .toFile());
-                getProject().copy(copySpec -> {
-                    copySpec.with(copyAction.getCopySpec());
-                    copySpec.into(getDestFile().getParentFile());
-                });
-                getInstructions().add(copyAction.getCopyInstruction());
-            }
-        }
+        Path dockerfileDirectory = getDestFile().getParentFile().toPath();
+        Path copyFileDirectory = dockerfileDirectory.resolve("copyFile");
+        getProject().delete(copyFileDirectory);
+        getProject().copy(copySpec -> {
+            copySpec.with(copyFileCopySpec);
+            copySpec.into(dockerfileDirectory);
+        });
 
         super.create();
     }
