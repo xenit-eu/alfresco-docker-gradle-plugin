@@ -30,18 +30,18 @@ createDockerFile {
 import com.bmuschko.gradle.docker.tasks.container.*
 
 task createContainer(type: DockerCreateContainer) {
-    targetImageId { buildDockerImage.imageId }
+    targetImageId buildDockerImage.imageId
     cmd = ["/test.sh"]
     dependsOn(buildDockerImage)
 }
 
 task startContainer(type: DockerStartContainer) {
-    targetContainerId { createContainer.containerId }
+    targetContainerId createContainer.containerId
     dependsOn(createContainer)
 }
 
 task waitContainer(type: DockerWaitContainer) {
-    targetContainerId { createContainer.containerId }
+    targetContainerId createContainer.containerId
     dependsOn(startContainer)
 
     doLast {
