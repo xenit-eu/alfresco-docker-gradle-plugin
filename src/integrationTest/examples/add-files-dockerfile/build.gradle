@@ -20,10 +20,10 @@ dockerAlfresco {
 }
 
 createDockerFile {
-    copyFile file("build.gradle"), "/opt/build.gradle"
+    smartCopy "build.gradle", "/opt/build.gradle"
     runCommand "mkdir -p /opt/gradle/test-src"
-    copyFile files("directory"), "/opt/gradle/test-src"
-    copyFile file("test.sh"), "/"
+    smartCopy files("directory"), "/opt/gradle/test-src"
+    smartCopy file("test.sh"), "/"
     runCommand "chmod +x /test.sh"
 }
 
