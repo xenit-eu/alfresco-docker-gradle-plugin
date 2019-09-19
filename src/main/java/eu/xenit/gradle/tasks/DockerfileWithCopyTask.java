@@ -4,6 +4,7 @@ import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import java.nio.file.Path;
 import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskAction;
 
 public class DockerfileWithCopyTask extends Dockerfile {
@@ -42,8 +43,8 @@ public class DockerfileWithCopyTask extends Dockerfile {
     @TaskAction
     @Override
     public void create() {
-        Path dockerfileDirectory = getDestFile().getParentFile().toPath();
-        Path copyFileDirectory = dockerfileDirectory.resolve("copyFile");
+        Provider<Path> dockerfileDirectory = getDestFile().map(f -> f.getAsFile().getParentFile().toPath());
+        Provider<Path> copyFileDirectory = dockerfileDirectory.map(p -> p.resolve("copyFile"));
         getProject().delete(copyFileDirectory);
         getProject().copy(copySpec -> {
             copySpec.with(copyFileCopySpec);
