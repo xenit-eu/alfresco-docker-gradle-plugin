@@ -1,7 +1,8 @@
 # Alfresco Docker Gradle Plugins
 
 [![Build Status](https://travis-ci.org/xenit-eu/alfresco-docker-gradle-plugin.svg?branch=master)](https://travis-ci.org/xenit-eu/alfresco-docker-gradle-plugin)
-[![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/eu/xenit/docker-alfresco/eu.xenit.docker-alfresco.gradle.plugin/maven-metadata.xml.svg?colorB=007ec6&label=gradle)](https://plugins.gradle.org/plugin/eu.xenit.docker-alfresco)
+[![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/eu/xenit/docker-alfresco/eu.xenit.docker-alfresco.gradle.plugin/maven-metadata.xml.svg?colorB=007ec6&label=eu.xenit.docker-alfresco)](https://plugins.gradle.org/plugin/eu.xenit.docker-alfresco)
+[![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/eu/xenit/docker/eu.xenit.docker.gradle.plugin/maven-metadata.xml.svg?colorB=007ec6&label=eu.xenit.docker)](https://plugins.gradle.org/plugin/eu.xenit.docker)
 
 This projects contains some gradle plugins that are used within Xenit Projects.
 
