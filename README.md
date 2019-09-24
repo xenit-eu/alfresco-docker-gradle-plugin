@@ -22,7 +22,7 @@ On Windows, you should enable the _Expose daemon on tcp://localhost:2375 without
 On Linux, you have to add your user to the `docker` group and do a logout and login.
 
 After setting up docker, you can configure the location of the docker socket, if it is different from settings above.
-When necessary, can configure these settings in the global Gradle configuration file, `$HOME/.gradle/gradle.properties`.
+When necessary, you can configure these settings in the global Gradle configuration file, `$HOME/.gradle/gradle.properties`.
 
 ```properties
 # Docker socket (UNIX; default on Linux)
