@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## Version 4.1.1 - 2019-09-26
+
+### Fixes
+
+ * [#66](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/66) - smartCopy has unexpected behaviour with copying folder
+
 ## Version 4.1.0 - 2019-09-24
 
 ### Added

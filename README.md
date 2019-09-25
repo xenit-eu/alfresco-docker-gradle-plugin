@@ -209,7 +209,7 @@ the Alfresco or Share war file with all AMPs, Dynamic Extensions and Simple Modu
 
 The tasks `alfrescoWar` and `shareWar` create respectively an Alfresco and a Share war that can be published.
 
-```gradle
+```groovy
 publishing.publications {
     alfresco(MavenPublication) {
         artifactId "repo"
@@ -219,6 +219,59 @@ publishing.publications {
         artifactId "share"
         artifact shareWar
     }
+}
+```
+
+#### Adding additional WARs to the automatically generated Dockerfile
+
+You can modify the automatically generated `Dockerfile`. The plugin will configure this task to add Alfresco and Share with their extensions,
+but you can make additional modifications to it if necessary.
+The `createDockerFile` task is of type [`DockerfileWithWarsTask`](src/main/java/eu/xenit/gradle/tasks/DockerfileWithWarsTask.java),
+which provides extra functionality on top of the methods provided by the upstream [`Dockerfile`](https://bmuschko.github.io/gradle-docker-plugin/api/com/bmuschko/gradle/docker/tasks/image/Dockerfile.html) type.
+
+```groovy
+configurations {
+    rootWar
+}
+// Extensions provided by DockerfileWithWarsTask
+createDockerFile {
+    // Change directory where WAR files are written to, if your tomcat has a different webapps directory
+    targetDirectory = "/usr/local/tomcat/webapps/"
+
+    // Add an extra WAR file from a configuration
+    addWar("ROOT", rootWar)
+    // Add an extra WAR file from a normal file
+    addWar("ROOT", file("deps/ROOT.war"))
+
+    // Flag to set if the original WAR should be removed before a new WAR with the same name is added.
+    // This option is used by dockerAlfresco.leanImage to be able to overlay partial WAR files
+    removeExistingWar = true
+
+    // Disables checking for matching Alfresco version between base WAR and base image (when using dockerAlfresco.leanImage)
+    // DANGER: disabling this version checking is an escape-hatch for exceptional situations. Using a mismatched base WAR and base image WILL cause hard to debug issues.
+    checkAlfrescoVersion false
+}
+```
+
+#### Adding files to the automatically generated Dockerfile
+
+The `createDockerFile` task is of type [`DockerfileWithWarsTask`](src/main/java/eu/xenit/gradle/tasks/DockerfileWithWarsTask.java)
+(extending [`DockerfileWithCopyTask`](src/main/java/eu/xenit/gradle/tasks/DockerfileWithCopyTask.java) and the upstream [`Dockerfile`](https://bmuschko.github.io/gradle-docker-plugin/api/com/bmuschko/gradle/docker/tasks/image/Dockerfile.html) types)
+
+A `smartCopy` method is available to make it easier to copy any file in the project to the Docker image.
+
+```groovy
+createDockerFile {
+    // Copy the contents of "directory123" in your project to /opt/directory123 in the Docker image
+    smartCopy "directory123", "/opt/directory123"
+    // Copy the file "file123" in your project to /opt/file123 in the Docker image
+    // Note: when copying a file and /opt/file123 is an already existing directory, the file will be copied to /opt/file123/file123
+    // This is standard behavior of both Docker COPY and the Unix cp command
+    smartCopy "file123", "/opt/file123"
+
+    // Copy all files of a FileCollection or Configuration into a folder
+    smartCopy files("lib"), "/tmp/classes"
+    smartCopy runtimeClasspath, "/tmp/classes"
 }
 ```
 
