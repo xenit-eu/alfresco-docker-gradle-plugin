@@ -211,7 +211,7 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
      */
     @Deprecated
     public void setShareWar(java.io.File shareWar) {
-        Deprecation.warnDeprecatedReplacedBy("addWar(\"alfresco\", alfrescoWar)");
+        Deprecation.warnDeprecatedReplacedBy("addWar(\"share\", alfrescoWar)");
         addWar("share", shareWar);
     }
 
