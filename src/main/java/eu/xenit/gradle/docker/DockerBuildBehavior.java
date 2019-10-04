@@ -110,7 +110,7 @@ public class DockerBuildBehavior {
         cleanDockerImage.setGroup(GRADLE_DOCKER_TASK_GROUP);
         cleanDockerImage.targetImageId(buildDockerImage.getImageId());
         cleanDockerImage.getForce().set(true);
-        cleanDockerImage.dependsOn(buildDockerImage);
+        cleanDockerImage.mustRunAfter(buildDockerImage);
     }
 
     private DockerBuildImage createDockerBuildImageTask(Project project,

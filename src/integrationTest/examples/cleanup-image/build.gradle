@@ -13,7 +13,11 @@ dockerFile {
     }
 }
 
+// This last part is added for testing purposes only. The inspectImage task is expected to fail because of a missing image.
+
 import com.bmuschko.gradle.docker.tasks.image.DockerInspectImage
+
+cleanDockerImage.dependsOn(buildDockerImage)
 
 task inspectImage(type: DockerInspectImage) {
     dependsOn cleanDockerImage
