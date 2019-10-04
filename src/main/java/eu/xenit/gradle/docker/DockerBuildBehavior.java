@@ -34,6 +34,7 @@ import org.gradle.util.GradleVersion;
 public class DockerBuildBehavior {
 
     private static final Logger LOGGER = Logging.getLogger(DockerBuildBehavior.class);
+    public static final String GRADLE_DOCKER_TASK_GROUP = "Docker";
 
     private Supplier<DockerBuildExtension> dockerBuildExtension;
     private Supplier<File> dockerFile;
@@ -64,6 +65,7 @@ public class DockerBuildBehavior {
     public void execute(Project project) {
         DockerBuildImage buildDockerImage = createDockerBuildImageTask(project, dockerBuildExtension);
         buildDockerImage.setDescription("Build the docker image");
+        buildDockerImage.setGroup(GRADLE_DOCKER_TASK_GROUP);
         if (dockerfileCreator != null) {
             buildDockerImage.getDockerFile().set(dockerfileCreator.getDestFile());
             buildDockerImage.dependsOn(dockerfileCreator);
@@ -93,7 +95,7 @@ public class DockerBuildBehavior {
         project.getTasks().create("buildLabels", DeprecatedTask.class).setReplacementTask(buildDockerImage);
 
         DefaultTask dockerPushImage = project.getTasks().create("pushDockerImage", DefaultTask.class);
-        dockerPushImage.setGroup("Docker");
+        dockerPushImage.setGroup(GRADLE_DOCKER_TASK_GROUP);
         dockerPushImage.setDescription("Collection of all the pushTags");
 
         project.afterEvaluate((project1 -> {
@@ -105,7 +107,7 @@ public class DockerBuildBehavior {
         task.dependsOn(buildDockerImage);
 
         DockerRemoveImage cleanDockerImage = project.getTasks().create("cleanDockerImage", DockerRemoveImage.class);
-        cleanDockerImage.setGroup("Docker");
+        cleanDockerImage.setGroup(GRADLE_DOCKER_TASK_GROUP);
         cleanDockerImage.targetImageId(buildDockerImage.getImageId());
         cleanDockerImage.getForce().set(true);
         cleanDockerImage.dependsOn(buildDockerImage);
