@@ -79,4 +79,9 @@ public class ExampleRunner extends AbstractIntegrationTest {
         testProjectFolder(EXAMPLES.resolve("publish-war"), ":publishToMavenLocal");
     }
 
+    @Test
+    public void cleanImage() throws IOException {
+        testProjectFolderExpectFailure(EXAMPLES.resolve("cleanup-image"), ":inspectImage", "no such image");
+    }
+
 }

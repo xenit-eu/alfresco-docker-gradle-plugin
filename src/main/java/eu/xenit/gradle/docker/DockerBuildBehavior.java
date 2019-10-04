@@ -4,6 +4,7 @@ import static eu.xenit.gradle.git.JGitInfoProvider.GetProviderForProject;
 
 import com.avast.gradle.dockercompose.ComposeExtension;
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
+import com.bmuschko.gradle.docker.tasks.image.DockerRemoveImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import eu.xenit.gradle.JenkinsUtil;
 import eu.xenit.gradle.docker.tasks.internal.DeprecatedTask;
@@ -102,6 +103,12 @@ public class DockerBuildBehavior {
 
         Task task = project.getTasks().getAt("composeUp");
         task.dependsOn(buildDockerImage);
+
+        DockerRemoveImage cleanDockerImage = project.getTasks().create("cleanDockerImage", DockerRemoveImage.class);
+        cleanDockerImage.setGroup("Docker");
+        cleanDockerImage.targetImageId(buildDockerImage.getImageId());
+        cleanDockerImage.getForce().set(true);
+        cleanDockerImage.dependsOn(buildDockerImage);
     }
 
     private DockerBuildImage createDockerBuildImageTask(Project project,

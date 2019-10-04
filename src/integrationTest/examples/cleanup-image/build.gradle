@@ -1,0 +1,21 @@
+plugins {
+    id 'eu.xenit.docker'
+}
+
+repositories {
+    jcenter()
+}
+
+dockerFile {
+    dockerFile = file('Dockerfile')
+    dockerBuild {
+        repository = 'test-cleanup-image'
+    }
+}
+
+import com.bmuschko.gradle.docker.tasks.image.DockerInspectImage
+
+task inspectImage(type: DockerInspectImage) {
+    dependsOn cleanDockerImage
+    targetImageId buildDockerImage.imageId
+}
