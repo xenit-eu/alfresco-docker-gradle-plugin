@@ -172,6 +172,7 @@ The Gradle tasks created by this plugin are executed in this order. (Ordering mi
  * `createDockerfile`: [`DockerfileWithWarsTask`](src/main/java/eu/xenit/gradle/tasks/DockerfileWithWarsTask.java) Creates a Dockerfile with instructions to add Alfresco and/or Share wars. Adds labels to identify extensions that have been installed.
  * `buildDockerImage`: [`DockerBuildImage`](https://bmuschko.github.io/gradle-docker-plugin/api/com/bmuschko/gradle/docker/tasks/image/DockerBuildImage.html) Builds a Docker image with the provided Dockerfile
  * `pushDockerImage`: Pushes all tags of the Docker image to the remote repository
+ * `cleanDockerImage`: [`DockerRemoveImage`](https://bmuschko.github.io/gradle-docker-plugin/api/com/bmuschko/gradle/docker/tasks/image/DockerRemoveImage.html) Cleanup the image built by `buildDockerImage`. This task will force remove the image.
 
 <details>
 <summary>Technical description of tasks</summary>
