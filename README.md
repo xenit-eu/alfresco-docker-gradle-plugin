@@ -313,6 +313,8 @@ The `eu.xenit.docker` plugin registers following Gradle tasks:
 
  * `buildDockerImage`: [`DockerBuildImage`](https://bmuschko.github.io/gradle-docker-plugin/api/com/bmuschko/gradle/docker/tasks/image/DockerBuildImage.html) Builds a Docker image with the provided Dockerfile
  * `pushDockerImage`: Pushes all tags of the Docker image to the remote repository
+ * `cleanDockerImage`: [`DockerRemoveImage`](https://bmuschko.github.io/gradle-docker-plugin/api/com/bmuschko/gradle/docker/tasks/image/DockerRemoveImage.html) Cleanup the image built by `buildDockerImage`. This task will force remove the image.
+
 
 ## Tagging behavior
 
