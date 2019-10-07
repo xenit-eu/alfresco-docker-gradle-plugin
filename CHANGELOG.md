@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Added
- * [#46](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/46) - Added cleanImage task to cleanup the image built by buildDockerImage
+ * [#46](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/46) - Added cleanDockerImage task to cleanup the image built by buildDockerImage
 
 ## Version 4.1.1 - 2019-09-26
 
