@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+* [#68](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/68) - DOCKER_HOST envvar is only set when eu.xenit.docker.url is set
+
 ## Version 4.1.1 - 2019-09-26
 
 ### Fixes
