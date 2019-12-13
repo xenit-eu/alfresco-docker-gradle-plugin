@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
@@ -184,7 +186,8 @@ public class DockerBuildBehavior {
     private List<DockerPushImage> getPushTags(Project project, DockerBuildImage dockerBuildImage) {
         List<DockerPushImage> result = new ArrayList<>();
         for (String tag : this.getTags()) {
-            DockerPushImage pushTag = project.getTasks().create("pushTag" + tag, DockerPushImage.class);
+            String tagForTaskName = cleanTagForTaskname(tag);
+            DockerPushImage pushTag = project.getTasks().create("pushTag" + tagForTaskName, DockerPushImage.class);
             pushTag.getImageName().set(getDockerRepository());
             pushTag.getTag().set(tag);
             pushTag.dependsOn(dockerBuildImage);
@@ -192,6 +195,15 @@ public class DockerBuildBehavior {
             result.add(pushTag);
         }
         return result;
+    }
+
+    // Clean up a tag to comply with the restrictions on task names introduced in Gradle 5
+    // See https://docs.gradle.org/current/userguide/upgrading_version_4.html#changes_5.0
+    // under 'Potential breaking changes/General/bulletpoint 2
+    private String cleanTagForTaskname(String tag) {
+        Pattern illegalCharacters = Pattern.compile("[/\\\\:<>\"?*|]");
+        Matcher matcher = illegalCharacters.matcher(tag);
+        return matcher.replaceAll("_");
     }
 
     private String getDockerRepository() {
