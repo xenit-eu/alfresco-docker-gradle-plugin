@@ -1,6 +1,5 @@
 package eu.xenit.gradle.alfresco;
 
-import eu.xenit.gradle.alfresco.tasks.internal.DeprecatedMergeWarTask;
 import eu.xenit.gradle.docker.DockerBuildBehavior;
 import eu.xenit.gradle.docker.DockerConfigPlugin;
 import eu.xenit.gradle.tasks.DockerfileWithWarsTask;
@@ -48,21 +47,25 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
 
         project.getPluginManager().apply(DockerConfigPlugin.class);
 
-        DockerAlfrescoExtension dockerAlfrescoExtension = project.getExtensions().create("dockerAlfresco", DockerAlfrescoExtension.class, project);
+        DockerAlfrescoExtension dockerAlfrescoExtension = project.getExtensions()
+                .create("dockerAlfresco", DockerAlfrescoExtension.class, project);
 
         List<WarLabelOutputTask> alfrescoWarEnrichmentTasks = warEnrichmentChain(project, ALFRESCO);
         List<WarLabelOutputTask> shareEnrichmentTasks = warEnrichmentChain(project, SHARE);
         DockerfileWithWarsTask dockerfile = getDockerFileTask(dockerAlfrescoExtension, project);
 
-        DockerBuildBehavior dockerBuildBehavior = new DockerBuildBehavior(dockerAlfrescoExtension::getDockerBuild, dockerfile);
+        DockerBuildBehavior dockerBuildBehavior = new DockerBuildBehavior(dockerAlfrescoExtension::getDockerBuild,
+                dockerfile);
         dockerBuildBehavior.apply(project);
 
         project.afterEvaluate(project1 -> {
-            updateDockerFileTask(project1, dockerfile, alfrescoWarEnrichmentTasks, shareEnrichmentTasks, dockerAlfrescoExtension);
+            updateDockerFileTask(project1, dockerfile, alfrescoWarEnrichmentTasks, shareEnrichmentTasks,
+                    dockerAlfrescoExtension);
         });
     }
 
-    private DockerfileWithWarsTask getDockerFileTask(DockerAlfrescoExtension dockerAlfrescoExtension, Project project1) {
+    private DockerfileWithWarsTask getDockerFileTask(DockerAlfrescoExtension dockerAlfrescoExtension,
+            Project project1) {
         DockerfileWithWarsTask dockerfile = project1.getTasks().create("createDockerFile",
                 DockerfileWithWarsTask.class);
         dockerfile.setBaseImage(dockerAlfrescoExtension.getBaseImageProperty());
@@ -93,35 +96,41 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
     }
 
     private List<WarLabelOutputTask> warEnrichmentChain(Project project, final String warName) {
-        Configuration baseWar = project.getConfigurations().getByName("base"+warName+"War");
+        Configuration baseWar = project.getConfigurations().getByName("base" + warName + "War");
 
-        WarEnrichmentTask resolveTask = project.getTasks().create("resolve" + warName + "War", StripAlfrescoWarTask.class, stripAlfrescoWarTask -> {
-            stripAlfrescoWarTask.addPathToCopy(WarHelperImpl.MANIFEST_FILE);
-            if(warName.equals(ALFRESCO)) {
-                stripAlfrescoWarTask.addPathToCopy(WarHelperImpl.VERSION_PROPERTIES);
-            }
-        });
+        WarEnrichmentTask resolveTask = project.getTasks()
+                .create("resolve" + warName + "War", StripAlfrescoWarTask.class, stripAlfrescoWarTask -> {
+                    stripAlfrescoWarTask.addPathToCopy(WarHelperImpl.MANIFEST_FILE);
+                    if (warName.equals(ALFRESCO)) {
+                        stripAlfrescoWarTask.addPathToCopy(WarHelperImpl.VERSION_PROPERTIES);
+                    }
+                });
         resolveTask.setGroup(TASK_GROUP);
         resolveTask.setInputWar(baseWar);
 
-
         final List<WarEnrichmentTask> tasks = new ArrayList<>();
 
-        tasks.add(project.getTasks().create("apply"+warName+"SM", InjectFilesInWarTask.class, injectFilesInWarTask -> {
-            injectFilesInWarTask.setTargetDirectory("/WEB-INF/lib/");
-            injectFilesInWarTask.setSourceFiles(project.getConfigurations().getByName(warName.toLowerCase()+"SM"));
-        }));
+        tasks.add(project.getTasks()
+                .create("apply" + warName + "SM", InjectFilesInWarTask.class, injectFilesInWarTask -> {
+                    injectFilesInWarTask.setTargetDirectory("/WEB-INF/lib/");
+                    injectFilesInWarTask
+                            .setSourceFiles(project.getConfigurations().getByName(warName.toLowerCase() + "SM"));
+                }));
         if (warName.equals(ALFRESCO)) {
-            tasks.add(project.getTasks().create("apply" + warName + "DE", InjectFilesInWarTask.class, injectFilesInWarTask -> {
-                injectFilesInWarTask.setTargetDirectory("/WEB-INF/classes/dynamic-extensions/bundles/");
-                injectFilesInWarTask.setSourceFiles(project.getConfigurations().getByName(warName.toLowerCase() + "DE"));
-            }));
+            tasks.add(project.getTasks()
+                    .create("apply" + warName + "DE", InjectFilesInWarTask.class, injectFilesInWarTask -> {
+                        injectFilesInWarTask.setTargetDirectory("/WEB-INF/classes/dynamic-extensions/bundles/");
+                        injectFilesInWarTask
+                                .setSourceFiles(project.getConfigurations().getByName(warName.toLowerCase() + "DE"));
+                    }));
         }
-        tasks.add(project.getTasks().create("apply"+warName+"Amp", InstallAmpsInWarTask.class, installAmpsInWarTask -> {
-            installAmpsInWarTask.setSourceFiles(project.getConfigurations().getByName(warName.toLowerCase()+"Amp"));
-        }));
+        tasks.add(project.getTasks()
+                .create("apply" + warName + "Amp", InstallAmpsInWarTask.class, installAmpsInWarTask -> {
+                    installAmpsInWarTask
+                            .setSourceFiles(project.getConfigurations().getByName(warName.toLowerCase() + "Amp"));
+                }));
 
-        for(WarEnrichmentTask task: tasks) {
+        for (WarEnrichmentTask task : tasks) {
             task.setInputWar(resolveTask);
             task.setGroup(TASK_GROUP);
         }
@@ -129,14 +138,10 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         List<WarLabelOutputTask> outputTasks = new ArrayList<>(tasks);
         outputTasks.add(0, resolveTask);
 
-        MergeWarsTask mergeWarsTask = project.getTasks().create(warName.toLowerCase()+"War", MergeWarsTask.class);
+        MergeWarsTask mergeWarsTask = project.getTasks().create(warName.toLowerCase() + "War", MergeWarsTask.class);
         mergeWarsTask.setGroup(TASK_GROUP);
 
-        DeprecatedMergeWarTask oldMergeWarsTask = project.getTasks().create("merge"+warName+"War", DeprecatedMergeWarTask.class);
-        oldMergeWarsTask.setGroup(TASK_GROUP);
-        oldMergeWarsTask.setReplacementTask(mergeWarsTask);
-
-        for(WarLabelOutputTask task: outputTasks) {
+        for (WarLabelOutputTask task : outputTasks) {
             mergeWarsTask.withLabels(task);
         }
         mergeWarsTask.setInputWars(

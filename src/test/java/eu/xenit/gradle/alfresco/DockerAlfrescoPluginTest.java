@@ -74,13 +74,14 @@ public class DockerAlfrescoPluginTest {
     }
 
     @Test
-    public void testAddTags(){
+    public void testAddTagsAutomatic(){
         DefaultProject project = getDefaultProject();
         project.getDependencies().add("baseAlfrescoWar", project.files(this.getClass().getClassLoader().getResource("test123.war").getFile()));
         project.getDependencies().add("alfrescoAmp", project.files(this.getClass().getClassLoader().getResource("test123.amp").getFile()));
         DockerAlfrescoExtension dockerAlfrescoExtension = (DockerAlfrescoExtension) project.getExtensions().getByName("dockerAlfresco");
         dockerAlfrescoExtension.dockerBuild((dockerBuildExtension -> {
             dockerBuildExtension.setTags(Arrays.asList("hello", "world"));
+            dockerBuildExtension.setAutomaticTags(true);
         }));
         project.evaluate();
 
@@ -95,14 +96,13 @@ public class DockerAlfrescoPluginTest {
     }
 
     @Test
-    public void testAddTagsPlain(){
+    public void testAddTags(){
         DefaultProject project = getDefaultProject();
         project.getDependencies().add("baseAlfrescoWar", project.files(this.getClass().getClassLoader().getResource("test123.war").getFile()));
         project.getDependencies().add("alfrescoAmp", project.files(this.getClass().getClassLoader().getResource("test123.amp").getFile()));
         DockerAlfrescoExtension dockerAlfrescoExtension = (DockerAlfrescoExtension) project.getExtensions().getByName("dockerAlfresco");
         dockerAlfrescoExtension.dockerBuild((dockerBuildExtension) -> {
             dockerBuildExtension.setTags(Arrays.asList("hello", "world"));
-            dockerBuildExtension.setAutomaticTags(false);
         });
         project.evaluate();
 
