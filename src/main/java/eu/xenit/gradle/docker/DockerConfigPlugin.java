@@ -54,9 +54,7 @@ public class DockerConfigPlugin implements Plugin<Project> {
         project.getPluginManager().apply(DockerComposePlugin.class);
         ComposeExtension composeExtension = (ComposeExtension) project.getExtensions().getByName("dockerCompose");
         composeExtension.getUseComposeFiles().add("docker-compose.yml");
-        if (dockerConfig.getUrl() != null) {
-            composeExtension.getEnvironment().put("DOCKER_HOST", dockerConfig.getUrl());
-        }
+        composeExtension.getEnvironment().put("DOCKER_HOST", dockerExtension.getUrl().get());
         composeExtension.getEnvironment().put("DOCKER_IP", dockerConfig.getExposeIp());
         if (dockerConfig.getCertPath() != null) {
             composeExtension.getEnvironment().put("DOCKER_CERT_PATH", dockerConfig.getCertPath());
