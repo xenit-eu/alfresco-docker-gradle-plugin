@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
@@ -150,12 +152,14 @@ public class DockerBuildBehavior {
         List<String> tags = dockerBuildExtension.get().getTags();
         boolean automaticTags = dockerBuildExtension.get().getAutomaticTags();
 
+        String jenkinsBranch = cleanForDockerTag(JenkinsUtil.getBranch());
+
         if (automaticTags) {
             tags = tags.stream().map(tag -> {
                 if (isMaster()) {
                     return tag;
                 } else {
-                    return JenkinsUtil.getBranch() + "-" + tag;
+                    return jenkinsBranch + "-" + tag;
                 }
             }).collect(Collectors.toList());
 
@@ -163,14 +167,14 @@ public class DockerBuildBehavior {
                 if (isMaster()) {
                     tags.add("build-" + JenkinsUtil.getBuildId());
                 } else {
-                    tags.add(JenkinsUtil.getBranch() + "-build-" + JenkinsUtil.getBuildId());
+                    tags.add(jenkinsBranch + "-build-" + JenkinsUtil.getBuildId());
                 }
             }
 
             if (isMaster()) {
                 tags.add("latest");
             } else {
-                tags.add(JenkinsUtil.getBranch());
+                tags.add(jenkinsBranch);
             }
         }
 
@@ -179,6 +183,18 @@ public class DockerBuildBehavior {
 
     private boolean isMaster() {
         return "master".equals(JenkinsUtil.getBranch());
+    }
+
+    /* Remove illegal characters from tags through encoding*/
+    private String cleanForDockerTag(String tag) {
+        Pattern illegalCharacters = Pattern.compile("[/\\\\:<>\"?*|]");
+        Matcher matcher = illegalCharacters.matcher(tag);
+        StringBuffer buffer = new StringBuffer();
+        while(matcher.find()) {
+            matcher.appendReplacement(buffer, "_");
+        }
+        matcher.appendTail(buffer);
+        return buffer.toString();
     }
 
     private List<DockerPushImage> getPushTags(Project project, DockerBuildImage dockerBuildImage) {
