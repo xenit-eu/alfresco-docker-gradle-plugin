@@ -8,13 +8,17 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.FileTree;
+import org.gradle.api.file.RegularFile;
+import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.bundling.Zip;
 
-public class MergeWarsTask extends Zip implements LabelConsumerTask, WarLabelOutputTask {
+public class MergeWarsTask extends Zip implements LabelConsumerTask, LabelSupplierTask {
 
     private List<Supplier<Map<String, String>>> labels = new ArrayList<>();
 
@@ -22,10 +26,9 @@ public class MergeWarsTask extends Zip implements LabelConsumerTask, WarLabelOut
 
     public MergeWarsTask() {
         super();
-        setExtension("war");
-        setDestinationDir(
-                getProject().getBuildDir().toPath().resolve("xenit-gradle-plugins").resolve(getName()).toFile());
-        setBaseName(getName());
+        getArchiveExtension().set("war");
+        getDestinationDirectory().set(getProject().getLayout().getBuildDirectory().dir("xenit-gradle-plugins/"+getName()));
+        getArchiveBaseName().set(getName());
         childWars = getRootSpec().addChildBeforeSpec(getMainSpec());
     }
 
@@ -49,17 +52,7 @@ public class MergeWarsTask extends Zip implements LabelConsumerTask, WarLabelOut
      * <p>
      * Later files overwrite earlier files
      */
-    public void setInputWars(Supplier<List<File>> inputWars) {
-        childWars.from((Callable<List<FileTree>>) () -> inputWars.get()
-                .stream()
-                .map(war -> getProject().zipTree(war))
-                .collect(Collectors.toList()));
+    public void addInputWar(Provider<File> inputWar) {
+        childWars.from(getProject().provider(() -> getProject().zipTree(inputWar)));
     }
-
-    @Override
-    @OutputFile
-    public File getOutputWar() {
-        return getDestinationDir().toPath().resolve(getName()).toFile();
-    }
-
 }

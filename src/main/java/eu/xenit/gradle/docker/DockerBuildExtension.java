@@ -1,98 +1,61 @@
 package eu.xenit.gradle.docker;
 
-import eu.xenit.gradle.docker.internal.Deprecation;
-import groovy.lang.GString;
+import javax.inject.Inject;
 import org.gradle.api.Project;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.Property;
 
 /**
  * Created by thijs on 10/25/16.
  */
 public class DockerBuildExtension {
 
-    private String repository;
+    private final Property<String> repository;
+    private final ListProperty<String> tags;
 
-    public DockerBuildExtension(Project project) {
-        repository = project.getName();
-    }
-
-
-    public String getRepository() {
-        return repository;
-    }
-
-    public void setRepository(String repository) {
-        this.repository = repository;
-    }
-
-    private List<String> tags = new ArrayList<>();
-
-    public List<String> getTags() {
-        return tags;
-    }
-
-
-    public void setTags(List<Object> tags) {
-        List<String> converted = new ArrayList<String>();
-        for (int i = 0; i < tags.size(); i++) {
-            Object tag = tags.get(i);
-            if (!(tag instanceof String) && !(tag instanceof GString)) {
-                throw new IllegalArgumentException("Only strings and gstrings are supported.");
-            }
-            converted.add(tag.toString());
-        }
-        this.tags = converted;
-    }
-
-    /**
-     * Do not modify tags before tagging the docker image
-     */
-    private boolean automaticTags = false;
-
-    public boolean getAutomaticTags() {
-        return automaticTags;
-    }
-
-    public void setAutomaticTags(boolean automaticTags) {
-        this.automaticTags = automaticTags;
-    }
-
-
-    private boolean pull = true;
-
-    public boolean getPull() {
-        return pull;
-    }
-
-    public void setPull(boolean pull) {
-        this.pull = pull;
-    }
+    private final Property<Boolean> pull;
 
     /**
      * Do not use cache when building the image (default false)
      */
-    private boolean noCache;
+    private final Property<Boolean> noCache;
 
-    public boolean getNoCache() {
+    private final Property<Boolean> automaticTags;
+
+    private final Property<Boolean> remove;
+
+    @Inject
+    public DockerBuildExtension(ObjectFactory objectFactory, Project project) {
+        repository = objectFactory.property(String.class);
+        tags = objectFactory.listProperty(String.class);
+        pull = objectFactory.property(Boolean.class).convention(true);
+        noCache = objectFactory.property(Boolean.class).convention(false);
+        automaticTags = objectFactory.property(Boolean.class).convention(false);
+        remove = objectFactory.property(Boolean.class).convention(true);
+    }
+
+    public Property<String> getRepository() {
+        return repository;
+    }
+
+    public Property<Boolean> getAutomaticTags() {
+        return automaticTags;
+    }
+
+    public Property<Boolean> getPull() {
+        return pull;
+    }
+
+    public Property<Boolean> getNoCache() {
         return noCache;
     }
 
-    public void setNoCache(boolean noCache) {
-        this.noCache = noCache;
-    }
-
-    /**
-     * Remove intermediate containers after a successful build (default true)
-     */
-    private boolean remove = true;
-
-    public boolean getRemove() {
+    public Property<Boolean> getRemove() {
         return remove;
     }
 
-    public void setRemove(boolean remove) {
-        this.remove = remove;
+    public ListProperty<String> getTags() {
+        return tags;
     }
 }

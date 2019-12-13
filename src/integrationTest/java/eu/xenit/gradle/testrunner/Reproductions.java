@@ -1,9 +1,13 @@
 package eu.xenit.gradle.testrunner;
 
+import static org.junit.Assert.assertTrue;
+
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import eu.xenit.gradle.tasks.DockerfileWithWarsTask;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.gradle.testkit.runner.BuildResult;
 import org.gradle.util.GradleVersion;
 import org.junit.Test;
 
@@ -66,9 +70,9 @@ public class Reproductions extends AbstractIntegrationTest {
 
     @Test
     public void testDockerAlfrescoPluginWithoutConfiguration() throws IOException {
-        testProjectFolderExpectFailure(REPRODUCTIONS.resolve("docker-alfresco-plugin-without-config"),
-                ":buildDockerImage",
-                DockerfileWithWarsTask.MESSAGE_BASE_IMAGE_NOT_SET);
+        BuildResult buildResult = getGradleRunner(REPRODUCTIONS.resolve("docker-alfresco-plugin-without-config"), ":buildDockerImage").buildAndFail();
+        assertTrue(buildResult.getOutput().contains(DockerfileWithWarsTask.MESSAGE_BASE_IMAGE_NOT_SET) || buildResult
+                .getOutput().contains("No value has been specified for property 'baseImage'"));
     }
 
     @Test

@@ -39,6 +39,28 @@ public class DockerfileWithCopyTask extends Dockerfile {
      * @see #smartCopy(String, String)
      */
     public void smartCopy(java.io.File file, String destinationInImage) {
+        smartCopy(getProject().provider(() -> file), destinationInImage);
+    }
+
+    /**
+     * smartCopy copies a file from anywhere into a docker image.
+     *
+     * @param file               The file to copy
+     * @param destinationInImage Destination file or directory inside the docker image
+     * @see #smartCopy(String, String)
+     */
+    public void smartCopy(Provider<java.io.File> file, String destinationInImage) {
+        smartCopy(file, getProject().provider(() -> destinationInImage));
+    }
+
+    /**
+     * smartCopy copies a file from anywhere into a docker image.
+     *
+     * @param file               The file to copy
+     * @param destinationInImage Destination file or directory inside the docker image
+     * @see #smartCopy(String, String)
+     */
+    public void smartCopy(Provider<java.io.File> file, Provider<String> destinationInImage) {
         String stagingDirectory = createCopyFileStagingDirectory();
         copyFileCopySpec.into(stagingDirectory, copySpec -> {
             copySpec.from(file);
@@ -48,15 +70,25 @@ public class DockerfileWithCopyTask extends Dockerfile {
             // In case of a directory, its contents are copied to the directory specified with into()
             // To patch up this difference, we re-introduce the directory name in the path for every copied file
             copySpec.eachFile(fileCopyDetails -> {
-                if (file.isDirectory()) {
+                if (file.get().isDirectory()) {
                     String path = fileCopyDetails.getPath();
                     String filePath = path.substring(stagingDirectory.length());
-                    fileCopyDetails.setPath(stagingDirectory+"/"+file.getName()+filePath);
+                    fileCopyDetails.setPath(stagingDirectory+"/"+file.get().getName()+filePath);
                 }
             });
         });
-        copyFile(stagingDirectory + "/" + file.getName(), destinationInImage);
+        copyFile(destinationInImage.flatMap(d -> file.map(f -> new File(stagingDirectory + "/"+f.getName(), d))));
         getInputs().files(file).withPropertyName("copyFile." + copyFileCounter);
+    }
+    /**
+     * smartCopy copies files from anywhere into a docker image.
+     *
+     * @param files              A collection of files to copy
+     * @param destinationInImage Destination directory inside the docker image where all files will be copied to
+     * @see #smartCopy(String, String)
+     */
+    public void smartCopy(FileCollection files, String destinationInImage) {
+        smartCopy(files, getProject().provider(() -> destinationInImage));
     }
 
     /**
@@ -66,12 +98,12 @@ public class DockerfileWithCopyTask extends Dockerfile {
      * @param destinationInImage Destination directory inside the docker image where all files will be copied to
      * @see #smartCopy(String, String)
      */
-    public void smartCopy(FileCollection files, String destinationInImage) {
+    public void smartCopy(FileCollection files, Provider<String> destinationInImage) {
         String stagingDirectory = createCopyFileStagingDirectory();
         copyFileCopySpec.into(stagingDirectory, copySpec -> {
             copySpec.from(files);
         });
-        copyFile(stagingDirectory, destinationInImage);
+        copyFile(destinationInImage.map(d -> new File(stagingDirectory, d)));
         getInputs().files(files).withPropertyName("copyFile." + copyFileCounter);
     }
 

@@ -50,15 +50,12 @@ public class DockerConfig {
     private String registryUsername;
     private String registryPassword;
 
-    public DockerConfig(Project project){
-        if(GradleVersion.current().compareTo(GradleVersion.version("4.10.3")) < 0) {
-            throw new GradleException("The Xenit alfresco-docker Gradle plugin requires at least Gradle 4.10.3. You are running "+GradleVersion.current());
-        }
+    public DockerConfig(Project project) {
         this.url = (String) project.getProperties().get(EU_XENIT_DOCKER_URL);
 
-        if(project.getProperties().containsKey(EU_XENIT_DOCKER_EXPOSE_IP)) {
-            exposeIp = (String)project.getProperties().get(EU_XENIT_DOCKER_EXPOSE_IP);
-        } else if(this.url != null) {
+        if (project.getProperties().containsKey(EU_XENIT_DOCKER_EXPOSE_IP)) {
+            exposeIp = (String) project.getProperties().get(EU_XENIT_DOCKER_EXPOSE_IP);
+        } else if (this.url != null) {
             // Try to extract ip to expose from the docker url
             try {
                 exposeIp = (new URI(this.url)).getHost();
@@ -67,20 +64,20 @@ public class DockerConfig {
             }
         }
         // If that did not work, fall back to localhost
-        if(exposeIp == null) {
+        if (exposeIp == null) {
             exposeIp = "127.0.0.1";
         }
 
-        if(project.getProperties().containsKey(EU_XENIT_DOCKER_CERT_PATH)) {
+        if (project.getProperties().containsKey(EU_XENIT_DOCKER_CERT_PATH)) {
             certPath = (String) project.getProperties().get(EU_XENIT_DOCKER_CERT_PATH);
         }
-        if(project.hasProperty(EU_XENIT_DOCKER_REGISTRY_URL)){
+        if (project.hasProperty(EU_XENIT_DOCKER_REGISTRY_URL)) {
             this.registryUrl = (String) project.getProperties().get(EU_XENIT_DOCKER_REGISTRY_URL);
         }
-        if(project.hasProperty(EU_XENIT_DOCKER_REGISTRY_USERNAME)){
+        if (project.hasProperty(EU_XENIT_DOCKER_REGISTRY_USERNAME)) {
             this.registryUsername = (String) project.getProperties().get(EU_XENIT_DOCKER_REGISTRY_USERNAME);
         }
-        if(project.hasProperty(EU_XENIT_DOCKER_REGISTRY_PASSWORD)){
+        if (project.hasProperty(EU_XENIT_DOCKER_REGISTRY_PASSWORD)) {
             this.registryPassword = (String) project.getProperties().get(EU_XENIT_DOCKER_REGISTRY_PASSWORD);
         }
     }

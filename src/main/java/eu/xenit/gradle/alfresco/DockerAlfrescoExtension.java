@@ -4,8 +4,10 @@ import eu.xenit.gradle.docker.DockerBuildExtension;
 import eu.xenit.gradle.docker.internal.Deprecation;
 import groovy.lang.Closure;
 import java.util.function.Supplier;
+import javax.inject.Inject;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
+import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 
@@ -14,58 +16,37 @@ import org.gradle.api.provider.Provider;
  */
 public class DockerAlfrescoExtension {
 
-    private final Project project;
-
     private final Property<String> baseImage;
 
-    public DockerAlfrescoExtension(Project project) {
-        dockerBuild = new DockerBuildExtension(project);
-        this.project = project;
-        baseImage = project.getObjects().property(String.class);
+    /**
+     * Don't add the base war, but only the amps, DE, and SM. Use this on images with the correct war already
+     * installed. This will then create an image where the last layer only contains the customizations.
+     */
+    private Property<Boolean> leanImage;
+
+    private DockerBuildExtension dockerBuild;
+
+    @Inject
+    public DockerAlfrescoExtension(ObjectFactory objectFactory, Project project) {
+        baseImage = objectFactory.property(String.class);
+        leanImage = objectFactory.property(Boolean.class).convention(false);
+        dockerBuild = objectFactory.newInstance(DockerBuildExtension.class, project);
     }
 
-    Provider<String> getBaseImageProperty() {
+    public Property<String> getBaseImage() {
         return baseImage;
-    }
-
-    public String getBaseImage() {
-        return baseImage.getOrNull();
-    }
-
-    public void setBaseImage(String baseImage) {
-        this.baseImage.set(baseImage);
-    }
-
-    public void setBaseImage(Provider<String> baseImage) {
-        this.baseImage.set(baseImage);
     }
 
     public DockerBuildExtension getDockerBuild() {
         return dockerBuild;
     }
 
-    public void setDockerBuild(DockerBuildExtension dockerBuild) {
-        this.dockerBuild = dockerBuild;
-    }
-
-    private DockerBuildExtension dockerBuild;
-
     public void dockerBuild(Action<? super DockerBuildExtension> closure) {
         closure.execute(dockerBuild);
     }
 
-    /**
-     * Don't add the base war, but only the amps, DE, and SM. Use this on images with the correct war already
-     * installed. This will then create an image where the last layer only contains the customizations.
-     */
-    private boolean leanImage = false;
-
-
-    public boolean getLeanImage() {
+    public Property<Boolean> getLeanImage() {
         return leanImage;
     }
 
-    public void setLeanImage(boolean leanImage) {
-        this.leanImage = leanImage;
-    }
 }

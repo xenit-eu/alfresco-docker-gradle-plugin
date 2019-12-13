@@ -54,7 +54,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         List<WarLabelOutputTask> shareEnrichmentTasks = warEnrichmentChain(project, SHARE);
         DockerfileWithWarsTask dockerfile = getDockerFileTask(dockerAlfrescoExtension, project);
 
-        DockerBuildBehavior dockerBuildBehavior = new DockerBuildBehavior(dockerAlfrescoExtension::getDockerBuild,
+        DockerBuildBehavior dockerBuildBehavior = new DockerBuildBehavior(dockerAlfrescoExtension.getDockerBuild(),
                 dockerfile);
         dockerBuildBehavior.apply(project);
 
@@ -68,28 +68,25 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
             Project project1) {
         DockerfileWithWarsTask dockerfile = project1.getTasks().create("createDockerFile",
                 DockerfileWithWarsTask.class);
-        dockerfile.setBaseImage(dockerAlfrescoExtension.getBaseImageProperty());
+        dockerfile.getBaseImage().set(dockerAlfrescoExtension.getBaseImage());
         return dockerfile;
     }
 
     private void updateDockerFileTask(Project project1, DockerfileWithWarsTask dockerfile,
             List<WarLabelOutputTask> alfrescoTasks, List<WarLabelOutputTask> shareTasks,
             DockerAlfrescoExtension dockerAlfrescoExtension) {
-        if (dockerAlfrescoExtension.getLeanImage()) {
-            dockerfile.setRemoveExistingWar(false);
-        }
+        dockerfile.getRemoveExistingWar().set(dockerAlfrescoExtension.getLeanImage().map(b -> !b));
         Configuration alfrescoBaseWar = project1.getConfigurations().getByName(BASE_ALFRESCO_WAR);
-        if (!dockerAlfrescoExtension.getLeanImage()) {
-            dockerfile.addWar("alfresco", () -> alfrescoBaseWar.isEmpty() ? null : alfrescoBaseWar.getSingleFile());
-        }
+        dockerfile.addWar("alfresco",
+                () -> dockerAlfrescoExtension.getLeanImage().get() || alfrescoBaseWar.isEmpty() ? null
+                        : alfrescoBaseWar.getSingleFile());
         alfrescoTasks.forEach(t -> {
             dockerfile.addWar("alfresco", t);
         });
 
         Configuration shareBaseWar = project1.getConfigurations().getByName(BASE_SHARE_WAR);
-        if (!dockerAlfrescoExtension.getLeanImage()) {
-            dockerfile.addWar("share", () -> shareBaseWar.isEmpty() ? null : shareBaseWar.getSingleFile());
-        }
+        dockerfile.addWar("share", () -> dockerAlfrescoExtension.getLeanImage().get() || shareBaseWar.isEmpty() ? null
+                : shareBaseWar.getSingleFile());
         shareTasks.forEach(t -> {
             dockerfile.addWar("share", t);
         });
@@ -112,14 +109,14 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
 
         tasks.add(project.getTasks()
                 .create("apply" + warName + "SM", InjectFilesInWarTask.class, injectFilesInWarTask -> {
-                    injectFilesInWarTask.setTargetDirectory("/WEB-INF/lib/");
+                    injectFilesInWarTask.getTargetDirectory().set("/WEB-INF/lib/");
                     injectFilesInWarTask
                             .setSourceFiles(project.getConfigurations().getByName(warName.toLowerCase() + "SM"));
                 }));
         if (warName.equals(ALFRESCO)) {
             tasks.add(project.getTasks()
                     .create("apply" + warName + "DE", InjectFilesInWarTask.class, injectFilesInWarTask -> {
-                        injectFilesInWarTask.setTargetDirectory("/WEB-INF/classes/dynamic-extensions/bundles/");
+                        injectFilesInWarTask.getTargetDirectory().set("/WEB-INF/classes/dynamic-extensions/bundles/");
                         injectFilesInWarTask
                                 .setSourceFiles(project.getConfigurations().getByName(warName.toLowerCase() + "DE"));
                     }));
@@ -141,12 +138,11 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         MergeWarsTask mergeWarsTask = project.getTasks().create(warName.toLowerCase() + "War", MergeWarsTask.class);
         mergeWarsTask.setGroup(TASK_GROUP);
 
+        mergeWarsTask.addInputWar(project.provider(() -> baseWar.getSingleFile()));
         for (WarLabelOutputTask task : outputTasks) {
             mergeWarsTask.withLabels(task);
+            mergeWarsTask.addInputWar(task.getOutputWar().getAsFile());
         }
-        mergeWarsTask.setInputWars(
-                () -> Stream.concat(Stream.of(baseWar.getSingleFile()),
-                        outputTasks.stream().map(WarOutputTask::getOutputWar)).collect(Collectors.toList()));
 
         return outputTasks;
     }

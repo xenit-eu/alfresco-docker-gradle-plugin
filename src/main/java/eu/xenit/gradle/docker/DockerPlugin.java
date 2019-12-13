@@ -14,9 +14,8 @@ public class DockerPlugin implements Plugin<Project> {
         project.getPluginManager().apply(DockerConfigPlugin.class);
         DockerFileExtension dockerFileExtension = project.getExtensions()
                 .create("dockerFile", DockerFileExtension.class, project);
-        DockerBuildBehavior dockerBuildBehavior = new DockerBuildBehavior(dockerFileExtension::getDockerBuild,
-                dockerFileExtension::getDockerFile);
-        project.getTasks().create("buildDockerImage", DockerBuildImage.class);
+        DockerBuildBehavior dockerBuildBehavior = new DockerBuildBehavior(dockerFileExtension.getDockerBuild(),
+                dockerFileExtension.getDockerFile());
         dockerBuildBehavior.apply(project);
     }
 }
