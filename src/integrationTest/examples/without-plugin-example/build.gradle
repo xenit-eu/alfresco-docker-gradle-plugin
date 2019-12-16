@@ -24,7 +24,7 @@ dependencies {
     testalfrescoAmp "de.fmaul:javascript-console-repo:0.6@amp"
 }
 
-task testresolveAlfrescoWar(type: ResolveWarTask) {
+task testresolveAlfrescoWar(type: StripAlfrescoWarTask) {
     inputWar = configurations.testbaseAlfrescoWar
 }
 
@@ -35,6 +35,7 @@ task testinstallAlfrescoAmps(type: InstallAmpsInWarTask) {
 
 task testcreateDockerFile(type: DockerfileWithWarsTask) {
     baseImage = "tomcat:7-jre8"
+    addWar("alfresco", configurations.testbaseAlfrescoWar)
     addWar("alfresco", testinstallAlfrescoAmps.outputWar)
     withLabels(testinstallAlfrescoAmps)
     withLabels(testresolveAlfrescoWar)
