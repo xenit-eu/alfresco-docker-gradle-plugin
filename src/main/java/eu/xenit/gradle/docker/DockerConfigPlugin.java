@@ -48,19 +48,16 @@ public class DockerConfigPlugin implements Plugin<Project> {
             registryCredentials.getUsername().set(dockerConfig.getRegistryUsername());
             registryCredentials.getPassword().set(dockerConfig.getRegistryPassword());
         }
-        GitInfoProvider provider = JGitInfoProvider.GetProviderForProject(project);
-        String branch = provider == null ? "no_branch" : provider.getBranch();
-        branch = branch == null ? "no_branch" : branch;
-        project.getPluginManager().apply(DockerComposePlugin.class);
-        ComposeExtension composeExtension = (ComposeExtension) project.getExtensions().getByName("dockerCompose");
-        composeExtension.getUseComposeFiles().add("docker-compose.yml");
-        composeExtension.getEnvironment().put("DOCKER_HOST", dockerExtension.getUrl().get());
-        composeExtension.getEnvironment().put("DOCKER_IP", dockerConfig.getExposeIp());
-        if (dockerConfig.getCertPath() != null) {
-            composeExtension.getEnvironment().put("DOCKER_CERT_PATH", dockerConfig.getCertPath());
-        }
 
-        composeExtension.getEnvironment().put("COMPOSE_PROJECT_NAME", project.getName() + "-" + branch);
+        project.getPlugins().withType(DockerComposePlugin.class, dockerComposePlugin -> {
+            ComposeExtension composeExtension = (ComposeExtension) project.getExtensions().getByName("dockerCompose");
+            composeExtension.getUseComposeFiles().add("docker-compose.yml");
+            composeExtension.getEnvironment().put("DOCKER_HOST", dockerExtension.getUrl().get());
+            composeExtension.getEnvironment().put("DOCKER_IP", dockerConfig.getExposeIp());
+            if (dockerConfig.getCertPath() != null) {
+                composeExtension.getEnvironment().put("DOCKER_CERT_PATH", dockerConfig.getCertPath());
+            }
+        });
 
     }
 }
