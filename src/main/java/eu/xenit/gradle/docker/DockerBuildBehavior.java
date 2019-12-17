@@ -22,6 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.file.DirectoryProperty;
@@ -35,6 +36,9 @@ import org.gradle.util.GradleVersion;
 public class DockerBuildBehavior {
 
     private static final Logger LOGGER = Logging.getLogger(DockerBuildBehavior.class);
+
+    private static final int DOCKER_TAG_LENGTH_CONSTRAINT = 128;
+    private static final String DOCKER_TAG_LENGTH_CONSTRAINT_ERRORMSG = "Automatic tags will violate tag length constraint of "+DOCKER_TAG_LENGTH_CONSTRAINT+", due to usage of branch name in tag. Modify branch name or disable automatic tags.";
 
     private Supplier<DockerBuildExtension> dockerBuildExtension;
     private Supplier<File> dockerFile;
@@ -55,7 +59,7 @@ public class DockerBuildBehavior {
     }
 
     private DirectoryProperty createDirectoryProperty(Project project) {
-        if(GradleVersion.current().compareTo(GradleVersion.version("5.0")) >= 0) {
+        if (GradleVersion.current().compareTo(GradleVersion.version("5.0")) >= 0) {
             return project.getObjects().directoryProperty();
         } else {
             return project.getLayout().directoryProperty();
@@ -176,6 +180,12 @@ public class DockerBuildBehavior {
             } else {
                 tags.add(jenkinsBranch);
             }
+
+            tags.forEach(tag -> {
+                if(tag.length() > DOCKER_TAG_LENGTH_CONSTRAINT) {
+                    throw new GradleException(DOCKER_TAG_LENGTH_CONSTRAINT_ERRORMSG);
+                }
+            });
         }
 
         return new HashSet<>(tags);
@@ -190,7 +200,7 @@ public class DockerBuildBehavior {
         Pattern illegalCharacters = Pattern.compile("[/\\\\:<>\"?*|]");
         Matcher matcher = illegalCharacters.matcher(tag);
         StringBuffer buffer = new StringBuffer();
-        while(matcher.find()) {
+        while (matcher.find()) {
             matcher.appendReplacement(buffer, "_");
         }
         matcher.appendTail(buffer);
