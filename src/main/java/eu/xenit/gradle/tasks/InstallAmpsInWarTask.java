@@ -35,18 +35,20 @@ public class InstallAmpsInWarTask extends InjectFilesInWarTask {
 
     @Override
     public void injectFiles() throws IOException {
-        ModuleManagementTool moduleManagementTool = new ModuleManagementTool();
         FileUtils.copyFile(getInputWar(), getOutputWar());
+        Util.withGlobalTvfsLock(() -> {
+            ModuleManagementTool moduleManagementTool = new ModuleManagementTool();
+            Set<File> sourceFiles = getSourceFiles().stream()
+                    .flatMap(InstallAmpsInWarTask::listFilesRecursively)
+                    .collect(Collectors.toSet());
+            List<File> filesInInstallationOrder = ModuleDependencySorter.sortByInstallOrder(sourceFiles, getOutputWar());
 
-        Set<File> sourceFiles = getSourceFiles().stream()
-                .flatMap(InstallAmpsInWarTask::listFilesRecursively)
-                .collect(Collectors.toSet());
-        List<File> filesInInstallationOrder = ModuleDependencySorter.sortByInstallOrder(sourceFiles, getOutputWar());
+            for (File file : filesInInstallationOrder) {
+                getLogger().debug("installing amp from {} in war {}",file.getAbsolutePath(), getOutputWar().getAbsolutePath());
+                moduleManagementTool
+                        .installModule(file.getAbsolutePath(), getOutputWar().getAbsolutePath(), false, true, false);
+            }
 
-        for (File file : filesInInstallationOrder) {
-            getLogger().debug("installing amp from {} in war {}",file.getAbsolutePath(), getOutputWar().getAbsolutePath());
-            moduleManagementTool
-                    .installModule(file.getAbsolutePath(), getOutputWar().getAbsolutePath(), false, true, false);
-        }
+        });
     }
 }

@@ -92,7 +92,6 @@ public abstract class AbstractIntegrationTest {
                 .withArguments(task, "--stacktrace", "--rerun-tasks", "--info")
                 .withGradleVersion(gradleVersion)
                 .withPluginClasspath()
-                .withDebug(true)
                 .forwardOutput();
     }
 
