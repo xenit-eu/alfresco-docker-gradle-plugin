@@ -56,3 +56,12 @@
    This usually does not affect your `build.gradle`, but if you explicitly call getters instead of accessing as a property, keep in mind that the return type has changed.
    Because `Property<>` is now used, setters have been removed. Instead of using `setFoo(bla)`, you should now use `getFoo().set(bla)`. 
 
+3. Automatic tagging has been disabled by default.
+   You can re-enable automatic tagging based on branch name and build number by using:
+   ```groovy
+   dockerAlfresco {
+       dockerBuild {
+           automaticTags = true
+       }
+   }
+   ```
