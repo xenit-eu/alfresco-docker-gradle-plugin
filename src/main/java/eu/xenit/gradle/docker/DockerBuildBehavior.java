@@ -3,6 +3,7 @@ package eu.xenit.gradle.docker;
 import static eu.xenit.gradle.git.JGitInfoProvider.GetProviderForProject;
 
 import com.avast.gradle.dockercompose.ComposeExtension;
+import com.avast.gradle.dockercompose.DockerComposePlugin;
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import eu.xenit.gradle.JenkinsUtil;
@@ -89,9 +90,14 @@ public class DockerBuildBehavior {
                 .provider(() -> this.getTags().stream().map(tag -> getDockerRepository() + ":" + tag).collect(
                         Collectors.toSet())));
 
-        buildDockerImage.doLast(task -> {
-            ComposeExtension composeExtension = (ComposeExtension) project.getExtensions().getByName("dockerCompose");
-            composeExtension.getEnvironment().put("DOCKER_IMAGE", buildDockerImage.getImageId().get());
+        project.getPlugins().withType(DockerComposePlugin.class, dockerComposePlugin -> {
+            buildDockerImage.doLast(task -> {
+                ComposeExtension composeExtension = (ComposeExtension) project.getExtensions()
+                        .getByName("dockerCompose");
+                composeExtension.getEnvironment().put("DOCKER_IMAGE", buildDockerImage.getImageId().get());
+            });
+            Task task = project.getTasks().getAt("composeUp");
+            task.dependsOn(buildDockerImage);
         });
 
         project.getTasks().create("labelDockerFile", DeprecatedTask.class).setReplacementTask(buildDockerImage);
@@ -106,8 +112,6 @@ public class DockerBuildBehavior {
             dockerPushImage.dependsOn(pushTags);
         }));
 
-        Task task = project.getTasks().getAt("composeUp");
-        task.dependsOn(buildDockerImage);
     }
 
     private DockerBuildImage createDockerBuildImageTask(Project project,
