@@ -40,24 +40,6 @@ public class DockerAlfrescoExtension {
         this.baseImage.set(baseImage);
     }
 
-    /**
-     * @deprecated in 4.1.0, removed in 5.0.0. Use {@link #setBaseImage(Provider)} instead.
-     */
-    @Deprecated
-    public void setBaseImage(Supplier<String> baseImage) {
-        Deprecation.warnDeprecatedReplacedBy("setBaseImage(Provider<String))");
-        setBaseImage(project.provider(baseImage::get));
-    }
-
-    /**
-     * @deprecated in 4.1.0, removed in 5.0.0. Use {@link #setBaseImage(Provider)} instead.
-     */
-    @Deprecated
-    public void setBaseImage(Closure<String> baseImage) {
-        Deprecation.warnDeprecatedReplacedBy("setBaseImage(Provider<String))");
-        setBaseImage(baseImage::call);
-    }
-
     public DockerBuildExtension getDockerBuild() {
         return dockerBuild;
     }

@@ -178,43 +178,6 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
         this.baseImage.set(baseImage);
     }
 
-    /**
-     * @deprecated since 4.1.0, will be removed in 5.0.0
-     */
-    @Deprecated
-    public void setBaseImage(Supplier<String> baseImage) {
-        Deprecation.warnDeprecatedReplacedBy("setBaseImage(Provider<String>)");
-        setBaseImage(getProject().provider(baseImage::get));
-    }
-
-    /**
-     * @deprecated since 4.1.0, will be removed in 5.0.0
-     */
-    @Deprecated
-    public void setBaseImage(Closure<String> baseImage) {
-        Deprecation.warnDeprecatedReplacedBy("setBaseImage(Provider<String>)");
-        setBaseImage(getProject().provider(baseImage::call));
-    }
-
-
-    /**
-     * @deprecated in 3.x, will be removed in 5.0.0
-     */
-    @Deprecated
-    public void setAlfrescoWar(java.io.File alfrescoWar) {
-        Deprecation.warnDeprecatedReplacedBy("addWar(\"alfresco\", alfrescoWar)");
-        addWar("alfresco", alfrescoWar);
-    }
-
-    /**
-     * @deprecated in 3.x, will be removed in 5.0.0
-     */
-    @Deprecated
-    public void setShareWar(java.io.File shareWar) {
-        Deprecation.warnDeprecatedReplacedBy("addWar(\"share\", alfrescoWar)");
-        addWar("share", shareWar);
-    }
-
     @InputFiles
     public Collection<java.io.File> getWarFiles() {
         return warFiles.values().stream()

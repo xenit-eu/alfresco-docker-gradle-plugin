@@ -27,7 +27,7 @@ public class Reproductions extends AbstractIntegrationTest {
 
     @Test
     public void testGitCommitWithQuoteTag() throws IOException {
-        testProjectFolder(REPRODUCTIONS.resolve("gitCommitWithQuoteTag"), ":labelDockerFile");
+        testProjectFolder(REPRODUCTIONS.resolve("gitCommitWithQuoteTag"), ":buildDockerImage");
     }
 
     @Test
@@ -66,7 +66,8 @@ public class Reproductions extends AbstractIntegrationTest {
 
     @Test
     public void testDockerAlfrescoPluginWithoutConfiguration() throws IOException {
-        testProjectFolderExpectFailure(REPRODUCTIONS.resolve("docker-alfresco-plugin-without-config"), ":buildDockerImage",
+        testProjectFolderExpectFailure(REPRODUCTIONS.resolve("docker-alfresco-plugin-without-config"),
+                ":buildDockerImage",
                 DockerfileWithWarsTask.MESSAGE_BASE_IMAGE_NOT_SET);
     }
 

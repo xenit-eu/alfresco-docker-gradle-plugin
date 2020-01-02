@@ -7,7 +7,6 @@ import com.avast.gradle.dockercompose.DockerComposePlugin;
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import eu.xenit.gradle.JenkinsUtil;
-import eu.xenit.gradle.docker.tasks.internal.DeprecatedTask;
 import eu.xenit.gradle.docker.tasks.internal.DockerBuildImage;
 import eu.xenit.gradle.git.CannotConvertToUrlException;
 import eu.xenit.gradle.git.GitInfoProvider;
@@ -99,9 +98,6 @@ public class DockerBuildBehavior {
             Task task = project.getTasks().getAt("composeUp");
             task.dependsOn(buildDockerImage);
         });
-
-        project.getTasks().create("labelDockerFile", DeprecatedTask.class).setReplacementTask(buildDockerImage);
-        project.getTasks().create("buildLabels", DeprecatedTask.class).setReplacementTask(buildDockerImage);
 
         DefaultTask dockerPushImage = project.getTasks().create("pushDockerImage", DefaultTask.class);
         dockerPushImage.setGroup("Docker");
