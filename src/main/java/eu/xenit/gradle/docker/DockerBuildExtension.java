@@ -49,7 +49,7 @@ public class DockerBuildExtension {
         for (int i = 0; i < tags.size(); i++) {
             Object tag = tags.get(i);
             if (!(tag instanceof String) && !(tag instanceof GString)) {
-                throw new Error("Only strings and gstrings are supported.");
+                throw new IllegalArgumentException("Only strings and gstrings are supported.");
             }
             converted.add(tag.toString());
         }

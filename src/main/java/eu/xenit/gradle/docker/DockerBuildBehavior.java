@@ -18,8 +18,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.file.DirectoryProperty;
@@ -33,6 +36,9 @@ import org.gradle.util.GradleVersion;
 public class DockerBuildBehavior {
 
     private static final Logger LOGGER = Logging.getLogger(DockerBuildBehavior.class);
+
+    private static final int DOCKER_TAG_LENGTH_CONSTRAINT = 128;
+    private static final String DOCKER_TAG_LENGTH_CONSTRAINT_ERRORMSG = "Automatic tags will violate tag length constraint of "+DOCKER_TAG_LENGTH_CONSTRAINT+", due to usage of branch name in tag. Modify branch name or disable automatic tags.";
 
     private Supplier<DockerBuildExtension> dockerBuildExtension;
     private Supplier<File> dockerFile;
@@ -53,7 +59,7 @@ public class DockerBuildBehavior {
     }
 
     private DirectoryProperty createDirectoryProperty(Project project) {
-        if(GradleVersion.current().compareTo(GradleVersion.version("5.0")) >= 0) {
+        if (GradleVersion.current().compareTo(GradleVersion.version("5.0")) >= 0) {
             return project.getObjects().directoryProperty();
         } else {
             return project.getLayout().directoryProperty();
@@ -150,12 +156,14 @@ public class DockerBuildBehavior {
         List<String> tags = dockerBuildExtension.get().getTags();
         boolean automaticTags = dockerBuildExtension.get().getAutomaticTags();
 
+        String jenkinsBranch = cleanForDockerTag(JenkinsUtil.getBranch());
+
         if (automaticTags) {
             tags = tags.stream().map(tag -> {
                 if (isMaster()) {
                     return tag;
                 } else {
-                    return JenkinsUtil.getBranch() + "-" + tag;
+                    return jenkinsBranch + "-" + tag;
                 }
             }).collect(Collectors.toList());
 
@@ -163,15 +171,21 @@ public class DockerBuildBehavior {
                 if (isMaster()) {
                     tags.add("build-" + JenkinsUtil.getBuildId());
                 } else {
-                    tags.add(JenkinsUtil.getBranch() + "-build-" + JenkinsUtil.getBuildId());
+                    tags.add(jenkinsBranch + "-build-" + JenkinsUtil.getBuildId());
                 }
             }
 
             if (isMaster()) {
                 tags.add("latest");
             } else {
-                tags.add(JenkinsUtil.getBranch());
+                tags.add(jenkinsBranch);
             }
+
+            tags.forEach(tag -> {
+                if(tag.length() > DOCKER_TAG_LENGTH_CONSTRAINT) {
+                    throw new GradleException(DOCKER_TAG_LENGTH_CONSTRAINT_ERRORMSG);
+                }
+            });
         }
 
         return new HashSet<>(tags);
@@ -179,6 +193,18 @@ public class DockerBuildBehavior {
 
     private boolean isMaster() {
         return "master".equals(JenkinsUtil.getBranch());
+    }
+
+    /* Remove illegal characters from tags through encoding*/
+    private String cleanForDockerTag(String tag) {
+        Pattern illegalCharacters = Pattern.compile("[/\\\\:<>\"?*|]");
+        Matcher matcher = illegalCharacters.matcher(tag);
+        StringBuffer buffer = new StringBuffer();
+        while (matcher.find()) {
+            matcher.appendReplacement(buffer, "_");
+        }
+        matcher.appendTail(buffer);
+        return buffer.toString();
     }
 
     private List<DockerPushImage> getPushTags(Project project, DockerBuildImage dockerBuildImage) {
