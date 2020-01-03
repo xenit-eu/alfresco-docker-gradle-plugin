@@ -65,3 +65,6 @@
        }
    }
    ```
+
+4. `resolveAlfrescoWar` and `resolveShareWar` tasks have been renamed to `stripAlfrescoWar` and `stripShareWar`.
+   

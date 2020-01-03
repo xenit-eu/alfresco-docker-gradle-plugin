@@ -164,7 +164,7 @@ You can use these task types to build your own pipeline to modify WAR files, but
 
 The Gradle tasks created by this plugin are executed in this order. (Ordering might not be entirely accurate, because there is no strict dependency ordering between all tasks.)
 
- * `resolveAlfrescoWar` & `resolveShareWar`: [`StripAlfrescoWarTask`](src/main/java/eu/xenit/gradle/tasks/StripAlfrescoWarTask.java) Downloads Alfresco/Share WAR
+ * `stripAlfrescoWar` & `stripShareWar`: [`StripAlfrescoWarTask`](src/main/java/eu/xenit/gradle/tasks/StripAlfrescoWarTask.java) Downloads Alfresco/Share war and trims them down to the minimum needed to apply AMPs
  * `applyAlfrescoAmp` & `applyShareAmp`: [`InstallAmpsInWarTask`](src/main/java/eu/xenit/gradle/tasks/InstallAmpsInWarTask.java) Uses [Alfresco MMT](https://docs.alfresco.com/5.2/concepts/dev-extensions-modules-management-tool.html) to install AMPs in Alfresco/Share
  * `applyAlfrescoSM` & `applyShareSM`: [`InjectFilesInWarTask`](src/main/java/eu/xenit/gradle/tasks/InjectFilesInWarTask.java) Installs [Simple Modules](https://docs.alfresco.com/5.2/concepts/dev-extensions-packaging-techniques-jar-files.html) on the Alfresco/Share classpath
  * `applyAlfrescoDE`: [`InjectFilesInWarTask`](src/main/java/eu/xenit/gradle/tasks/InjectFilesInWarTask.java) Installs [Dynamic extensions](https://github.com/xenit-eu/dynamic-extensions-for-alfresco) in Alfresco
