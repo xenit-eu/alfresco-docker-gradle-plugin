@@ -103,7 +103,12 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
                     }
                 });
         resolveTask.setGroup(TASK_GROUP);
-        resolveTask.setInputWar(baseWar);
+        resolveTask.getInputWar().set(project.getLayout().file(project.provider(() -> {
+            if (baseWar.isEmpty()) {
+                return null;
+            }
+            return baseWar.getSingleFile();
+        })));
 
         final List<WarEnrichmentTask> tasks = new ArrayList<>();
 
