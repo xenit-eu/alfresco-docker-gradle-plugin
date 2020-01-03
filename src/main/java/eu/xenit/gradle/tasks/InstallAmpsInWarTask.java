@@ -26,7 +26,7 @@ public class InstallAmpsInWarTask extends AbstractInjectFilesInWarTask {
 
     @TaskAction
     public void injectFiles() throws IOException {
-        File outputWar = getOutputWar().getAsFile().get();
+        File outputWar = getOutputWar().get().getAsFile();
         FileUtils.copyFile(getInputWar().getAsFile().get(), outputWar);
         Util.withGlobalTvfsLock(() -> {
             ModuleManagementTool moduleManagementTool = new ModuleManagementTool();

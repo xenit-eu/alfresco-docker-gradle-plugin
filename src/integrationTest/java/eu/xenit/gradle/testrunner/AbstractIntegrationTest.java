@@ -94,6 +94,7 @@ public abstract class AbstractIntegrationTest {
                 .withProjectDir(tempExample)
                 .withArguments(task, "--stacktrace", "--rerun-tasks", "--info")
                 .withPluginClasspath()
+                .withDebug(true)
                 .forwardOutput();
 
         if(System.getProperty("eu.xenit.gradle.integration.useGradleVersion") == null) {

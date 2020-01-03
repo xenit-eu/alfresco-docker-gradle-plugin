@@ -5,6 +5,7 @@ import static eu.xenit.gradle.tasks.VersionMatchChecking.getCanAddWarsCheckComma
 import de.schlichtherle.truezip.file.TArchiveDetector;
 import de.schlichtherle.truezip.file.TFile;
 import eu.xenit.gradle.docker.internal.Deprecation;
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
@@ -14,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,6 +27,7 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.RegularFile;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
@@ -48,7 +51,7 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
     /**
      * Map of directories in the tomcat folder to the war file to place there
      */
-    private final Map<String, List<Supplier<java.io.File>>> warFiles = new HashMap<>();
+    private final Map<String, List<Provider<java.io.File>>> warFiles = new HashMap<>();
 
     /**
      * Target directory inside the docker container where war files will be placed
@@ -157,8 +160,8 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
         ConfigurableFileCollection mappedWarFiles = getProject().files(getProject().provider(() -> {
             return warFiles.values().stream()
                     .flatMap(Collection::stream)
-                    .map(Supplier::get)
-                    .filter(Objects::nonNull)
+                    .filter(Provider::isPresent)
+                    .map(Provider::get)
                     .collect(Collectors.toList());
         }));
         // Filter with an always matching filter, so the returned FileCollection is no longer a ConfigurableFileCollection
@@ -172,16 +175,16 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
     }
 
     public void addWar(String name, Provider<RegularFile> regularFileProvider) {
-        _addWar(name, () -> regularFileProvider.get().getAsFile());
+        _addWar(name, regularFileProvider.map(f -> f.getAsFile()));
     }
 
     public void addWar(String name, java.io.File file) {
-        _addWar(name, () -> file);
+        _addWar(name, getProject().provider(() -> file));
     }
 
-    private void _addWar(String name, Supplier<java.io.File> file) {
+    private void _addWar(String name, Provider<java.io.File> file) {
         if (!warFiles.containsKey(name)) {
-            warFiles.put(name, new LinkedList<>());
+            warFiles.put(name, new ArrayList<>());
         }
         warFiles.get(name).add(file);
     }
@@ -190,12 +193,12 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
     public void addWar(String name, Supplier<java.io.File> file) {
         Deprecation.warnDeprecatedReplaced("addWar(String name, Supplier<File> file)",
                 "addWar(String name, Provider<RegularFile> fileProvider)");
-        _addWar(name, file);
+        _addWar(name, getProject().provider(file::get));
     }
 
     public void addWar(String name, Configuration configuration) {
         dependsOn(configuration);
-        _addWar(name, configuration::getSingleFile);
+        _addWar(name, getProject().provider(() -> configuration.getSingleFile()));
     }
 
     @TaskAction
@@ -213,7 +216,7 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
             }
             wars.forEach((war) -> {
                 // Unpack war
-                unzipWar(war.get(), destinationDir);
+                unzipWar(war.getOrNull(), destinationDir);
             });
 
             if (destinationDir.exists()) {

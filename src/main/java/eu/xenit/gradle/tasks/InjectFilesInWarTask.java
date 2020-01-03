@@ -22,7 +22,7 @@ public class InjectFilesInWarTask extends AbstractInjectFilesInWarTask {
 
     @TaskAction
     public void injectFiles() throws IOException {
-        File outputWar = getOutputWar().getAsFile().get();
+        File outputWar = getOutputWar().get().getAsFile();
         FileUtils.copyFile(getInputWar().getAsFile().get(), outputWar);
         Util.withWar(outputWar, war -> {
             TFile warJarFolder = new TFile(war.getAbsolutePath() + getTargetDirectory().get());

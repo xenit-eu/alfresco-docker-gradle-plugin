@@ -3,8 +3,6 @@ package eu.xenit.gradle.tasks;
 import static eu.xenit.gradle.alfresco.DockerAlfrescoPlugin.LABEL_PREFIX;
 
 import de.schlichtherle.truezip.file.TFile;
-import eu.xenit.gradle.docker.internal.Deprecation;
-import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
@@ -14,16 +12,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
-import org.apache.commons.io.FileUtils;
 import org.gradle.api.DefaultTask;
-import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.RegularFile;
 import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.InputFile;
-import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
-import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputFile;
-import org.gradle.api.tasks.SkipWhenEmpty;
 import org.gradle.api.tasks.TaskAction;
 
 /**
@@ -38,7 +33,8 @@ public class StripAlfrescoWarTask extends DefaultTask implements WarEnrichmentTa
      */
     private RegularFileProperty inputWar = getProject().getObjects().fileProperty();
 
-    private RegularFileProperty outputWar = getProject().getObjects().fileProperty().convention(getProject().getLayout().getBuildDirectory().file("xenit-gradle-plugins/"+getName()+"/"+getName()+".war"));
+    private RegularFileProperty outputWar = getProject().getObjects().fileProperty()
+            .convention(getProject().provider(() -> inputWar.isPresent()?getProject().getLayout().getBuildDirectory().file("xenit-gradle-plugins/"+getName()+"/"+getName()+".war").get():null));
 
     private List<Supplier<Map<String, String>>> labels = new ArrayList<>();
     private Set<String> pathsToCopy = new HashSet<>();
@@ -80,7 +76,7 @@ public class StripAlfrescoWarTask extends DefaultTask implements WarEnrichmentTa
     @TaskAction
     public void copyWar() {
         Util.withWar(getInputWar().getAsFile().get(), inputWar -> {
-            Util.withWar(getOutputWar().getAsFile().get(), outputWar -> {
+            Util.withWar(getOutputWar().get().getAsFile(), outputWar -> {
                 try {
                     for (String pathToCopy : pathsToCopy) {
                         TFile fileToCopy = new TFile(inputWar.getAbsolutePath() + pathToCopy);

@@ -2,32 +2,23 @@ package eu.xenit.gradle.tasks;
 
 import static eu.xenit.gradle.alfresco.DockerAlfrescoPlugin.LABEL_PREFIX;
 
-import de.schlichtherle.truezip.file.TFile;
 import java.io.File;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.apache.commons.io.FileUtils;
 import org.gradle.api.DefaultTask;
-import org.gradle.api.Task;
 import org.gradle.api.file.ConfigurableFileCollection;
-import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.RegularFile;
 import org.gradle.api.file.RegularFileProperty;
-import org.gradle.api.provider.Property;
-import org.gradle.api.provider.SetProperty;
-import org.gradle.api.tasks.Input;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.SkipWhenEmpty;
-import org.gradle.api.tasks.TaskAction;
 
 abstract class AbstractInjectFilesInWarTask extends DefaultTask implements WarEnrichmentTask {
 
@@ -36,7 +27,8 @@ abstract class AbstractInjectFilesInWarTask extends DefaultTask implements WarEn
      */
     private RegularFileProperty inputWar = getProject().getObjects().fileProperty();
 
-    private RegularFileProperty outputWar = getProject().getObjects().fileProperty().convention(getProject().getLayout().getBuildDirectory().file("xenit-gradle-plugins/"+getName()+"/"+getName()+".war"));
+    private RegularFileProperty outputWar = getProject().getObjects().fileProperty()
+            .convention(getProject().provider(() -> inputWar.isPresent()?getProject().getLayout().getBuildDirectory().file("xenit-gradle-plugins/"+getName()+"/"+getName()+".war").get():null));
     /**
      * Files to inject in the war
      */

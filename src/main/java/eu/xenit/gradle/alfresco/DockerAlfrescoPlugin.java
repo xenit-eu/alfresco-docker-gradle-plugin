@@ -81,14 +81,17 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
                 () -> dockerAlfrescoExtension.getLeanImage().get() || alfrescoBaseWar.isEmpty() ? null
                         : alfrescoBaseWar.getSingleFile());
         alfrescoTasks.forEach(t -> {
-            dockerfile.addWar("alfresco", t);
+            dockerfile.addWar("alfresco",
+                    project1.provider(() -> alfrescoBaseWar.isEmpty() ? null : t.getOutputWar().get()));
+            dockerfile.dependsOn(t);
         });
 
         Configuration shareBaseWar = project1.getConfigurations().getByName(BASE_SHARE_WAR);
         dockerfile.addWar("share", () -> dockerAlfrescoExtension.getLeanImage().get() || shareBaseWar.isEmpty() ? null
                 : shareBaseWar.getSingleFile());
         shareTasks.forEach(t -> {
-            dockerfile.addWar("share", t);
+            dockerfile.addWar("share", project1.provider(() -> shareBaseWar.isEmpty() ? null : t.getOutputWar().get()));
+            dockerfile.dependsOn(t);
         });
     }
 
@@ -146,7 +149,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         mergeWarsTask.addInputWar(project.provider(() -> baseWar.getSingleFile()));
         for (WarLabelOutputTask task : outputTasks) {
             mergeWarsTask.withLabels(task);
-            mergeWarsTask.addInputWar(task.getOutputWar().getAsFile());
+            mergeWarsTask.addInputWar(project.provider(() -> task.getOutputWar().get().getAsFile()));
         }
 
         return outputTasks;
