@@ -61,7 +61,7 @@ abstract class AbstractInjectFilesInWarTask extends DefaultTask implements WarEn
         return sourceFiles;
     }
 
-    public void setSourceFiles(FileCollection files) {
+    public void setSourceFiles(Object files) {
         sourceFiles.setFrom(files);
     }
 
