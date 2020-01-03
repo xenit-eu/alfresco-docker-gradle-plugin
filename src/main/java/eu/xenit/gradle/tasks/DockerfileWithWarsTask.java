@@ -158,7 +158,7 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
             return warFiles.values().stream()
                     .flatMap(Collection::stream)
                     .map(Supplier::get)
-                    .map(Objects::nonNull)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
         }));
         // Filter with an always matching filter, so the returned FileCollection is no longer a ConfigurableFileCollection
