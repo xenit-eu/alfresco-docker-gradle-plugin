@@ -131,6 +131,8 @@ jar {
     dependsOn(shadowJar)
 }
 
+import org.gradle.util.GradleVersion
+
 task integrationTest(type: Test, group: "verification") {
     useJUnit()
     if (project.hasProperty("integrationTestGradleVersions")) {
@@ -146,6 +148,11 @@ task integrationTest(type: Test, group: "verification") {
             filter.includeTestsMatching("*[Gradle v${version}]")
             filter.includeTestsMatching("*[Gradle v${version}.*]")
         })
+    }
+    doFirst {
+        if (gradle.startParameter.offline) {
+            systemProperty "eu.xenit.gradle.integration.useGradleVersion", GradleVersion.current().version
+        }
     }
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
