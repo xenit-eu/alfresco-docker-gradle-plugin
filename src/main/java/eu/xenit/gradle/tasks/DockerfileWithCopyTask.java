@@ -77,7 +77,7 @@ public class DockerfileWithCopyTask extends Dockerfile {
                 }
             });
         });
-        copyFile(destinationInImage.flatMap(d -> file.map(f -> new File(stagingDirectory + "/"+f.getName(), d))));
+        copyFile(destinationInImage.flatMap(d -> file.map(f -> new CopyFile(stagingDirectory + "/"+f.getName(), d))));
         getInputs().files(file).withPropertyName("copyFile." + copyFileCounter);
     }
     /**
@@ -103,7 +103,7 @@ public class DockerfileWithCopyTask extends Dockerfile {
         copyFileCopySpec.into(stagingDirectory, copySpec -> {
             copySpec.from(files);
         });
-        copyFile(destinationInImage.map(d -> new File(stagingDirectory, d)));
+        copyFile(destinationInImage.map(d -> new CopyFile(stagingDirectory, d)));
         getInputs().files(files).withPropertyName("copyFile." + copyFileCounter);
     }
 

@@ -68,3 +68,5 @@
 
 4. `resolveAlfrescoWar` and `resolveShareWar` tasks have been renamed to `stripAlfrescoWar` and `stripShareWar`.
    
+5. [`gradle-docker-plugin`](https://bmuschko.github.io/gradle-docker-plugin/#change_log) has been upgraded from 4.6.2 to 5.3.0.
+    This should not affect basic usage, but may break more advanced usecases. See the breaking changes in the changelog there.
