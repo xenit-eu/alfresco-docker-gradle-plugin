@@ -28,6 +28,7 @@ import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
@@ -46,7 +47,7 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
     /**
      * Map of labels to add to the dockerfile
      */
-    private final List<Supplier<Map<String, String>>> labels = new ArrayList<>();
+    private final MapProperty<String, String> labels = getProject().getObjects().mapProperty(String.class, String.class);
 
     /**
      * Map of directories in the tomcat folder to the war file to place there
@@ -234,25 +235,20 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
         });
 
         // LABEL
-        Map<String, String> labels = getLabels();
-        if (!labels.isEmpty()) {
-            label(labels);
+        if(!getLabels().get().isEmpty()) {
+            label(getLabels());
         }
 
         super.create();
     }
 
     @Override
-    public void withLabels(Supplier<Map<String, String>> labels) {
-        this.labels.add(labels);
+    public void withLabels(Provider<Map<String, String>> labels) {
+        this.labels.putAll(labels);
     }
 
     @Input
-    public Map<String, String> getLabels() {
-        Map<String, String> accumulator = new HashMap<>();
-        for (Supplier<Map<String, String>> supplier : labels) {
-            accumulator.putAll(supplier.get());
-        }
-        return accumulator;
+    public MapProperty<String, String> getLabels() {
+        return labels;
     }
 }

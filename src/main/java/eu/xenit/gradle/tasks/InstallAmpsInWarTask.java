@@ -26,6 +26,10 @@ public class InstallAmpsInWarTask extends AbstractInjectFilesInWarTask {
 
     @TaskAction
     public void injectFiles() throws IOException {
+        // Configure labels
+        configureLabels();
+
+        // Install AMMs
         File outputWar = getOutputWar().get().getAsFile();
         FileUtils.copyFile(getInputWar().getAsFile().get(), outputWar);
         Util.withGlobalTvfsLock(() -> {

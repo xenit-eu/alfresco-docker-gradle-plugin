@@ -4,16 +4,21 @@ import org.gradle.api.Task;
 
 import java.util.Map;
 import java.util.function.Supplier;
+import org.gradle.api.provider.Provider;
 
 public interface LabelConsumerTask extends Task {
-    void withLabels(Supplier<Map<String, String>> labels);
+    void withLabels(Provider<Map<String, String>> labels);
+
+    default void withLabels(Supplier<Map<String, String>> labels) {
+        withLabels(getProject().provider(() -> labels.get()));
+    }
 
     default void withLabels(Map<String, String> labels) {
-        withLabels((Supplier<Map<String, String>>) ()->labels);
+        withLabels(getProject().provider(() -> labels));
     }
 
     default void withLabels(LabelSupplierTask task) {
         dependsOn(task);
-        withLabels((Supplier<Map<String, String>>) task::getLabels);
+        withLabels(task.getLabels());
     }
 }

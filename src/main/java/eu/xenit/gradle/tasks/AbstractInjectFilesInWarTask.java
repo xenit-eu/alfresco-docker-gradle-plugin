@@ -20,32 +20,11 @@ import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.SkipWhenEmpty;
 
-abstract class AbstractInjectFilesInWarTask extends DefaultTask implements WarEnrichmentTask {
-
-    /**
-     * WAR file used as input (is not modified)
-     */
-    private RegularFileProperty inputWar = getProject().getObjects().fileProperty();
-
-    private RegularFileProperty outputWar = getProject().getObjects().fileProperty()
-            .convention(getProject().provider(() -> inputWar.isPresent()?getProject().getLayout().getBuildDirectory().file("xenit-gradle-plugins/"+getName()+"/"+getName()+".war").get():null));
+abstract class AbstractInjectFilesInWarTask extends AbstractWarEnrichmentTask {
     /**
      * Files to inject in the war
      */
     private final ConfigurableFileCollection sourceFiles = getProject().files();
-    private final List<Supplier<Map<String, String>>> labels = new ArrayList<>();
-
-    @InputFile
-    @Override
-    public RegularFileProperty getInputWar() {
-        return inputWar;
-    }
-
-    @OutputFile
-    @Override
-    public RegularFileProperty getOutputWar() {
-        return outputWar;
-    }
 
     @InputFiles
     @SkipWhenEmpty
@@ -57,24 +36,12 @@ abstract class AbstractInjectFilesInWarTask extends DefaultTask implements WarEn
         sourceFiles.setFrom(files);
     }
 
-    @Override
-    public void withLabels(Supplier<Map<String, String>> labels) {
-        this.labels.add(labels);
-    }
-
-    @Override
-    @Internal
-    public Map<String, String> getLabels() {
-        Map<String, String> accumulator = new HashMap<>();
+    protected void configureLabels() {
         String injectedFiles = getSourceFiles()
                 .getFiles()
                 .stream()
                 .map(File::getName)
                 .collect(Collectors.joining(", "));
-        accumulator.put(LABEL_PREFIX + getName(), injectedFiles);
-        for (Supplier<Map<String, String>> supplier : labels) {
-            accumulator.putAll(supplier.get());
-        }
-        return accumulator;
+        getLabels().put(LABEL_PREFIX + getName(), injectedFiles);
     }
 }

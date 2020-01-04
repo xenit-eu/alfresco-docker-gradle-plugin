@@ -26,47 +26,12 @@ import org.gradle.api.tasks.TaskAction;
  * This task can get a configuration as input and resolves it to a file as output. It is mainly used to pass the
  * filename in the labels.
  */
-public class StripAlfrescoWarTask extends DefaultTask implements WarEnrichmentTask {
+public class StripAlfrescoWarTask extends AbstractWarEnrichmentTask {
 
-    /**
-     * WAR file used as input (is not modified)
-     */
-    private RegularFileProperty inputWar = getProject().getObjects().fileProperty();
-
-    private RegularFileProperty outputWar = getProject().getObjects().fileProperty()
-            .convention(getProject().provider(() -> inputWar.isPresent()?getProject().getLayout().getBuildDirectory().file("xenit-gradle-plugins/"+getName()+"/"+getName()+".war").get():null));
-
-    private List<Supplier<Map<String, String>>> labels = new ArrayList<>();
     private Set<String> pathsToCopy = new HashSet<>();
 
-    @InputFile
-    @Override
-    public RegularFileProperty getInputWar() {
-        return inputWar;
-    }
-
-    @Override
-    @OutputFile
-    public RegularFileProperty getOutputWar() {
-        return outputWar;
-    }
-
-    @Override
-    public void withLabels(Supplier<Map<String, String>> labels) {
-        this.labels.add(labels);
-    }
-
-    @Override
-    @Internal
-    public Map<String, String> getLabels() {
-        Map<String, String> accumulator = new HashMap<>();
-        if (getInputWar().isPresent()) {
-            accumulator.put(LABEL_PREFIX + getName(), getInputWar().get().getAsFile().getName());
-        }
-        for (Supplier<Map<String, String>> supplier : labels) {
-            accumulator.putAll(supplier.get());
-        }
-        return accumulator;
+    public StripAlfrescoWarTask() {
+        getLabels().put(LABEL_PREFIX + getName(), getInputWar().map(f -> f.getAsFile().getName()));
     }
 
     public void addPathToCopy(String path) {

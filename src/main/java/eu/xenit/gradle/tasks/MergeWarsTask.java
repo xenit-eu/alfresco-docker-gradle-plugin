@@ -13,6 +13,7 @@ import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.FileTree;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
@@ -20,31 +21,28 @@ import org.gradle.api.tasks.bundling.Zip;
 
 public class MergeWarsTask extends Zip implements LabelConsumerTask, LabelSupplierTask {
 
-    private List<Supplier<Map<String, String>>> labels = new ArrayList<>();
+    private MapProperty<String, String> labels = getProject().getObjects().mapProperty(String.class, String.class);
 
     private final CopySpec childWars;
 
     public MergeWarsTask() {
         super();
         getArchiveExtension().set("war");
-        getDestinationDirectory().set(getProject().getLayout().getBuildDirectory().dir("xenit-gradle-plugins/"+getName()));
+        getDestinationDirectory()
+                .set(getProject().getLayout().getBuildDirectory().dir("xenit-gradle-plugins/" + getName()));
         getArchiveBaseName().set(getName());
         childWars = getRootSpec().addChildBeforeSpec(getMainSpec());
     }
 
     @Override
-    public void withLabels(Supplier<Map<String, String>> labels) {
-        this.labels.add(labels);
+    public void withLabels(Provider<Map<String, String>> labels) {
+        this.labels.putAll(labels);
     }
 
     @Override
     @Internal
-    public Map<String, String> getLabels() {
-        Map<String, String> accumulator = new HashMap<>();
-        for (Supplier<Map<String, String>> supplier : labels) {
-            accumulator.putAll(supplier.get());
-        }
-        return accumulator;
+    public MapProperty<String, String> getLabels() {
+        return labels;
     }
 
     /**

@@ -10,6 +10,7 @@ import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 
 public class InjectFilesInWarTask extends AbstractInjectFilesInWarTask {
+
     /**
      * Target location to copy the files to inside the war
      */
@@ -22,6 +23,10 @@ public class InjectFilesInWarTask extends AbstractInjectFilesInWarTask {
 
     @TaskAction
     public void injectFiles() throws IOException {
+        // Configure labels
+        configureLabels();
+
+        // Inject files
         File outputWar = getOutputWar().get().getAsFile();
         FileUtils.copyFile(getInputWar().getAsFile().get(), outputWar);
         Util.withWar(outputWar, war -> {
