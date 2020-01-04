@@ -16,6 +16,8 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.provider.SetProperty;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
@@ -28,10 +30,15 @@ import org.gradle.api.tasks.TaskAction;
  */
 public class StripAlfrescoWarTask extends AbstractWarEnrichmentTask {
 
-    private Set<String> pathsToCopy = new HashSet<>();
+    private SetProperty<String> pathsToCopy = getProject().getObjects().setProperty(String.class);
 
     public StripAlfrescoWarTask() {
         getLabels().put(LABEL_PREFIX + getName(), getInputWar().map(f -> f.getAsFile().getName()));
+    }
+
+    @Input
+    public SetProperty<String> getPathsToCopy() {
+        return pathsToCopy;
     }
 
     public void addPathToCopy(String path) {
@@ -43,7 +50,7 @@ public class StripAlfrescoWarTask extends AbstractWarEnrichmentTask {
         Util.withWar(getInputWar().getAsFile().get(), inputWar -> {
             Util.withWar(getOutputWar().get().getAsFile(), outputWar -> {
                 try {
-                    for (String pathToCopy : pathsToCopy) {
+                    for (String pathToCopy : pathsToCopy.get()) {
                         TFile fileToCopy = new TFile(inputWar.getAbsolutePath() + pathToCopy);
                         TFile fileToReceive = new TFile(outputWar.getAbsolutePath() + pathToCopy);
                         TFile.cp(fileToCopy, fileToReceive);
