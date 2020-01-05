@@ -75,7 +75,7 @@ public class DockerBuildBehavior {
                     }));
 
                     buildDockerImage.getLabels().set(project.provider(() -> this.getLabels(project)));
-                    buildDockerImage.getTags().set(
+                    buildDockerImage.getImages().set(
                             getTags()
                                     .map(tags -> tags.stream()
                                             .map(tag -> dockerBuildExtension.getRepository().get() + ":" + tag)
@@ -84,13 +84,12 @@ public class DockerBuildBehavior {
                     );
                 });
 
-        DefaultTask dockerPushImage = project.getTasks().create("pushDockerImage", DefaultTask.class);
-        dockerPushImage.setGroup("Docker");
-        dockerPushImage.setDescription("Collection of all the pushTags");
+        project.getTasks().register("pushDockerImage", DockerPushImage.class, dockerPushImage -> {
+            dockerPushImage.setGroup("Docker");
+            dockerPushImage.setDescription("Collection of all the pushTags");
+            dockerPushImage.getImages().set(buildDockerImageProvider.flatMap(DockerBuildImage::getImages));
 
-        project.afterEvaluate((project1 -> {
-            dockerPushImage.dependsOn(getPushTags(project, buildDockerImageProvider));
-        }));
+        });
 
         project.getPlugins().withType(DockerComposePlugin.class, dockerComposePlugin -> {
             buildDockerImageProvider.configure(dockerBuildImage -> {
@@ -196,22 +195,6 @@ public class DockerBuildBehavior {
         }
         matcher.appendTail(buffer);
         return buffer.toString();
-    }
-
-    private List<TaskProvider<DockerPushImage>> getPushTags(Project project,
-            TaskProvider<DockerBuildImage> dockerBuildImage) {
-        List<TaskProvider<DockerPushImage>> result = new ArrayList<>();
-        for (String tag : this.getTags().get()) {
-            TaskProvider<DockerPushImage> pushTagProvider = project.getTasks()
-                    .register("pushTag" + tag, DockerPushImage.class, pushTag -> {
-                        pushTag.getImageName().set(dockerBuildExtension.getRepository());
-                        pushTag.getTag().set(tag);
-                        pushTag.dependsOn(dockerBuildImage);
-                        pushTag.setDescription("Push image with tag " + tag);
-                    });
-            result.add(pushTagProvider);
-        }
-        return result;
     }
 
 }
