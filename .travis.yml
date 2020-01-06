@@ -11,11 +11,10 @@ services:
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 
 cache:
   directories:
-    - $HOME/.gradle/caches/
+    - $HOME/.gradle/caches/modules-2/
     - $HOME/.gradle/wrapper/
 
 jobs:
@@ -34,8 +33,7 @@ stages:
   - deploy
 
 env:
-  - GRADLE_INTEGRATION_TEST_VERSIONS=4.10,5.0,5.1 PUBLISH_SONAR=true
-  - GRADLE_INTEGRATION_TEST_VERSIONS=5.1,5.2,5.3
+  - GRADLE_INTEGRATION_TEST_VERSIONS=5.2,5.3 PUBLISH_SONAR=true
   - GRADLE_INTEGRATION_TEST_VERSIONS=5.4,5.5,5.6
 
 before_script:

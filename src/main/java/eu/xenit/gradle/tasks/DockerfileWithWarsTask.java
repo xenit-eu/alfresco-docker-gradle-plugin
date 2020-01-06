@@ -2,11 +2,9 @@ package eu.xenit.gradle.tasks;
 
 import static eu.xenit.gradle.tasks.VersionMatchChecking.getCanAddWarsCheckCommands;
 
-import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import de.schlichtherle.truezip.file.TArchiveDetector;
 import de.schlichtherle.truezip.file.TFile;
 import eu.xenit.gradle.docker.internal.Deprecation;
-import groovy.lang.Closure;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
@@ -17,14 +15,15 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.RegularFile;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
@@ -43,17 +42,18 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
     /**
      * Map of labels to add to the dockerfile
      */
-    private final List<Supplier<Map<String, String>>> labels = new ArrayList<>();
+    private final MapProperty<String, String> labels = getProject().getObjects().mapProperty(String.class, String.class);
 
     /**
      * Map of directories in the tomcat folder to the war file to place there
      */
-    private final Map<String, List<Supplier<java.io.File>>> warFiles = new HashMap<>();
+    private final Map<String, List<Provider<java.io.File>>> warFiles = new HashMap<>();
 
     /**
      * Target directory inside the docker container where war files will be placed
      */
-    private String targetDirectory = "/usr/local/tomcat/webapps/";
+    private Property<String> targetDirectory = getProject().getObjects().property(String.class)
+            .convention("/usr/local/tomcat/webapps/");
 
     public DockerfileWithWarsTask() {
         if (GradleVersion.current().compareTo(GradleVersion.version("5.6")) >= 0) {
@@ -67,47 +67,31 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
     }
 
     @Input
-    public String getTargetDirectory() {
+    public Property<String> getTargetDirectory() {
         return targetDirectory;
-    }
-
-    public DockerfileWithWarsTask setTargetDirectory(String targetDirectory) {
-        this.targetDirectory = targetDirectory;
-        return this;
     }
 
 
     /**
      * Before adding the new war to the image, remove the expanded folder in the webapps.
      */
-    private boolean removeExistingWar = true;
+    private Property<Boolean> removeExistingWar = getProject().getObjects().property(Boolean.class).convention(true);
 
 
     @Input
-    public boolean getRemoveExistingWar() {
+    public Property<Boolean> getRemoveExistingWar() {
         return removeExistingWar;
-    }
-
-    public void setRemoveExistingWar(boolean removeExistingWar) {
-        this.removeExistingWar = removeExistingWar;
     }
 
     /**
      * Check if Alfresco version that is already present in the container matches the Alfresco version of the war that will be added.
      */
-    private BooleanSupplier checkAlfrescoVersion = () -> !this.getRemoveExistingWar();
+    private Property<Boolean> checkAlfrescoVersion = getProject().getObjects().property(Boolean.class)
+            .convention(getRemoveExistingWar().map(b -> !b));
 
     @Input
-    public boolean getCheckAlfrescoVersion() {
-        return checkAlfrescoVersion.getAsBoolean();
-    }
-
-    public void setCheckAlfrescoVersion(boolean checkAlfrescoVersion) {
-        this.checkAlfrescoVersion = () -> checkAlfrescoVersion;
-    }
-
-    public void setCheckAlfrescoVersion(BooleanSupplier checkAlfrescoVersion) {
-        this.checkAlfrescoVersion = checkAlfrescoVersion;
+    public Property<Boolean> getCheckAlfrescoVersion() {
+        return checkAlfrescoVersion;
     }
 
     /**
@@ -163,50 +147,54 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
     }
 
     @Input
-    public String getBaseImage() {
-        if (!baseImage.isPresent() || baseImage.getOrNull() == null) {
-            throw new IllegalStateException(MESSAGE_BASE_IMAGE_NOT_SET);
-        }
-        return baseImage.get();
-    }
-
-    public void setBaseImage(String baseImage) {
-        setBaseImage(getProject().provider(() -> baseImage));
-    }
-
-    public void setBaseImage(Provider<String> baseImage) {
-        this.baseImage.set(baseImage);
+    public Property<String> getBaseImage() {
+        return baseImage;
     }
 
     @InputFiles
-    public Collection<java.io.File> getWarFiles() {
-        return warFiles.values().stream()
-                .flatMap(Collection::stream)
-                .map(Supplier::get)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+    public FileCollection getWarFiles() {
+        ConfigurableFileCollection mappedWarFiles = getProject().files(getProject().provider(() -> {
+            return warFiles.values().stream()
+                    .flatMap(Collection::stream)
+                    .filter(Provider::isPresent)
+                    .map(Provider::get)
+                    .collect(Collectors.toList());
+        }));
+        // Filter with an always matching filter, so the returned FileCollection is no longer a ConfigurableFileCollection
+        return mappedWarFiles.filter(x -> true);
     }
 
     public void addWar(String name, WarLabelOutputTask task) {
         dependsOn(task);
-        addWar(name, task::getOutputWar);
+        addWar(name, task.getOutputWar());
         withLabels(task);
     }
 
-    public void addWar(String name, java.io.File file) {
-        addWar(name, () -> file);
+    public void addWar(String name, Provider<RegularFile> regularFileProvider) {
+        _addWar(name, regularFileProvider.map(RegularFile::getAsFile));
     }
 
-    public void addWar(String name, Supplier<java.io.File> file) {
+    public void addWar(String name, java.io.File file) {
+        _addWar(name, getProject().provider(() -> file));
+    }
+
+    private void _addWar(String name, Provider<java.io.File> file) {
         if (!warFiles.containsKey(name)) {
-            warFiles.put(name, new LinkedList<>());
+            warFiles.put(name, new ArrayList<>());
         }
         warFiles.get(name).add(file);
     }
 
+    @Deprecated
+    public void addWar(String name, Supplier<java.io.File> file) {
+        Deprecation.warnDeprecatedReplaced("addWar(String name, Supplier<File> file)",
+                "addWar(String name, Provider<RegularFile> fileProvider)");
+        _addWar(name, getProject().provider(file::get));
+    }
+
     public void addWar(String name, Configuration configuration) {
         dependsOn(configuration);
-        addWar(name, configuration::getSingleFile);
+        _addWar(name, getProject().provider(configuration::getSingleFile));
     }
 
     @TaskAction
@@ -224,43 +212,38 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
             }
             wars.forEach((war) -> {
                 // Unpack war
-                unzipWar(war.get(), destinationDir);
+                unzipWar(war.getOrNull(), destinationDir);
             });
 
             if (destinationDir.exists()) {
                 improveLog4j(destinationDir, name.toUpperCase());
 
                 // COPY
-                if (getRemoveExistingWar()) {
-                    runCommand("rm -rf " + getTargetDirectory() + name);
+                if (getRemoveExistingWar().get()) {
+                    runCommand("rm -rf " + getTargetDirectory().get() + name);
                 }
-                if (getCheckAlfrescoVersion()) {
-                    getCanAddWarsCheckCommands(destinationDir, getTargetDirectory()).forEach(this::runCommand);
+                if (getCheckAlfrescoVersion().get()) {
+                    getCanAddWarsCheckCommands(destinationDir, getTargetDirectory().get()).forEach(this::runCommand);
                 }
-                DockerfileWithWarsTask.this.copyFile("./" + name, getTargetDirectory() + name);
+                DockerfileWithWarsTask.this.copyFile("./" + name, getTargetDirectory().get() + name);
             }
         });
 
         // LABEL
-        Map<String, String> labels = getLabels();
-        if (!labels.isEmpty()) {
-            label(labels);
+        if(!getLabels().get().isEmpty()) {
+            label(getLabels());
         }
 
         super.create();
     }
 
     @Override
-    public void withLabels(Supplier<Map<String, String>> labels) {
-        this.labels.add(labels);
+    public void withLabels(Provider<Map<String, String>> labels) {
+        this.labels.putAll(labels);
     }
 
     @Input
-    public Map<String, String> getLabels() {
-        Map<String, String> accumulator = new HashMap<>();
-        for (Supplier<Map<String, String>> supplier : labels) {
-            accumulator.putAll(supplier.get());
-        }
-        return accumulator;
+    public MapProperty<String, String> getLabels() {
+        return labels;
     }
 }

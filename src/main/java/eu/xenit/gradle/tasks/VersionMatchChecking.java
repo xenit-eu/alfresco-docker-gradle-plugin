@@ -1,14 +1,13 @@
 package eu.xenit.gradle.tasks;
 
-import java.util.Collections;
-import org.apache.commons.io.FileUtils;
-import org.gradle.util.CollectionUtils;
-
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import org.apache.commons.io.FileUtils;
+import org.gradle.util.CollectionUtils;
 
 class VersionMatchChecking {
 

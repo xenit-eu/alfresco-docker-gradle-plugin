@@ -1,37 +1,30 @@
 package eu.xenit.gradle.docker;
 
-import groovy.lang.Closure;
-
-import java.io.File;
+import javax.inject.Inject;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
+import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.model.ObjectFactory;
 
 /**
  * Created by thijs on 10/25/16.
  */
 public class DockerFileExtension {
-    private File dockerFile;
+    private RegularFileProperty dockerFile;
     private DockerBuildExtension dockerBuild;
 
-    public DockerFileExtension(Project project) {
-        dockerFile = project.file("Dockerfile");
-        dockerBuild = new DockerBuildExtension(project);
+    @Inject
+    public DockerFileExtension(ObjectFactory objectFactory, Project project) {
+        dockerFile = objectFactory.fileProperty().convention(project.getLayout().getProjectDirectory().file("Dockerfile"));
+        dockerBuild = objectFactory.newInstance(DockerBuildExtension.class, project);
     }
 
-    public File getDockerFile() {
+    public RegularFileProperty getDockerFile() {
         return dockerFile;
-    }
-
-    public void setDockerFile(File dockerFile) {
-        this.dockerFile = dockerFile;
     }
 
     public DockerBuildExtension getDockerBuild() {
         return dockerBuild;
-    }
-
-    public void setDockerBuild(DockerBuildExtension dockerBuild) {
-        this.dockerBuild = dockerBuild;
     }
 
     public void dockerBuild(Action<? super DockerBuildExtension> closure) {

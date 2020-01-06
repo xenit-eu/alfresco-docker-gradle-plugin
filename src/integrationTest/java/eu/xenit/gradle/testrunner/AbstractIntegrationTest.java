@@ -30,15 +30,18 @@ public abstract class AbstractIntegrationTest {
 
     @Parameters(name = "Gradle v{0}")
     public static Collection<Object[]> testData() {
+        String forceGradleVersion = System.getProperty("eu.xenit.gradle.integration.useGradleVersion");
+        if (forceGradleVersion != null) {
+            return Arrays.asList(new Object[][]{
+                    {forceGradleVersion},
+            });
+        }
         return Arrays.asList(new Object[][]{
-                {"5.6"},
+                {"5.6.4"},
                 {"5.5.1"},
                 {"5.4.1"},
                 {"5.3.1"},
                 {"5.2.1"},
-                {"5.1.1"},
-                {"5.0"},
-                {"4.10.3"},
         });
     }
 
@@ -87,12 +90,18 @@ public abstract class AbstractIntegrationTest {
             FileUtils.moveDirectory(gitDir, tempExample.toPath().resolve(".git").toFile());
         }
 
-        return GradleRunner.create()
+        GradleRunner runner =  GradleRunner.create()
                 .withProjectDir(tempExample)
                 .withArguments(task, "--stacktrace", "--rerun-tasks", "--info")
-                .withGradleVersion(gradleVersion)
                 .withPluginClasspath()
+                .withDebug(true)
                 .forwardOutput();
+
+        if(System.getProperty("eu.xenit.gradle.integration.useGradleVersion") == null) {
+            return runner.withGradleVersion(gradleVersion);
+        }
+
+        return runner;
     }
 
     protected void testProjectFolder(Path projectFolder) throws IOException {

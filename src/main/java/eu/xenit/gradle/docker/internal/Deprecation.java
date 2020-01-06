@@ -79,7 +79,7 @@ public final class Deprecation {
     public static void printSummary() {
         if (warningMode == WarningMode.Summary && !warnings.isEmpty()) {
             LOGGER.warn(
-                    "Deprecated features were used in this build, making it incompatible with alfresco-docker-plugin 5.0.\n"
+                    "Deprecated features were used in this build, making it incompatible with alfresco-docker-plugin 6.0.\n"
                             +
                             "Use --warning-mode all to show individual deprecation warnings.");
         }

@@ -58,9 +58,8 @@ repositories {
 }
 
 task applyFirstAmp(type: InstallAmpsInWarTask) {
-    inputWar = resolveAlfrescoWar
-    sourceFiles = files(moduleDAmp)
-    dependsOn(moduleDAmp)
+    inputWar = stripAlfrescoWar
+    sourceFiles = moduleDAmp
 }
 
 applyAlfrescoAmp {

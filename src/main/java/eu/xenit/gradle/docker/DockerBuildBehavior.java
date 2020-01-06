@@ -10,25 +10,23 @@ import eu.xenit.gradle.JenkinsUtil;
 import eu.xenit.gradle.docker.tasks.internal.DockerBuildImage;
 import eu.xenit.gradle.git.CannotConvertToUrlException;
 import eu.xenit.gradle.git.GitInfoProvider;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.gradle.api.Action;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
-import org.gradle.api.Task;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
-import org.gradle.util.GradleVersion;
+import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.TaskProvider;
 
 /**
  * Created by thijs on 10/25/16.
@@ -36,20 +34,19 @@ import org.gradle.util.GradleVersion;
 public class DockerBuildBehavior {
 
     private static final Logger LOGGER = Logging.getLogger(DockerBuildBehavior.class);
-
     private static final int DOCKER_TAG_LENGTH_CONSTRAINT = 128;
     private static final String DOCKER_TAG_LENGTH_CONSTRAINT_ERRORMSG = "Automatic tags will violate tag length constraint of "+DOCKER_TAG_LENGTH_CONSTRAINT+", due to usage of branch name in tag. Modify branch name or disable automatic tags.";
 
-    private Supplier<DockerBuildExtension> dockerBuildExtension;
-    private Supplier<File> dockerFile;
+    private DockerBuildExtension dockerBuildExtension;
+    private RegularFileProperty dockerFile;
     private Dockerfile dockerfileCreator;
 
-    public DockerBuildBehavior(Supplier<DockerBuildExtension> dockerBuildExtension, Supplier<File> dockerFile) {
+    public DockerBuildBehavior(DockerBuildExtension dockerBuildExtension, RegularFileProperty dockerFile) {
         this.dockerBuildExtension = dockerBuildExtension;
         this.dockerFile = dockerFile;
     }
 
-    public DockerBuildBehavior(Supplier<DockerBuildExtension> dockerBuildExtension, Dockerfile dockerfileCreator) {
+    public DockerBuildBehavior(DockerBuildExtension dockerBuildExtension, Dockerfile dockerfileCreator) {
         this.dockerBuildExtension = dockerBuildExtension;
         this.dockerfileCreator = dockerfileCreator;
     }
@@ -58,74 +55,66 @@ public class DockerBuildBehavior {
         this.execute(project);
     }
 
-    private DirectoryProperty createDirectoryProperty(Project project) {
-        if (GradleVersion.current().compareTo(GradleVersion.version("5.0")) >= 0) {
-            return project.getObjects().directoryProperty();
-        } else {
-            return project.getLayout().directoryProperty();
-        }
-    }
-
     public void execute(Project project) {
-        DockerBuildImage buildDockerImage = createDockerBuildImageTask(project, dockerBuildExtension);
-        buildDockerImage.setDescription("Build the docker image");
-        if (dockerfileCreator != null) {
-            buildDockerImage.getDockerFile().set(dockerfileCreator.getDestFile());
-            buildDockerImage.dependsOn(dockerfileCreator);
-        }
+        TaskProvider<DockerBuildImage> buildDockerImageProvider = createDockerBuildImageTask(project,
+                buildDockerImage -> {
+                    buildDockerImage.setDescription("Build the docker image");
+                    if (dockerfileCreator != null) {
+                        buildDockerImage.getDockerFile().set(dockerfileCreator.getDestFile());
+                        buildDockerImage.dependsOn(dockerfileCreator);
+                    }
 
-        if (dockerFile != null) {
-            buildDockerImage.getDockerFile().set(dockerFile::get);
-        }
+                    if (dockerFile != null) {
+                        buildDockerImage.getDockerFile().set(dockerFile);
+                    }
 
-        buildDockerImage.getInputDir().set(project.provider(() -> {
-            DirectoryProperty directoryProperty = createDirectoryProperty(project);
-            directoryProperty.set(buildDockerImage.getDockerFile().getAsFile().get().getParentFile());
-            return directoryProperty.get();
-        }));
+                    buildDockerImage.getInputDir().set(project.provider(() -> {
+                        DirectoryProperty directoryProperty = project.getObjects().directoryProperty();
+                        directoryProperty.set(buildDockerImage.getDockerFile().getAsFile().get().getParentFile());
+                        return directoryProperty.get();
+                    }));
 
-        buildDockerImage.getLabels().set(project.provider(() -> this.getLabels(project)));
-        buildDockerImage.getTags().set(project
-                .provider(() -> this.getTags().stream().map(tag -> getDockerRepository() + ":" + tag).collect(
-                        Collectors.toSet())));
-
-        project.getPlugins().withType(DockerComposePlugin.class, dockerComposePlugin -> {
-            buildDockerImage.doLast(task -> {
-                ComposeExtension composeExtension = (ComposeExtension) project.getExtensions()
-                        .getByName("dockerCompose");
-                composeExtension.getEnvironment().put("DOCKER_IMAGE", buildDockerImage.getImageId().get());
-            });
-            Task task = project.getTasks().getAt("composeUp");
-            task.dependsOn(buildDockerImage);
-        });
+                    buildDockerImage.getLabels().set(project.provider(() -> this.getLabels(project)));
+                    buildDockerImage.getTags().set(
+                            getTags()
+                                    .map(tags -> tags.stream()
+                                            .map(tag -> dockerBuildExtension.getRepository().get() + ":" + tag)
+                                            .collect(Collectors.toSet())
+                                    )
+                    );
+                });
 
         DefaultTask dockerPushImage = project.getTasks().create("pushDockerImage", DefaultTask.class);
         dockerPushImage.setGroup("Docker");
         dockerPushImage.setDescription("Collection of all the pushTags");
 
         project.afterEvaluate((project1 -> {
-            List<DockerPushImage> pushTags = getPushTags(project, buildDockerImage);
-            dockerPushImage.dependsOn(pushTags);
+            dockerPushImage.dependsOn(getPushTags(project, buildDockerImageProvider));
         }));
 
+        project.getPlugins().withType(DockerComposePlugin.class, dockerComposePlugin -> {
+            buildDockerImageProvider.configure(dockerBuildImage -> {
+                dockerBuildImage.doLast(t -> {
+                    ComposeExtension composeExtension = (ComposeExtension) project.getExtensions()
+                            .getByName("dockerCompose");
+                    composeExtension.getEnvironment().put("DOCKER_IMAGE", dockerBuildImage.getImageId().get());
+                });
+            });
+            project.getTasks().named("composeUp", composeUp -> {
+                composeUp.dependsOn(buildDockerImageProvider);
+            });
+        });
     }
 
-    private DockerBuildImage createDockerBuildImageTask(Project project,
-            Supplier<DockerBuildExtension> dockerBuildExtension) {
-        DockerBuildImage dockerBuildImage = (DockerBuildImage) project.getTasks().findByName("buildDockerImage");
-        if (dockerBuildImage == null) {
-            dockerBuildImage = project.getTasks().create("buildDockerImage", DockerBuildImage.class);
-        }
-
-        DockerBuildImage finalDockerBuildImage = dockerBuildImage;
-        project.afterEvaluate((project1) -> {
-            DockerBuildExtension extension = dockerBuildExtension.get();
-            finalDockerBuildImage.getPull().set(extension.getPull());
-            finalDockerBuildImage.getNoCache().set(extension.getNoCache());
-            finalDockerBuildImage.getRemove().set(extension.getRemove());
+    private TaskProvider<DockerBuildImage> createDockerBuildImageTask(Project project,
+            Action<? super DockerBuildImage> configure) {
+        return project.getTasks().register("buildDockerImage", DockerBuildImage.class, task -> {
+            task.setGroup("Docker");
+            task.getPull().set(dockerBuildExtension.getPull());
+            task.getNoCache().set(dockerBuildExtension.getNoCache());
+            task.getRemove().set(dockerBuildExtension.getRemove());
+            configure.execute(task);
         });
-
-        return dockerBuildImage;
     }
 
     private Map<String, String> getLabels(Project project) {
@@ -152,43 +141,45 @@ public class DockerBuildBehavior {
         return labels;
     }
 
-    private Set<String> getTags() {
-        List<String> tags = dockerBuildExtension.get().getTags();
-        boolean automaticTags = dockerBuildExtension.get().getAutomaticTags();
-
+    private Provider<List<String>> getTags() {
         String jenkinsBranch = cleanForDockerTag(JenkinsUtil.getBranch());
+        return dockerBuildExtension.getAutomaticTags()
+                .flatMap(automaticTags -> {
+                    if (!automaticTags) {
+                        return dockerBuildExtension.getTags();
+                    } else {
+                        return dockerBuildExtension.getTags()
+                                .map(tags -> {
+                                    List<String> newTags = tags.stream().map(tag -> {
+                                        if (isMaster()) {
+                                            return tag;
+                                        } else {
+                                            return jenkinsBranch + "-" + tag;
+                                        }
+                                    }).collect(Collectors.toList());
 
-        if (automaticTags) {
-            tags = tags.stream().map(tag -> {
-                if (isMaster()) {
-                    return tag;
-                } else {
-                    return jenkinsBranch + "-" + tag;
-                }
-            }).collect(Collectors.toList());
+                                    if (JenkinsUtil.getBuildId() != null) {
+                                        if (isMaster()) {
+                                            newTags.add("build-" + JenkinsUtil.getBuildId());
+                                        } else {
+                                            newTags.add(jenkinsBranch + "-build-" + JenkinsUtil.getBuildId());
+                                        }
+                                    }
 
-            if (JenkinsUtil.getBuildId() != null) {
-                if (isMaster()) {
-                    tags.add("build-" + JenkinsUtil.getBuildId());
-                } else {
-                    tags.add(jenkinsBranch + "-build-" + JenkinsUtil.getBuildId());
-                }
-            }
-
-            if (isMaster()) {
-                tags.add("latest");
-            } else {
-                tags.add(jenkinsBranch);
-            }
-
-            tags.forEach(tag -> {
-                if(tag.length() > DOCKER_TAG_LENGTH_CONSTRAINT) {
-                    throw new GradleException(DOCKER_TAG_LENGTH_CONSTRAINT_ERRORMSG);
-                }
-            });
-        }
-
-        return new HashSet<>(tags);
+                                    if (isMaster()) {
+                                        newTags.add("latest");
+                                    } else {
+                                        newTags.add(jenkinsBranch);
+                                    }
+                                    newTags.forEach(tag -> {
+                                        if(tag.length() > DOCKER_TAG_LENGTH_CONSTRAINT) {
+                                            throw new GradleException(DOCKER_TAG_LENGTH_CONSTRAINT_ERRORMSG);
+                                        }
+                                    });
+                                    return newTags;
+                                });
+                    }
+                });
     }
 
     private boolean isMaster() {
@@ -207,21 +198,20 @@ public class DockerBuildBehavior {
         return buffer.toString();
     }
 
-    private List<DockerPushImage> getPushTags(Project project, DockerBuildImage dockerBuildImage) {
-        List<DockerPushImage> result = new ArrayList<>();
-        for (String tag : this.getTags()) {
-            DockerPushImage pushTag = project.getTasks().create("pushTag" + tag, DockerPushImage.class);
-            pushTag.getImageName().set(getDockerRepository());
-            pushTag.getTag().set(tag);
-            pushTag.dependsOn(dockerBuildImage);
-            pushTag.setDescription("Push image with tag " + tag);
-            result.add(pushTag);
+    private List<TaskProvider<DockerPushImage>> getPushTags(Project project,
+            TaskProvider<DockerBuildImage> dockerBuildImage) {
+        List<TaskProvider<DockerPushImage>> result = new ArrayList<>();
+        for (String tag : this.getTags().get()) {
+            TaskProvider<DockerPushImage> pushTagProvider = project.getTasks()
+                    .register("pushTag" + tag, DockerPushImage.class, pushTag -> {
+                        pushTag.getImageName().set(dockerBuildExtension.getRepository());
+                        pushTag.getTag().set(tag);
+                        pushTag.dependsOn(dockerBuildImage);
+                        pushTag.setDescription("Push image with tag " + tag);
+                    });
+            result.add(pushTagProvider);
         }
         return result;
-    }
-
-    private String getDockerRepository() {
-        return dockerBuildExtension.get().getRepository();
     }
 
 }
