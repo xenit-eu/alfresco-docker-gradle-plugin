@@ -171,7 +171,7 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
     }
 
     public void addWar(String name, Provider<RegularFile> regularFileProvider) {
-        _addWar(name, regularFileProvider.map(f -> f.getAsFile()));
+        _addWar(name, regularFileProvider.map(RegularFile::getAsFile));
     }
 
     public void addWar(String name, java.io.File file) {
@@ -194,7 +194,7 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
 
     public void addWar(String name, Configuration configuration) {
         dependsOn(configuration);
-        _addWar(name, getProject().provider(() -> configuration.getSingleFile()));
+        _addWar(name, getProject().provider(configuration::getSingleFile));
     }
 
     @TaskAction
