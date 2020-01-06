@@ -9,7 +9,7 @@ import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
 
-abstract public class AbstractWarEnrichmentTask extends DefaultTask implements WarEnrichmentTask {
+public abstract class AbstractWarEnrichmentTask extends DefaultTask implements WarEnrichmentTask {
 
     /**
      * WAR file used as input (is not modified)
