@@ -1,12 +1,6 @@
 package eu.xenit.gradle.tasks;
 
-import static eu.xenit.gradle.alfresco.DockerAlfrescoPlugin.LABEL_PREFIX;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.MapProperty;

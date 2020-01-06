@@ -10,8 +10,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.alfresco.repo.module.tool.ModuleManagementTool;
 import org.apache.commons.io.FileUtils;
-import org.gradle.api.provider.Property;
-import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 
 public class InstallAmpsInWarTask extends AbstractInjectFilesInWarTask {

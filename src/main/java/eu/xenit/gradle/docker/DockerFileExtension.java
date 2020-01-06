@@ -1,8 +1,5 @@
 package eu.xenit.gradle.docker;
 
-import groovy.lang.Closure;
-
-import java.io.File;
 import javax.inject.Inject;
 import org.gradle.api.Action;
 import org.gradle.api.Project;

@@ -1,11 +1,8 @@
 package eu.xenit.gradle.docker;
 
-import org.gradle.api.GradleException;
-import org.gradle.api.Project;
-
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.gradle.util.GradleVersion;
+import org.gradle.api.Project;
 
 /**
  * Created by thijs on 10/24/16.

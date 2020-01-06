@@ -3,21 +3,9 @@ package eu.xenit.gradle.tasks;
 import static eu.xenit.gradle.alfresco.DockerAlfrescoPlugin.LABEL_PREFIX;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
-import org.gradle.api.file.RegularFile;
-import org.gradle.api.file.RegularFileProperty;
-import org.gradle.api.provider.Provider;
-import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.InputFiles;
-import org.gradle.api.tasks.Internal;
-import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.SkipWhenEmpty;
 
 abstract class AbstractInjectFilesInWarTask extends AbstractWarEnrichmentTask {

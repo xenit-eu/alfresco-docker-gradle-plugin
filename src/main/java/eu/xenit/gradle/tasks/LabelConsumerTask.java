@@ -1,9 +1,8 @@
 package eu.xenit.gradle.tasks;
 
-import org.gradle.api.Task;
-
 import java.util.Map;
 import java.util.function.Supplier;
+import org.gradle.api.Task;
 import org.gradle.api.provider.Provider;
 
 public interface LabelConsumerTask extends Task {

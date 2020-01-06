@@ -1,8 +1,6 @@
 package eu.xenit.gradle.tasks;
 
 import org.gradle.api.Task;
-
-import java.util.Map;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.tasks.Internal;
 

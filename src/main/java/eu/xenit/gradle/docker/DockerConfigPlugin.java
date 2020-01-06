@@ -6,8 +6,6 @@ import com.bmuschko.gradle.docker.DockerExtension;
 import com.bmuschko.gradle.docker.DockerRegistryCredentials;
 import com.bmuschko.gradle.docker.DockerRemoteApiPlugin;
 import eu.xenit.gradle.docker.internal.Deprecation;
-import eu.xenit.gradle.git.GitInfoProvider;
-import eu.xenit.gradle.git.JGitInfoProvider;
 import java.io.File;
 import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
