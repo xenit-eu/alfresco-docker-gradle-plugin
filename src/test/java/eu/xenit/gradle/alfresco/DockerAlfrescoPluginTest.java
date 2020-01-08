@@ -3,6 +3,7 @@ package eu.xenit.gradle.alfresco;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import eu.xenit.gradle.JenkinsUtil;
 import eu.xenit.gradle.tasks.DockerfileWithWarsTask;
 import java.io.BufferedWriter;
@@ -10,6 +11,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import org.gradle.api.UnknownTaskException;
 import org.gradle.api.internal.artifacts.configurations.ConfigurationInternal.InternalState;
 import org.gradle.api.internal.artifacts.configurations.DefaultConfiguration;
@@ -85,17 +88,19 @@ public class DockerAlfrescoPluginTest {
         DockerAlfrescoExtension dockerAlfrescoExtension = (DockerAlfrescoExtension) project.getExtensions()
                 .getByName("dockerAlfresco");
         dockerAlfrescoExtension.dockerBuild((dockerBuildExtension -> {
+            dockerBuildExtension.getRepository().set("docker.io/xenit/docker-gradle-plugin-test");
             dockerBuildExtension.getTags().set(Arrays.asList("hello", "world"));
             dockerBuildExtension.getAutomaticTags().set(true);
         }));
         project.evaluate();
+        checkTaskExists(project, "pushDockerImage");
+
+        Set<String> images = project.getTasks().withType(DockerPushImage.class).getByName("pushDockerImage").getImages().get();
 
         if(!"master".equals(JenkinsUtil.getBranch())){
-            checkTaskExists(project, "pushTag"+JenkinsUtil.getBranch()+"-hello");
-            checkTaskExists(project, "pushTag"+JenkinsUtil.getBranch()+"-world");
+            assertEquals(new HashSet(Arrays.asList("docker.io/xenit/docker-gradle-plugin-test:"+JenkinsUtil.getBranch(), "docker.io/xenit/docker-gradle-plugin-test:"+JenkinsUtil.getBranch()+"-hello", "docker.io/xenit/docker-gradle-plugin-test:"+JenkinsUtil.getBranch()+"-world")), images);
         } else {
-            checkTaskExists(project, "pushTaghello");
-            checkTaskExists(project, "pushTagworld");
+            assertEquals(new HashSet(Arrays.asList("docker.io/xenit/docker-gradle-plugin-test:hello", "docker.io/xenit/docker-gradle-plugin-test:world")), images);
         }
 
     }
@@ -110,13 +115,15 @@ public class DockerAlfrescoPluginTest {
         DockerAlfrescoExtension dockerAlfrescoExtension = (DockerAlfrescoExtension) project.getExtensions()
                 .getByName("dockerAlfresco");
         dockerAlfrescoExtension.dockerBuild((dockerBuildExtension) -> {
+            dockerBuildExtension.getRepository().set("docker.io/xenit/docker-gradle-plugin-test");
             dockerBuildExtension.getTags().set(Arrays.asList("hello", "world"));
         });
         project.evaluate();
+        checkTaskExists(project, "pushDockerImage");
 
-        checkTaskExists(project, "pushTaghello");
-        checkTaskExists(project, "pushTagworld");
-        checkTaskNotExists(project, "pushTaglatest");
+        Set<String> images = project.getTasks().withType(DockerPushImage.class).getByName("pushDockerImage").getImages().get();
+
+        assertEquals(new HashSet(Arrays.asList("docker.io/xenit/docker-gradle-plugin-test:hello", "docker.io/xenit/docker-gradle-plugin-test:world")), images);
     }
 
     @Test

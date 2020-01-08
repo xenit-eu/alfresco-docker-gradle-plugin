@@ -171,7 +171,7 @@ The Gradle tasks created by this plugin are executed in this order. (Ordering mi
  * `alfrescoWar` & `shareWar`: [`MergeWarsTask`](src/main/java/eu/xenit/gradle/tasks/MergeWarsTask.java) Delivers the finished Alfresco/Share war with all extensions installed.
  * `createDockerfile`: [`DockerfileWithWarsTask`](src/main/java/eu/xenit/gradle/tasks/DockerfileWithWarsTask.java) Creates a Dockerfile with instructions to add Alfresco and/or Share wars. Adds labels to identify extensions that have been installed.
  * `buildDockerImage`: [`DockerBuildImage`](https://bmuschko.github.io/gradle-docker-plugin/api/com/bmuschko/gradle/docker/tasks/image/DockerBuildImage.html) Builds a Docker image with the provided Dockerfile
- * `pushDockerImage`: Pushes all tags of the Docker image to the remote repository
+ * `pushDockerImage`: [`DockerPushImage`](https://bmuschko.github.io/gradle-docker-plugin/api/com/bmuschko/gradle/docker/tasks/image/DockerPushImage.html) Pushes all tags of the Docker image to the remote repository
 
 <details>
 <summary>Technical description of tasks</summary>

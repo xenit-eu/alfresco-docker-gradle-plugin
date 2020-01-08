@@ -68,3 +68,7 @@
 
 4. `resolveAlfrescoWar` and `resolveShareWar` tasks have been renamed to `stripAlfrescoWar` and `stripShareWar`.
    
+5. [`gradle-docker-plugin`](https://bmuschko.github.io/gradle-docker-plugin/#change_log) has been upgraded from 4.6.2 to 6.1.1.
+    This should not affect basic usage, but may break more advanced usecases. See the breaking changes in the changelog there.
+
+6. The `pushTag*` tasks that allow to push individual tags have been removed. Use `pushDockerImage` to push all tags of the docker image.
