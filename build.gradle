@@ -59,6 +59,10 @@ gradlePlugin {
             id = "eu.xenit.docker"
             implementationClass = "eu.xenit.gradle.docker.DockerPlugin"
         }
+        dockerComposeBase {
+            id = "eu.xenit.docker-compose.base"
+            implementationClass = "eu.xenit.gradle.docker.compose.DockerComposeBasePlugin"
+        }
         dockerCompose {
             id = "eu.xenit.docker-compose"
             implementationClass = "eu.xenit.gradle.docker.compose.DockerComposePlugin"
@@ -84,8 +88,12 @@ pluginBundle {
             displayName = "Docker plugin"
         }
 
-        dockerCompose {
+        dockerComposeBase {
             displayName = "docker-compose plugin"
+        }
+
+        dockerCompose {
+            displayName = "docker-compose plugin: automatic configuration for all projects"
         }
     }
 

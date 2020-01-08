@@ -7,6 +7,12 @@ public class DockerComposePlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
-        project.getExtensions().create("dockerCompose", DockerComposeExtensionOverride.class, project);
+        project.getPlugins().withType(DockerComposeBasePlugin.class, dockerComposePlugin -> {
+            project.allprojects(project1 -> {
+                dockerComposePlugin.getDockerComposeConvention().fromProject(project1);
+            });
+        });
+
+        project.getPlugins().apply(DockerComposeBasePlugin.class);
     }
 }
