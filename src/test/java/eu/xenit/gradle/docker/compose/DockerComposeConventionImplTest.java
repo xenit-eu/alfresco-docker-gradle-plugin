@@ -7,8 +7,13 @@ import com.avast.gradle.dockercompose.ComposeSettings;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
 import eu.xenit.gradle.alfresco.DockerAlfrescoPlugin;
 import eu.xenit.gradle.docker.DockerPlugin;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.internal.project.ProjectInternal;
+import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.Before;
@@ -54,14 +59,49 @@ public class DockerComposeConventionImplTest {
         });
     }
 
+    private static Set<Task> resolveDependenciesToTasks(Task task) {
+        return task.getDependsOn()
+                .stream()
+                .flatMap(dependency -> {
+                    if (dependency instanceof Task) {
+                        return Stream.of((Task) dependency);
+                    } else if (dependency instanceof TaskProvider) {
+                        return Stream.of(((TaskProvider<Task>) dependency).get());
+                    } else if (dependency instanceof TaskCollection) {
+                        return ((TaskCollection<Task>) dependency).stream();
+                    } else {
+                        return Stream.empty();
+                    }
+                })
+                .collect(Collectors.toSet());
+    }
+
+    private static Set<Task> resolveDependenciesToTasks(TaskProvider<? extends Task> taskProvider) {
+        return resolveDependenciesToTasks(taskProvider.get());
+    }
+
+    private static void assertTaskDependsOn(Task task, Task dependency) {
+        assertTrue("Task " + task.getPath() + " should contain a dependency on " + dependency.getPath(),
+                resolveDependenciesToTasks(task).contains(dependency));
+    }
+
+    private static void assertTaskDependsOn(TaskProvider<? extends Task> task, Task dependency) {
+        assertTaskDependsOn(task.get(), dependency);
+    }
+
+    private static void assertTaskDependsOn(TaskProvider<? extends Task> task,
+            TaskProvider<? extends Task> dependency) {
+        assertTaskDependsOn(task.get(), dependency.get());
+    }
+
     @Test
     public void testFromBuildImage() {
         DockerBuildImage dockerBuildImage = dockerBuildImageProvider.get();
         composeConvention.fromBuildImage(dockerBuildImage);
 
-        assertTrue(composeSettings.getUpTask().get().getDependsOn().contains(dockerBuildImage));
-        assertTrue(composeSettings.getBuildTask().get().getDependsOn().contains(dockerBuildImage));
-        assertTrue(composeSettings.getPushTask().get().getDependsOn().contains(dockerBuildImage));
+        assertTaskDependsOn(composeSettings.getUpTask(), dockerBuildImage);
+        assertTaskDependsOn(composeSettings.getBuildTask(), dockerBuildImage);
+        assertTaskDependsOn(composeSettings.getPushTask(), dockerBuildImage);
 
         runDockerBuildImage();
 
@@ -73,9 +113,9 @@ public class DockerComposeConventionImplTest {
         DockerBuildImage dockerBuildImage = dockerBuildImageProvider.get();
         composeConvention.fromBuildImage("DOCKER_IMAGE", dockerBuildImage);
 
-        assertTrue(composeSettings.getUpTask().get().getDependsOn().contains(dockerBuildImage));
-        assertTrue(composeSettings.getBuildTask().get().getDependsOn().contains(dockerBuildImage));
-        assertTrue(composeSettings.getPushTask().get().getDependsOn().contains(dockerBuildImage));
+        assertTaskDependsOn(composeSettings.getUpTask(), dockerBuildImage);
+        assertTaskDependsOn(composeSettings.getBuildTask(), dockerBuildImage);
+        assertTaskDependsOn(composeSettings.getPushTask(), dockerBuildImage);
 
         runDockerBuildImage();
 
@@ -87,9 +127,9 @@ public class DockerComposeConventionImplTest {
     public void testFromBuildImageProvider() {
         composeConvention.fromBuildImage(dockerBuildImageProvider);
 
-        assertTrue(composeSettings.getUpTask().get().getDependsOn().contains(dockerBuildImageProvider));
-        assertTrue(composeSettings.getBuildTask().get().getDependsOn().contains(dockerBuildImageProvider));
-        assertTrue(composeSettings.getPushTask().get().getDependsOn().contains(dockerBuildImageProvider));
+        assertTaskDependsOn(composeSettings.getUpTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getBuildTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getPushTask(), dockerBuildImageProvider);
 
         runDockerBuildImage();
 
@@ -100,9 +140,9 @@ public class DockerComposeConventionImplTest {
     public void testFromBuildImageProviderWithEnvironment() {
         composeConvention.fromBuildImage("DOCKER_IMAGE", dockerBuildImageProvider);
 
-        assertTrue(composeSettings.getUpTask().get().getDependsOn().contains(dockerBuildImageProvider));
-        assertTrue(composeSettings.getBuildTask().get().getDependsOn().contains(dockerBuildImageProvider));
-        assertTrue(composeSettings.getPushTask().get().getDependsOn().contains(dockerBuildImageProvider));
+        assertTaskDependsOn(composeSettings.getUpTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getBuildTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getPushTask(), dockerBuildImageProvider);
 
         runDockerBuildImage();
 
@@ -113,10 +153,11 @@ public class DockerComposeConventionImplTest {
     @Test
     public void testFromProject() {
         composeConvention.fromProject(project);
+        TaskCollection<DockerBuildImage> buildImageTaskCollection = project.getTasks().withType(DockerBuildImage.class);
 
-        assertTrue(composeSettings.getUpTask().get().getDependsOn().contains(dockerBuildImageProvider.get()));
-        assertTrue(composeSettings.getBuildTask().get().getDependsOn().contains(dockerBuildImageProvider.get()));
-        assertTrue(composeSettings.getPushTask().get().getDependsOn().contains(dockerBuildImageProvider.get()));
+        assertTaskDependsOn(composeSettings.getUpTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getBuildTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getPushTask(), dockerBuildImageProvider);
 
         runDockerBuildImage();
 
@@ -133,12 +174,9 @@ public class DockerComposeConventionImplTest {
         composeConvention.fromProject(subProject1);
         composeConvention.fromProject(subProject2);
 
-        assertTrue(
-                composeSettings.getUpTask().get().getDependsOn().contains(subProject2BuildDockerImageProvider.get()));
-        assertTrue(composeSettings.getBuildTask().get().getDependsOn()
-                .contains(subProject2BuildDockerImageProvider.get()));
-        assertTrue(
-                composeSettings.getPushTask().get().getDependsOn().contains(subProject2BuildDockerImageProvider.get()));
+        assertTaskDependsOn(composeSettings.getUpTask(), subProject2BuildDockerImageProvider);
+        assertTaskDependsOn(composeSettings.getBuildTask(), subProject2BuildDockerImageProvider);
+        assertTaskDependsOn(composeSettings.getPushTask(), subProject2BuildDockerImageProvider);
 
         runDockerBuildImage(subProject2BuildDockerImageProvider);
         assertEquals(DOCKER_IMAGE_ID,
@@ -146,12 +184,9 @@ public class DockerComposeConventionImplTest {
 
         TaskProvider<DockerBuildImage> subProject1BuildDockerImageProvider = createBuildDockerImage(subProject1);
 
-        assertTrue(
-                composeSettings.getUpTask().get().getDependsOn().contains(subProject1BuildDockerImageProvider.get()));
-        assertTrue(composeSettings.getBuildTask().get().getDependsOn()
-                .contains(subProject1BuildDockerImageProvider.get()));
-        assertTrue(
-                composeSettings.getPushTask().get().getDependsOn().contains(subProject1BuildDockerImageProvider.get()));
+        assertTaskDependsOn(composeSettings.getUpTask(), subProject1BuildDockerImageProvider);
+        assertTaskDependsOn(composeSettings.getBuildTask(), subProject1BuildDockerImageProvider);
+        assertTaskDependsOn(composeSettings.getPushTask(), subProject1BuildDockerImageProvider);
 
         runDockerBuildImage(subProject1BuildDockerImageProvider);
         assertEquals(DOCKER_IMAGE_ID,

@@ -32,8 +32,6 @@ public class DockerComposeConventionImpl implements DockerComposeConvention {
 
     private void configureBuildImageTask(TaskProvider<DockerBuildImage> buildImageTaskProvider,
             Action<? super DockerBuildImage> action) {
-        configureComposeDependencies(buildImageTaskProvider);
-
         buildImageTaskProvider.configure(dockerBuildImage -> {
             dockerBuildImage.doLast(CONFIGURE_COMPOSE_ACTION_NAME, t -> {
                 action.execute(dockerBuildImage);
@@ -42,8 +40,6 @@ public class DockerComposeConventionImpl implements DockerComposeConvention {
     }
 
     private void configureBuildImageTask(DockerBuildImage buildImage, Action<? super DockerBuildImage> action) {
-        configureComposeDependencies(buildImage);
-
         buildImage.doLast(CONFIGURE_COMPOSE_ACTION_NAME, t -> {
             action.execute(buildImage);
         });
@@ -64,25 +60,34 @@ public class DockerComposeConventionImpl implements DockerComposeConvention {
     }
 
     public void fromBuildImage(String environmentVariable, TaskProvider<DockerBuildImage> buildImageTaskProvider) {
+        configureComposeDependencies(buildImageTaskProvider);
         configureBuildImageTask(buildImageTaskProvider, createSetComposeEnvironmentAction(environmentVariable));
     }
 
     public void fromBuildImage(String environmentVariable, DockerBuildImage buildImage) {
+        configureComposeDependencies(buildImage);
         configureBuildImageTask(buildImage, createSetComposeEnvironmentAction(environmentVariable));
     }
 
     public void fromBuildImage(TaskProvider<DockerBuildImage> buildImageTaskProvider) {
+        configureComposeDependencies(buildImageTaskProvider);
+        configureComposeDependencies(buildImageTaskProvider);
         configureBuildImageTask(buildImageTaskProvider, createSetComposeEnvironmentFromPathAction());
     }
 
     public void fromBuildImage(DockerBuildImage buildImage) {
+        configureComposeDependencies(buildImage);
+        configureBuildImageTask(buildImage, createSetComposeEnvironmentFromPathAction());
+    }
+
+    private void fromProjectBuildImage(DockerBuildImage buildImage) {
         configureBuildImageTask(buildImage, createSetComposeEnvironmentFromPathAction());
     }
 
     public void fromProject(Project project) {
         TaskCollection<DockerBuildImage> dockerBuildImages = project.getTasks().withType(DockerBuildImage.class);
         configureComposeDependencies(dockerBuildImages);
-        dockerBuildImages.configureEach(this::fromBuildImage);
+        dockerBuildImages.configureEach(this::fromProjectBuildImage);
 
         // Register shortened environment variables for `buildDockerImage` tasks created with the docker or docker-alfresco plugin
         project.getPlugins().withType(DockerPlugin.class, plugin -> {
