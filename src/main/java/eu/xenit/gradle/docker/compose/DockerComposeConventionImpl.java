@@ -19,9 +19,15 @@ public class DockerComposeConventionImpl implements DockerComposeConvention {
     }
 
     private void configureComposeDependencies(Object dependencies) {
-        composeSettings.getUpTask().dependsOn(dependencies);
-        composeSettings.getBuildTask().dependsOn(dependencies);
-        composeSettings.getPushTask().dependsOn(dependencies);
+        composeSettings.getUpTask().configure(composeUp -> {
+            composeUp.dependsOn(dependencies);
+        });
+        composeSettings.getBuildTask().configure(composeBuild -> {
+            composeBuild.dependsOn(dependencies);
+        });
+        composeSettings.getPushTask().configure(composePush -> {
+            composePush.dependsOn(dependencies);
+        });
     }
 
     private void configureBuildImageTask(TaskProvider<DockerBuildImage> buildImageTaskProvider,
