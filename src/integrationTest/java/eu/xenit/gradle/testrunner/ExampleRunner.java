@@ -39,8 +39,8 @@ public class ExampleRunner extends AbstractIntegrationTest {
     }
 
     @Test
-    public void testDockerComposeBaseExample() throws IOException {
-        testProjectFolder(EXAMPLES.resolve("docker-compose-base-example"), ":integrationTest");
+    public void testDockerComposeAutoExample() throws IOException {
+        testProjectFolder(EXAMPLES.resolve("docker-compose-auto-example"), ":integrationTest");
     }
 
     @Test

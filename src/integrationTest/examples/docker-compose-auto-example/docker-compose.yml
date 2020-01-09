@@ -3,4 +3,4 @@ services:
   docker-compose-subpr1:
     image: ${SUBPR1_DOCKER_IMAGE}
   docker-compose-subpr2:
-    image: ${TEST_IMAGE}
+    image: ${SUBPR2_DOCKER_IMAGE}

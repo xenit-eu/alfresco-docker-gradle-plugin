@@ -1,0 +1,8 @@
+plugins {
+    id "eu.xenit.docker-compose.auto"
+}
+
+task integrationTest {
+}
+
+dockerCompose.isRequiredBy(integrationTest)

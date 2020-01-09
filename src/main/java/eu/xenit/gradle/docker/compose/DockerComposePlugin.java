@@ -5,14 +5,15 @@ import org.gradle.api.Project;
 
 public class DockerComposePlugin implements Plugin<Project> {
 
+    private DockerComposeConvention dockerComposeConvention;
+
     @Override
     public void apply(Project project) {
-        project.getPlugins().withType(DockerComposeBasePlugin.class, dockerComposePlugin -> {
-            project.allprojects(project1 -> {
-                dockerComposePlugin.getDockerComposeConvention().fromProject(project1);
-            });
-        });
+        dockerComposeConvention = project.getExtensions()
+                .create("dockerCompose", DockerComposeExtensionOverride.class, project);
+    }
 
-        project.getPlugins().apply(DockerComposeBasePlugin.class);
+    public DockerComposeConvention getDockerComposeConvention() {
+        return dockerComposeConvention;
     }
 }
