@@ -6,7 +6,7 @@ final class Util {
     }
 
     public static String safeEnvironmentVariableName(String original) {
-        return original.replaceAll("[A-Z]", "_$0").toUpperCase().replaceAll("[^A-Za-z0-9]", "_");
+        return original.replaceAll("([a-z0-9])([A-Z])", "$1_$2").toUpperCase().replaceAll("[^A-Za-z0-9]", "_");
     }
 
 }
