@@ -1,11 +1,5 @@
 plugins {
-    id "eu.xenit.docker-compose.base"
-}
-evaluationDependsOn(":subpr2")
-
-dockerCompose {
-    fromProject(':subpr1')
-    fromBuildImage("TEST_IMAGE", project.project(':subpr2').tasks.named("buildDockerImage"))
+    id "eu.xenit.docker-compose"
 }
 
 task integrationTest {
