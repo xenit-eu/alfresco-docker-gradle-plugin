@@ -74,9 +74,13 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
             DockerAlfrescoExtension dockerAlfrescoExtension) {
         dockerfile.getRemoveExistingWar().set(dockerAlfrescoExtension.getLeanImage().map(b -> !b));
         Configuration alfrescoBaseWar = project1.getConfigurations().getByName(BASE_ALFRESCO_WAR);
-        dockerfile.addWar("alfresco",
-                () -> dockerAlfrescoExtension.getLeanImage().get() || alfrescoBaseWar.isEmpty() ? null
-                        : alfrescoBaseWar.getSingleFile());
+        dockerfile.addWar("alfresco", dockerAlfrescoExtension.getLeanImage().flatMap(isLeanImage -> {
+            if(alfrescoBaseWar.isEmpty()) {
+                return project1.provider(() -> null);
+            } else {
+                return project1.getLayout().file(project1.provider(alfrescoBaseWar::getSingleFile));
+            }
+        }));
         alfrescoTasks.forEach(t -> {
             dockerfile.addWar("alfresco",
                     project1.provider(() -> alfrescoBaseWar.isEmpty() ? null : t.getOutputWar().get()));
@@ -84,8 +88,13 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         });
 
         Configuration shareBaseWar = project1.getConfigurations().getByName(BASE_SHARE_WAR);
-        dockerfile.addWar("share", () -> dockerAlfrescoExtension.getLeanImage().get() || shareBaseWar.isEmpty() ? null
-                : shareBaseWar.getSingleFile());
+        dockerfile.addWar("share", dockerAlfrescoExtension.getLeanImage().flatMap(isLeanImage -> {
+            if(shareBaseWar.isEmpty()) {
+                return project1.provider(() -> null);
+            } else {
+                return project1.getLayout().file(project1.provider(shareBaseWar::getSingleFile));
+            }
+        }));
         shareTasks.forEach(t -> {
             dockerfile.addWar("share", project1.provider(() -> shareBaseWar.isEmpty() ? null : t.getOutputWar().get()));
             dockerfile.dependsOn(t);

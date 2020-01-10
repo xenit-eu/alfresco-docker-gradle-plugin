@@ -17,11 +17,8 @@ public final class ModuleDependencySorter {
     }
 
     static Set<ModuleInformation> readInstalledModulesFromWar(File war) {
-        WarHelper warHelper = new WarHelperImpl(new LogOutput() {
-            @Override
-            public void info(Object o) {
-
-            }
+        WarHelper warHelper = new WarHelperImpl(o -> {
+            // We do not want to log any output from the WarHelper
         });
 
         return warHelper.listModules(new TFile(war))

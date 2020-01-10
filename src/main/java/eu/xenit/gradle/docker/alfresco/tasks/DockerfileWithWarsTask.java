@@ -105,7 +105,7 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
     private void improveLog4j(java.io.File destinationDir, String logName) {
         Path path = destinationDir.toPath().resolve(Paths.get("WEB-INF", "classes", "log4j.properties"));
         if (Files.exists(path)) {
-            getLogger().info("Prefixing logs for " + destinationDir.getName() + " with [" + logName + "]");
+            getLogger().info("Prefixing logs for {} with [{}]", destinationDir.getName(), logName);
             Charset charset = StandardCharsets.UTF_8;
             try {
                 String content = new String(Files.readAllBytes(path), charset);
@@ -118,12 +118,11 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
                                         + "\\]\\ %d\\{ISO8601\\}");
                 Files.write(path, content.getBytes(charset));
             } catch (IOException e) {
-                e.printStackTrace();
                 throw new IllegalStateException(e);
             }
         } else {
-            getLogger().info("No log4j.properties available in " + destinationDir.getName()
-                    + ". Not changing the console appender");
+            getLogger().info("No log4j.properties available in {}. Not changing the console appender",
+                    destinationDir.getName());
         }
     }
 
@@ -212,7 +211,7 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
                     throw new UncheckedIOException(e);
                 }
             }
-            wars.forEach((war) -> {
+            wars.forEach(war -> {
                 // Unpack war
                 unzipWar(war.getOrNull(), destinationDir);
             });
@@ -227,7 +226,7 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
                 if (getCheckAlfrescoVersion().get()) {
                     getCanAddWarsCheckCommands(destinationDir, getTargetDirectory().get()).forEach(this::runCommand);
                 }
-                DockerfileWithWarsTask.this.copyFile("./" + name, getTargetDirectory().get() + name);
+                copyFile("./" + name, getTargetDirectory().get() + name);
             }
         });
 
