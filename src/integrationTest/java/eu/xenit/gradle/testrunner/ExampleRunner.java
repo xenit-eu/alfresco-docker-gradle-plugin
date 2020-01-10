@@ -38,6 +38,15 @@ public class ExampleRunner extends AbstractIntegrationTest {
         testProjectFolder(EXAMPLES.resolve("example-docker-plugin"), ":integrationTest");
     }
 
+    @Test
+    public void testDockerComposeAutoExample() throws IOException {
+        testProjectFolder(EXAMPLES.resolve("docker-compose-auto-example"), ":integrationTest");
+    }
+
+    @Test
+    public void testDockerComposeExample() throws IOException {
+        testProjectFolder(EXAMPLES.resolve("docker-compose-example"), ":integrationTest");
+    }
 
     @Test
     public void testFileDependencies() throws IOException {

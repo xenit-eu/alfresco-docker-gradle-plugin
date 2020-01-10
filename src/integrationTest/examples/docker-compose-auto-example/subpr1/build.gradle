@@ -1,0 +1,17 @@
+plugins {
+    id "eu.xenit.docker"
+}
+import eu.xenit.gradle.tasks.DockerfileWithCopyTask
+
+task createDockerFile(type: DockerfileWithCopyTask) {
+    from('alpine:edge')
+}
+
+buildDockerImage.dependsOn(createDockerFile)
+
+dockerFile {
+    dockerFile = createDockerFile.getDestFile()
+    dockerBuild {
+        repository = 'docker-compose-example-subpr2'
+    }
+}

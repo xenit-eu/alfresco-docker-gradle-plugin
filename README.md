@@ -3,17 +3,24 @@
 [![Build Status](https://travis-ci.org/xenit-eu/alfresco-docker-gradle-plugin.svg?branch=master)](https://travis-ci.org/xenit-eu/alfresco-docker-gradle-plugin)
 [![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/eu/xenit/docker-alfresco/eu.xenit.docker-alfresco.gradle.plugin/maven-metadata.xml.svg?colorB=007ec6&label=eu.xenit.docker-alfresco)](https://plugins.gradle.org/plugin/eu.xenit.docker-alfresco)
 [![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/eu/xenit/docker/eu.xenit.docker.gradle.plugin/maven-metadata.xml.svg?colorB=007ec6&label=eu.xenit.docker)](https://plugins.gradle.org/plugin/eu.xenit.docker)
+[![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/eu/xenit/docker-compose/eu.xenit.docker-compose.gradle.plugin/maven-metadata.xml.svg?colorB=007ec6&label=eu.xenit.docker-compose)](https://plugins.gradle.org/plugin/eu.xenit.docker-compose)
 
 This projects contains some gradle plugins that are used within Xenit Projects.
 
-Currently there are 3 plugins:
+There are 3 main plugins:
 
-- `eu.xenit.docker-alfresco`: Makes it possible to build Alfresco and Share wars with amps installed. A docker
+- [`eu.xenit.docker-alfresco`](#plugin-eu-xenit-docker-alfresco): Makes it possible to build Alfresco and Share wars with amps installed. A docker
 image can be built with the alfresco installed. It is also possible to include Alfresco Dynamic Extensions, and Alfresco
  Simple Modules.
-- `eu.xenit.docker`: Build a docker image, starting from a Dockerfile.
-- `eu.xenit.docker-config`: Helper plugin that is used to configure the docker environment.
-This plugin is automatically applied when using the two other plugins.
+- [`eu.xenit.docker`](#plugin-eu-xenit-docker): Build a docker image, starting from a Dockerfile.
+- [`eu.xenit.docker-compose.auto`](#plugin-eu-xenit-docker-compose-auto): Inject built docker images from all projects in docker-compose
+
+2 lower-level helper plugins that you can use when you only want the absolute basic configuration, without any conventions applied by the higher-level plugins.
+
+- `eu.xenit.docker-config`: Helper plugin that is used to configure the docker environment from `gradle.properties` settings.
+    This plugin is automatically applied when using `eu.xenit.docker` or `eu.xenit.docker-alfresco`
+- [`eu.xenit.docker-compose`](#plugin-eu-xenit-docker-compose): Sets up `dockerCompose` configuration without automatically including all docker images built by other projects
+    Tis plugin is automatically applied when using the `eu.xenit.docker-compose.auto` plugin
 
 ## Setup
 
@@ -51,6 +58,7 @@ When you want to build a Docker image, you can choose between 2 plugins, dependi
 The `eu.xenit.docker` plugin builds Docker images from a Dockerfile that you provide. This plugin can be used to build any Docker image.
 The `eu.xenit.docker-alfresco` plugin is specialized to build Docker images containing Alfresco and/or Share. It knows how to install AMPs, Simple Modules and Dynamic Extensions bundles, and can install the resulting application in a prepared Tomcat container.
 
+<a name="plugin-eu-xenit-docker-alfresco"></a>
 ### Plugin `eu.xenit.docker-alfresco`: Build an Alfresco Docker image
 
 First, you need to apply the plugin to your `build.gradle`
@@ -275,6 +283,7 @@ createDockerFile {
 }
 ```
 
+<a name="plugin-eu-xenit-docker"></a>
 ### Plugin `eu.xenit.docker`: Build a Docker image from a Dockerfile
 
 First, you need to apply the plugin to your `build.gradle`
@@ -312,6 +321,56 @@ The `eu.xenit.docker` plugin registers following Gradle tasks:
 
  * `buildDockerImage`: [`DockerBuildImage`](https://bmuschko.github.io/gradle-docker-plugin/api/com/bmuschko/gradle/docker/tasks/image/DockerBuildImage.html) Builds a Docker image with the provided Dockerfile
  * `pushDockerImage`: Pushes all tags of the Docker image to the remote repository
+
+<a name="plugin-eu-xenit-docker-compose"></a>
+### Plugin `eu.xenit.docker-compose`: Inject built docker images into docker-compose
+
+This plugin extends the [`com.avast.gradle.docker-compose`](https://github.com/avast/gradle-docker-compose-plugin) plugin
+to use docker images built with the [`DockerBuildImage`](https://bmuschko.github.io/gradle-docker-plugin/api/com/bmuschko/gradle/docker/tasks/image/DockerBuildImage.html) tasks in your `docker-compose.yml` file
+
+It extends the `dockerCompose` configuration block with two functions:
+
+ * `fromBuildImage([environmentVariable,] task)`: Add a dependency on the specified `DockerBuildImage` task, and expose the image id as an environment variable.
+    * `fromBuildImage(String environmentVariable, DockerBuildImage task)`, `fromBuildImage(String environmentVariable, TaskProvider<DockerBuildImage> taskProvider)`: Exposes the id of the docker image built by the task as the specified environment variable.
+    * `fromBuildImage(DockerBuildImage task)`, `fromBuildImage(TaskProvider<DockerBuildImage> taskProvider)`: Exposes the id of the docker image built by the task as an environment variable based on the project and task name.
+ * `fromProject(project)`: Use `fromBuildImage()` for each `DockerBuildImage` task in the project.
+    When the `eu.xenit.docker` or the `eu.xenit.docker-alfresco` plugins are applied, the `buildDockerImage` task is exposed as an environment variable based on project name only.
+    * `fromProject(String)`
+    * `fromProject(Project)`
+
+```groovy
+plugins {
+    id "eu.xenit.docker-compose" version "5.0.0" // See https://plugins.gradle.org/plugin/eu.xenit.docker-compose for the latest version
+}
+
+dockerCompose {
+    fromProject(":some-other-project")
+    fromBuildImage(project.tasks.named("buildXYZDockerImage"))
+}
+
+task buildXYZDockerImage(type: DockerBuildImage) {
+    // ...
+}
+```
+
+#### Environment variable naming
+
+To generate an environment name for a docker image of a task, we concatenate project name, `_`, task name, `_DOCKER_IMAGE`.
+Non-alphanumeric characters are converted to underscores, and camelCased names are converted to uppercase SNAKE_CASE names.
+
+e.g. task `:projectA:taskAbc` -> `PROJECT_A_TASK_ABC_DOCKER_IMAGE`
+
+When a project uses the `eu.xenit.docker` or the `eu.xenit.docker-alfresco` plugins, the `buildDockerImage` task is also exposed as a shorter environment variable: project name, `_DOCKER_IMAGE`
+
+e.g. project `:projectA` -> `PROJECT_A_DOCKER_IMAGE` and `PROJECT_A_BUILD_DOCKER_IMAGE_DOCKER_IMAGE`
+
+
+<a name="plugin-eu-xenit-docker-compose-auto"></a>
+### Plugin `eu.xenit.docker-compose.auto`: Automatically inject built docker images into docker-compose
+
+This plugin is an extension of [`eu.xenit.docker-compose`](#plugin-eu-xenit-docker-compose) that automatically uses `dockerCompose.fromProject()` for all projects in your Gradle build.
+
+It does not require you to explicitly list which projects you want to depend on.
 
 ## Tagging behavior
 
