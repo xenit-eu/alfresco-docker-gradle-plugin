@@ -2,13 +2,11 @@ package eu.xenit.gradle.testrunner;
 
 import static org.junit.Assert.assertTrue;
 
-import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
-import eu.xenit.gradle.tasks.DockerfileWithWarsTask;
+import eu.xenit.gradle.docker.alfresco.tasks.DockerfileWithWarsTask;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.gradle.testkit.runner.BuildResult;
-import org.gradle.util.GradleVersion;
 import org.junit.Test;
 
 /**

@@ -12,7 +12,7 @@ repositories {
 
 
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-import eu.xenit.gradle.tasks.*
+import eu.xenit.gradle.docker.alfresco.tasks.*
 
 configurations {
     testbaseAlfrescoWar

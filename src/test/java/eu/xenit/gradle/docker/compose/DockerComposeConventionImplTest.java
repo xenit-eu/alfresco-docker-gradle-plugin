@@ -5,7 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.avast.gradle.dockercompose.ComposeSettings;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
-import eu.xenit.gradle.alfresco.DockerAlfrescoPlugin;
+import eu.xenit.gradle.docker.alfresco.DockerAlfrescoPlugin;
 import eu.xenit.gradle.docker.DockerPlugin;
 import java.util.Set;
 import java.util.stream.Collectors;
