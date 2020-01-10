@@ -23,7 +23,7 @@ public class DockerConfigPlugin implements Plugin<Project> {
     public void apply(Project project) {
         if (GradleVersion.current().compareTo(GradleVersion.version("5.2")) < 0) {
             throw new GradleException(
-                    "The Xenit alfresco-docker Gradle plugin requires at least Gradle 5.2. You are running "
+                    "The  eu.xenit.docker-config plugin requires at least Gradle 5.2. You are running "
                             + GradleVersion.current());
         }
         // Set up deprecation warnings
