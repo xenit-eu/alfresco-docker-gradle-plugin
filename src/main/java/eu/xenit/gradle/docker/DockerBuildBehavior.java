@@ -6,7 +6,7 @@ import com.avast.gradle.dockercompose.ComposeExtension;
 import com.avast.gradle.dockercompose.DockerComposePlugin;
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
-import eu.xenit.gradle.JenkinsUtil;
+import eu.xenit.gradle.docker.internal.JenkinsUtil;
 import eu.xenit.gradle.docker.tasks.internal.DockerBuildImage;
 import eu.xenit.gradle.docker.internal.git.CannotConvertToUrlException;
 import eu.xenit.gradle.docker.internal.git.GitInfoProvider;

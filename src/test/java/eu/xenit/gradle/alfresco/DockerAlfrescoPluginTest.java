@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
-import eu.xenit.gradle.JenkinsUtil;
+import eu.xenit.gradle.docker.internal.JenkinsUtil;
 import eu.xenit.gradle.alfresco.tasks.DockerfileWithWarsTask;
 import java.io.BufferedWriter;
 import java.io.File;

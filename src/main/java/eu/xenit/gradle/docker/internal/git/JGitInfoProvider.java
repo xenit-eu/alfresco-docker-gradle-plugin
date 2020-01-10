@@ -1,6 +1,6 @@
 package eu.xenit.gradle.docker.internal.git;
 
-import eu.xenit.gradle.JenkinsUtil;
+import eu.xenit.gradle.docker.internal.JenkinsUtil;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
