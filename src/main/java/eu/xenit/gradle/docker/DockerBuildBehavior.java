@@ -3,9 +3,9 @@ package eu.xenit.gradle.docker;
 import static eu.xenit.gradle.docker.internal.git.JGitInfoProvider.GetProviderForProject;
 
 import com.avast.gradle.dockercompose.ComposeExtension;
-import com.avast.gradle.dockercompose.DockerComposePlugin;
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import eu.xenit.gradle.docker.compose.DockerComposePlugin;
 import eu.xenit.gradle.docker.internal.JenkinsUtil;
 import eu.xenit.gradle.docker.tasks.internal.DockerBuildImage;
 import eu.xenit.gradle.docker.internal.git.CannotConvertToUrlException;
@@ -90,16 +90,7 @@ public class DockerBuildBehavior {
         });
 
         project.getPlugins().withType(DockerComposePlugin.class, dockerComposePlugin -> {
-            buildDockerImageProvider.configure(dockerBuildImage -> {
-                dockerBuildImage.doLast(t -> {
-                    ComposeExtension composeExtension = (ComposeExtension) project.getExtensions()
-                            .getByName("dockerCompose");
-                    composeExtension.getEnvironment().put("DOCKER_IMAGE", dockerBuildImage.getImageId().get());
-                });
-            });
-            project.getTasks().named("composeUp", composeUp -> {
-                composeUp.dependsOn(buildDockerImageProvider);
-            });
+            dockerComposePlugin.getDockerComposeConvention().fromBuildImage("DOCKER_IMAGE", buildDockerImageProvider);
         });
     }
 

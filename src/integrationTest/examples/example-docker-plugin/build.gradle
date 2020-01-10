@@ -1,6 +1,6 @@
 plugins {
     id 'eu.xenit.docker'
-    id 'com.avast.gradle.docker-compose'
+    id 'eu.xenit.docker-compose'
 }
 
 repositories {

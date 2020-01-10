@@ -7,7 +7,6 @@ import org.gradle.api.Project;
  * Created by thijs on 10/25/16.
  */
 public class DockerPlugin implements Plugin<Project> {
-
     public static final String PLUGIN_ID = "eu.xenit.docker";
 
     @Override
