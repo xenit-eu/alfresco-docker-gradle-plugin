@@ -1,4 +1,4 @@
-package eu.xenit.gradle.git;
+package eu.xenit.gradle.docker.internal.git;
 
 
 import java.net.URL;
@@ -9,9 +9,14 @@ import java.net.URL;
 public interface GitInfoProvider {
 
     String getBranch();
+
     String getCommitChecksum();
+
     String getOrigin();
+
     URL getCommitURL() throws CannotConvertToUrlException;
+
     String getCommitAuthor();
+
     String getCommitMessage();
 }

@@ -1,4 +1,4 @@
-package eu.xenit.gradle.git;
+package eu.xenit.gradle.docker.internal.git;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -44,19 +44,19 @@ public class JGitInfoProviderTest {
         try {
             System.out.println(gitInfo.getCommitURL());
             assertNotNull(gitInfo.getCommitURL());
-        } catch(CannotConvertToUrlException ex) {
+        } catch (CannotConvertToUrlException ex) {
             assumeTrue(false); // Skip test
         }
     }
 
     @Test
-    public void testGetCommitAuthor(){
+    public void testGetCommitAuthor() {
         System.out.println(gitInfo.getCommitAuthor());
         assertNotNull(gitInfo.getCommitAuthor());
     }
 
     @Test
-    public void testGetCommitMessage(){
+    public void testGetCommitMessage() {
         System.out.println(gitInfo.getCommitMessage());
         assertNotNull(gitInfo.getCommitMessage());
     }

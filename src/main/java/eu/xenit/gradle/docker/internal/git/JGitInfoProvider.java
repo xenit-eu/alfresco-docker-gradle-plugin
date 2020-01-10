@@ -1,4 +1,4 @@
-package eu.xenit.gradle.git;
+package eu.xenit.gradle.docker.internal.git;
 
 import eu.xenit.gradle.JenkinsUtil;
 import java.io.File;
@@ -110,7 +110,7 @@ public class JGitInfoProvider implements GitInfoProvider {
     @Override
     public URL getCommitURL() throws CannotConvertToUrlException {
         final URIish origin = getUrIish();
-        if(origin == null) {
+        if (origin == null) {
             throw new CannotConvertToUrlException("No origin is set");
         }
         String path = origin.getPath().split("\\.git\\z")[0];
@@ -144,7 +144,7 @@ public class JGitInfoProvider implements GitInfoProvider {
     public String getCommitMessage() {
         try {
             return getLastRevCommit().getFullMessage().trim();
-        } catch(NoHeadException e) {
+        } catch (NoHeadException e) {
             return "<none>";
         }
     }

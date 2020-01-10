@@ -1,6 +1,6 @@
 package eu.xenit.gradle.docker;
 
-import static eu.xenit.gradle.git.JGitInfoProvider.GetProviderForProject;
+import static eu.xenit.gradle.docker.internal.git.JGitInfoProvider.GetProviderForProject;
 
 import com.avast.gradle.dockercompose.ComposeExtension;
 import com.avast.gradle.dockercompose.DockerComposePlugin;
@@ -8,9 +8,8 @@ import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import eu.xenit.gradle.JenkinsUtil;
 import eu.xenit.gradle.docker.tasks.internal.DockerBuildImage;
-import eu.xenit.gradle.git.CannotConvertToUrlException;
-import eu.xenit.gradle.git.GitInfoProvider;
-import java.util.ArrayList;
+import eu.xenit.gradle.docker.internal.git.CannotConvertToUrlException;
+import eu.xenit.gradle.docker.internal.git.GitInfoProvider;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +17,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.gradle.api.Action;
-import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.file.DirectoryProperty;
