@@ -1,4 +1,4 @@
-package eu.xenit.gradle.tasks;
+package eu.xenit.gradle.docker.tasks;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import java.nio.file.Path;

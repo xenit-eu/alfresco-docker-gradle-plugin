@@ -1,4 +1,4 @@
-package eu.xenit.gradle.tasks;
+package eu.xenit.gradle.alfresco.tasks;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -51,7 +51,6 @@ class VersionMatchChecking {
             throw new Error(e);
         }
     }
-
 
 
 }

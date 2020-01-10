@@ -1,4 +1,4 @@
-package eu.xenit.gradle.tasks;
+package eu.xenit.gradle.alfresco.tasks;
 
 import de.schlichtherle.truezip.file.TArchiveDetector;
 import de.schlichtherle.truezip.file.TConfig;

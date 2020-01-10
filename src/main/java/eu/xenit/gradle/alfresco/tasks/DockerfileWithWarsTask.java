@@ -1,10 +1,11 @@
-package eu.xenit.gradle.tasks;
+package eu.xenit.gradle.alfresco.tasks;
 
-import static eu.xenit.gradle.tasks.VersionMatchChecking.getCanAddWarsCheckCommands;
+import static eu.xenit.gradle.alfresco.tasks.VersionMatchChecking.getCanAddWarsCheckCommands;
 
 import de.schlichtherle.truezip.file.TArchiveDetector;
 import de.schlichtherle.truezip.file.TFile;
 import eu.xenit.gradle.docker.internal.Deprecation;
+import eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
@@ -42,7 +43,8 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
     /**
      * Map of labels to add to the dockerfile
      */
-    private final MapProperty<String, String> labels = getProject().getObjects().mapProperty(String.class, String.class);
+    private final MapProperty<String, String> labels = getProject().getObjects()
+            .mapProperty(String.class, String.class);
 
     /**
      * Map of directories in the tomcat folder to the war file to place there
@@ -230,7 +232,7 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
         });
 
         // LABEL
-        if(!getLabels().get().isEmpty()) {
+        if (!getLabels().get().isEmpty()) {
             label(getLabels());
         }
 

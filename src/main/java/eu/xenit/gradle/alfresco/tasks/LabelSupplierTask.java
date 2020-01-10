@@ -1,4 +1,4 @@
-package eu.xenit.gradle.tasks;
+package eu.xenit.gradle.alfresco.tasks;
 
 import org.gradle.api.Task;
 import org.gradle.api.provider.MapProperty;

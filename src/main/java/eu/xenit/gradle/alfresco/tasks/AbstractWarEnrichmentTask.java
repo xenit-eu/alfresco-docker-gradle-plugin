@@ -1,4 +1,4 @@
-package eu.xenit.gradle.tasks;
+package eu.xenit.gradle.alfresco.tasks;
 
 import java.util.Map;
 import org.gradle.api.DefaultTask;

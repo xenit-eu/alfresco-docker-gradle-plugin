@@ -4,7 +4,7 @@ plugins {
     id "eu.xenit.docker-alfresco"
 }
 
-import eu.xenit.gradle.tasks.InstallAmpsInWarTask
+import eu.xenit.gradle.alfresco.tasks.InstallAmpsInWarTask
 
 sourceSets {
     moduleA {

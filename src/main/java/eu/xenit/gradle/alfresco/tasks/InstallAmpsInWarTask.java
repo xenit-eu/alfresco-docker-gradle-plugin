@@ -1,4 +1,4 @@
-package eu.xenit.gradle.tasks;
+package eu.xenit.gradle.alfresco.tasks;
 
 import eu.xenit.gradle.alfresco.amp.ModuleDependencySorter;
 import java.io.File;

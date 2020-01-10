@@ -5,7 +5,7 @@ import static org.junit.Assert.assertFalse;
 
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import eu.xenit.gradle.JenkinsUtil;
-import eu.xenit.gradle.tasks.DockerfileWithWarsTask;
+import eu.xenit.gradle.alfresco.tasks.DockerfileWithWarsTask;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -47,7 +47,7 @@ public class DockerAlfrescoPluginTest {
 
 
     @Test
-    public void testLog4jRegex(){
+    public void testLog4jRegex() {
         String base = "share";
         String log4j = "log4j.appender.Console.layout.ConversionPattern=%d{ISO8601} %x %-5p [%c{3}] [%t] %m%n ";
         log4j = log4j.replaceAll("log4j\\.appender\\.Console\\.layout\\.ConversionPattern=\\%d\\{ISO8601\\}",
@@ -69,17 +69,17 @@ public class DockerAlfrescoPluginTest {
     }
 
     @Test
-    public void testApplyAlfrescoAmps(){
+    public void testApplyAlfrescoAmps() {
         testApplyAmps("Alfresco");
     }
 
     @Test
-    public void testApplyShareAmps(){
+    public void testApplyShareAmps() {
         testApplyAmps("Share");
     }
 
     @Test
-    public void testAddTagsAutomatic(){
+    public void testAddTagsAutomatic() {
         DefaultProject project = getDefaultProject();
         project.getDependencies().add("baseAlfrescoWar",
                 project.files(this.getClass().getClassLoader().getResource("test123.war").getFile()));
@@ -106,7 +106,7 @@ public class DockerAlfrescoPluginTest {
     }
 
     @Test
-    public void testAddTags(){
+    public void testAddTags() {
         DefaultProject project = getDefaultProject();
         project.getDependencies().add("baseAlfrescoWar",
                 project.files(this.getClass().getClassLoader().getResource("test123.war").getFile()));
@@ -127,7 +127,7 @@ public class DockerAlfrescoPluginTest {
     }
 
     @Test
-    public void testLeanImage(){
+    public void testLeanImage() {
         DefaultProject project = getDefaultProject();
         project.getDependencies().add("baseAlfrescoWar",
                 project.files(this.getClass().getClassLoader().getResource("test123.war").getFile()));
@@ -144,7 +144,7 @@ public class DockerAlfrescoPluginTest {
     }
 
     @Test
-    public void testApplySm(){
+    public void testApplySm() {
         DefaultProject project = getDefaultProject();
         project.getDependencies().add("baseAlfrescoWar",
                 project.files(this.getClass().getClassLoader().getResource("test123.war").getFile()));
@@ -187,7 +187,7 @@ public class DockerAlfrescoPluginTest {
 //        checkTaskExists(project, "getImagebuild-987");
 //    }
 
-    private void testApplyAmps(String warName){
+    private void testApplyAmps(String warName) {
         DefaultProject project = getDefaultProject();
         project.getDependencies().add("base" + warName + "War",
                 project.files(this.getClass().getClassLoader().getResource("test123.war").getFile()));

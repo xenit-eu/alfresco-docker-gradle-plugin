@@ -72,3 +72,7 @@
     This should not affect basic usage, but may break more advanced usecases. See the breaking changes in the changelog there.
 
 6. The `pushTag*` tasks that allow to push individual tags have been removed. Use `pushDockerImage` to push all tags of the docker image.
+
+7. Gradle task classes have been moved out of the `eu.xenit.gradle.tasks` package 
+    * `DockerfileWithCopyTask` has moved to `eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask`
+    * Other tasks have been moved to the `eu.xenit.gradle.docker.tasks` package
