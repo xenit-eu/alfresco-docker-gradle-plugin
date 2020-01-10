@@ -49,7 +49,7 @@ gradlePlugin {
     plugins {
         dockerAlfresco {
             id = "eu.xenit.docker-alfresco"
-            implementationClass = "eu.xenit.gradle.alfresco.DockerAlfrescoPlugin"
+            implementationClass = "eu.xenit.gradle.docker.alfresco.DockerAlfrescoPlugin"
         }
         dockerConfig {
             id = "eu.xenit.docker-config"

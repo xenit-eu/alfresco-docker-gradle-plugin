@@ -2,7 +2,7 @@ package eu.xenit.gradle.testrunner;
 
 import static org.junit.Assert.assertTrue;
 
-import eu.xenit.gradle.alfresco.tasks.DockerfileWithWarsTask;
+import eu.xenit.gradle.docker.alfresco.tasks.DockerfileWithWarsTask;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;

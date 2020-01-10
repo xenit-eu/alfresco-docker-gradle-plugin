@@ -75,4 +75,4 @@
 
 7. Gradle task classes have been moved out of the `eu.xenit.gradle.tasks` package 
     * `DockerfileWithCopyTask` has moved to `eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask`
-    * Other tasks have been moved to the `eu.xenit.gradle.docker.tasks` package
+    * Other tasks have been moved to the `eu.xenit.gradle.docker.alfresco.tasks` package
