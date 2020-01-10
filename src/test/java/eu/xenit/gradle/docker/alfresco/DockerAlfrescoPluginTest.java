@@ -47,28 +47,6 @@ public class DockerAlfrescoPluginTest {
 
 
     @Test
-    public void testLog4jRegex() {
-        String base = "share";
-        String log4j = "log4j.appender.Console.layout.ConversionPattern=%d{ISO8601} %x %-5p [%c{3}] [%t] %m%n ";
-        log4j = log4j.replaceAll("log4j\\.appender\\.Console\\.layout\\.ConversionPattern=\\%d\\{ISO8601\\}",
-                "log4j\\.appender\\.Console\\.layout\\.ConversionPattern=\\[" + base.toUpperCase()
-                        + "\\]%%d\\ \\{ISO8601\\}");
-        System.out.println(log4j);
-    }
-
-    private void writeFile(File destination, String content) throws IOException {
-        BufferedWriter output = null;
-        try {
-            output = new BufferedWriter(new FileWriter(destination));
-            output.write(content);
-        } finally {
-            if (output != null) {
-                output.close();
-            }
-        }
-    }
-
-    @Test
     public void testApplyAlfrescoAmps() {
         testApplyAmps("Alfresco");
     }

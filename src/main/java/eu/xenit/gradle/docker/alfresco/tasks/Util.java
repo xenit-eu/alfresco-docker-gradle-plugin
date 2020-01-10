@@ -11,9 +11,12 @@ import java.io.File;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-class Util {
+final class Util {
 
     private static final Object TVFS_LOCK = new Object();
+
+    private Util() {
+    }
 
     static void withGlobalTvfsLock(Runnable runnable) {
         Objects.requireNonNull(runnable);
