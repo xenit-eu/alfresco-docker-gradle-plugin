@@ -49,8 +49,7 @@ public class DockerConfigPlugin implements Plugin<Project> {
         }
 
         if (dockerConfig.getRegistryUrl() != null) {
-            DockerRegistryCredentials registryCredentials = (DockerRegistryCredentials) ((ExtensionAware) dockerExtension)
-                    .getExtensions().getByName("registryCredentials");
+            DockerRegistryCredentials registryCredentials = dockerExtension.getRegistryCredentials();
             registryCredentials.getUrl().set(dockerConfig.getRegistryUrl());
             registryCredentials.getUsername().set(dockerConfig.getRegistryUsername());
             registryCredentials.getPassword().set(dockerConfig.getRegistryPassword());
