@@ -113,6 +113,6 @@ public class PluginClasspathChecker {
         }
 
         // It really is a totally different class, just try a cast so we generate a ClassCastException
-        return (T) taskInstance;
+        throw new ClassCastException(String.format("%s cannot be cast to %s", taskInstance.getClass(), taskClass));
     }
 }
