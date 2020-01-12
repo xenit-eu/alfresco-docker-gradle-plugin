@@ -5,6 +5,8 @@ import org.gradle.api.Project;
 
 public class DockerComposeAutoPlugin implements Plugin<Project> {
 
+    public static final String PLUGIN_ID = "eu.xenit.docker-compose.auto";
+
     @Override
     public void apply(Project project) {
         project.getPlugins().withType(DockerComposePlugin.class, dockerComposePlugin -> {
