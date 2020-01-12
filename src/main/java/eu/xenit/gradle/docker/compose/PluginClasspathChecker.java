@@ -44,12 +44,12 @@ public class PluginClasspathChecker {
 
     /**
      * Checks that a plugin {@code pluginId} in the {@code targetProject} has the same class identity as the {@code plugin} class
-     *
+     * <p>
      * This check will only be run when a plugin {@code pluginId} is applied to the project.
      *
      * @param targetProject Project to check for the plugin
-     * @param plugin Plugin class (or parent class of the plugin) that must be the class of the {@code pluginId} plugin
-     * @param pluginId Plugin id that will be checked for consistency (at the time the plugin is applied)
+     * @param plugin        Plugin class (or parent class of the plugin) that must be the class of the {@code pluginId} plugin
+     * @param pluginId      Plugin id that will be checked for consistency (at the time the plugin is applied)
      */
     public void checkPlugin(Project targetProject, Class<? extends Plugin<Project>> plugin, String pluginId) {
         withPlugin(targetProject, plugin, pluginId, appliedPlugin -> {
@@ -60,13 +60,14 @@ public class PluginClasspathChecker {
     /**
      * Checks that a plugin {@code pluginId} in the {@code targetProject} has the same class identity as the {@code plugin} class,
      * and then runs an action with that plugin.
-     *
+     * <p>
      * This check and action will only be run when a plugin {@code pluginId} is applied to the project.
+     *
      * @param targetProject Project to check for the plugin
-     * @param plugin Plugin class (or parent class of the plugin) that must be the class of the {@code pluginId} plugin
-     * @param pluginId Plugin id that will be checked for consistency (at the time the plugin is applied)
-     * @param action Action to run on the plugin {@code plugin}
-     * @param <T> The specific type of the plugin
+     * @param plugin        Plugin class (or parent class of the plugin) that must be the class of the {@code pluginId} plugin
+     * @param pluginId      Plugin id that will be checked for consistency (at the time the plugin is applied)
+     * @param action        Action to run on the plugin {@code plugin}
+     * @param <T>           The specific type of the plugin
      */
     public <T extends Plugin<Project>> void withPlugin(Project targetProject, Class<T> plugin, String pluginId,
             Action<? super T> action) {
@@ -76,7 +77,11 @@ public class PluginClasspathChecker {
             }
         });
         targetProject.getPlugins().withType(plugin, appliedPlugin -> {
-            if (!targetProject.getPluginManager().hasPlugin(pluginId)) {
+            // Plugins applied by class first trigger the withType(), before the plugin id itself is registered.
+            // Try to find the plugin with hasPlugin(), and if it does not exist, try to apply it again.
+            // If a plugin has already been applied, it will return the same instance. If not, we have a classpath problem here
+            if (!targetProject.getPlugins().hasPlugin(pluginId)
+                    && targetProject.getPlugins().apply(pluginId) != appliedPlugin) {
                 throw new PluginClasspathPollutionException(project, targetProject, pluginId);
             }
             action.execute(appliedPlugin);
@@ -85,13 +90,13 @@ public class PluginClasspathChecker {
 
     /**
      * Checks that a task {@code taskInstance} has the same class identity as {@code taskClass}
-     *
+     * <p>
      * In the case that a task class with the same name ({@link Class#getName()} is detected, but with a different identity,
      * the {@link PluginClasspathPollutionException} is thrown to indicate a problem with the plugin classpath.
      *
-     * @param taskClass Task class (or parent class of the task) that must be the type of the {@code taskInstance} instance
+     * @param taskClass    Task class (or parent class of the task) that must be the type of the {@code taskInstance} instance
      * @param taskInstance Task instance that will be checked to be of type {@code taskClass}
-     * @param <T> The specific type of the class
+     * @param <T>          The specific type of the class
      * @return Task instance that has safely been casted to {@code taskClass}
      */
     public <T extends Task> T checkTask(Class<T> taskClass, Task taskInstance) {
