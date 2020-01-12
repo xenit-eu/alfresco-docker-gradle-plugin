@@ -16,6 +16,8 @@ import org.gradle.api.Task;
  */
 public class PluginClasspathChecker {
 
+    private static final String KILL_SWITCH = "eu.xenit.gradle.docker.flags.PluginClasspathChecker.v1.disabled";
+
     private final Project project;
 
     public static class PluginClasspathPollutionException extends ClassCastException {
@@ -38,6 +40,10 @@ public class PluginClasspathChecker {
         }
     }
 
+    private static boolean isDisabled() {
+        return Boolean.getBoolean(System.getProperty(KILL_SWITCH, "false"));
+    }
+
     public PluginClasspathChecker(Project project) {
         this.project = project;
     }
@@ -52,6 +58,8 @@ public class PluginClasspathChecker {
      * @param pluginId      Plugin id that will be checked for consistency (at the time the plugin is applied)
      */
     public void checkPlugin(Project targetProject, Class<? extends Plugin<Project>> plugin, String pluginId) {
+        if(isDisabled())
+            return;
         withPlugin(targetProject, plugin, pluginId, appliedPlugin -> {
             // Empty
         });
@@ -71,6 +79,9 @@ public class PluginClasspathChecker {
      */
     public <T extends Plugin<Project>> void withPlugin(Project targetProject, Class<T> plugin, String pluginId,
             Action<? super T> action) {
+        if(isDisabled()) {
+            targetProject.getPlugins().withType(plugin, action);
+        }
         targetProject.getPlugins().withId(pluginId, appliedPlugin -> {
             if (!plugin.isAssignableFrom(appliedPlugin.getClass())) {
                 throw new PluginClasspathPollutionException(project, targetProject, pluginId);
@@ -100,7 +111,7 @@ public class PluginClasspathChecker {
      * @return Task instance that has safely been casted to {@code taskClass}
      */
     public <T extends Task> T checkTask(Class<T> taskClass, Task taskInstance) {
-        if (taskClass.isAssignableFrom(taskInstance.getClass())) {
+        if (isDisabled() || taskClass.isAssignableFrom(taskInstance.getClass())) {
             return (T) taskInstance;
         }
 
