@@ -5,10 +5,10 @@ import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskProvider;
 
 public interface DockerComposeConvention {
-    void fromBuildImage(String environmentVariable, TaskProvider<DockerBuildImage> buildImageTaskProvider);
+    void fromBuildImage(String environmentVariable, TaskProvider<? extends DockerBuildImage> buildImageTaskProvider);
     void fromBuildImage(String environmentVariable, DockerBuildImage buildImage);
 
-    void fromBuildImage(TaskProvider<DockerBuildImage> buildImageTaskProvider);
+    void fromBuildImage(TaskProvider<? extends DockerBuildImage> buildImageTaskProvider);
     void fromBuildImage(DockerBuildImage buildImage);
 
 

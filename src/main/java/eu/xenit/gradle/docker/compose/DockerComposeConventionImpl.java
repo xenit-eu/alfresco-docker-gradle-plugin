@@ -30,7 +30,7 @@ public class DockerComposeConventionImpl implements DockerComposeConvention {
         });
     }
 
-    private void configureBuildImageTask(TaskProvider<DockerBuildImage> buildImageTaskProvider,
+    private void configureBuildImageTask(TaskProvider<? extends DockerBuildImage> buildImageTaskProvider,
             Action<? super DockerBuildImage> action) {
         buildImageTaskProvider.configure(dockerBuildImage -> {
             dockerBuildImage.doLast(CONFIGURE_COMPOSE_ACTION_NAME, t -> {
@@ -59,22 +59,26 @@ public class DockerComposeConventionImpl implements DockerComposeConvention {
         };
     }
 
-    public void fromBuildImage(String environmentVariable, TaskProvider<DockerBuildImage> buildImageTaskProvider) {
+    @Override
+    public void fromBuildImage(String environmentVariable, TaskProvider<? extends DockerBuildImage> buildImageTaskProvider) {
         configureComposeDependencies(buildImageTaskProvider);
         configureBuildImageTask(buildImageTaskProvider, createSetComposeEnvironmentAction(environmentVariable));
     }
 
+    @Override
     public void fromBuildImage(String environmentVariable, DockerBuildImage buildImage) {
         configureComposeDependencies(buildImage);
         configureBuildImageTask(buildImage, createSetComposeEnvironmentAction(environmentVariable));
     }
 
-    public void fromBuildImage(TaskProvider<DockerBuildImage> buildImageTaskProvider) {
+    @Override
+    public void fromBuildImage(TaskProvider<? extends DockerBuildImage> buildImageTaskProvider) {
         configureComposeDependencies(buildImageTaskProvider);
         configureComposeDependencies(buildImageTaskProvider);
         configureBuildImageTask(buildImageTaskProvider, createSetComposeEnvironmentFromPathAction());
     }
 
+    @Override
     public void fromBuildImage(DockerBuildImage buildImage) {
         configureComposeDependencies(buildImage);
         configureBuildImageTask(buildImage, createSetComposeEnvironmentFromPathAction());
@@ -84,6 +88,7 @@ public class DockerComposeConventionImpl implements DockerComposeConvention {
         configureBuildImageTask(buildImage, createSetComposeEnvironmentFromPathAction());
     }
 
+    @Override
     public void fromProject(Project project) {
         TaskCollection<DockerBuildImage> dockerBuildImages = project.getTasks().withType(DockerBuildImage.class);
         configureComposeDependencies(dockerBuildImages);
@@ -100,6 +105,7 @@ public class DockerComposeConventionImpl implements DockerComposeConvention {
         });
     }
 
+    @Override
     public void fromProject(String projectName) {
         fromProject(composeSettings.getProject().project(projectName));
     }

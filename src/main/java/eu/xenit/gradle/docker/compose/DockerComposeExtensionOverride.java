@@ -21,7 +21,7 @@ public class DockerComposeExtensionOverride extends ComposeExtension implements 
     }
 
     @Override
-    public void fromBuildImage(String environmentVariable, TaskProvider<DockerBuildImage> buildImageTaskProvider) {
+    public void fromBuildImage(String environmentVariable, TaskProvider<? extends DockerBuildImage> buildImageTaskProvider) {
         dockerComposeConvention.fromBuildImage(environmentVariable, buildImageTaskProvider);
 
     }
@@ -33,7 +33,7 @@ public class DockerComposeExtensionOverride extends ComposeExtension implements 
     }
 
     @Override
-    public void fromBuildImage(TaskProvider<DockerBuildImage> buildImageTaskProvider) {
+    public void fromBuildImage(TaskProvider<? extends DockerBuildImage> buildImageTaskProvider) {
         dockerComposeConvention.fromBuildImage(buildImageTaskProvider);
 
     }
