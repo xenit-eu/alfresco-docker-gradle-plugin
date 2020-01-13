@@ -4,6 +4,8 @@ import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 
 /**
  * Validates that plugins of an other project are on the same (or parent) classpath of where this plugin is running.
@@ -14,34 +16,38 @@ import org.gradle.api.Task;
  * Not having the same class identity will result in either {@link ClassCastException}, or some tasks that are seemingly ignored.
  * Receiving such exceptions would be very confusing to the user, so when this case is detected, we pre-emptively throw an exception with a custom message.
  */
-public class PluginClasspathChecker {
+class PluginClasspathChecker {
 
     private static final String KILL_SWITCH = "eu.xenit.gradle.docker.flags.PluginClasspathChecker.v1.disabled";
 
+    private static final Logger LOGGER = Logging.getLogger(PluginClasspathChecker.class);
+
     private final Project project;
 
-    public static class PluginClasspathPollutionException extends ClassCastException {
-
-        private static String createMessage(Project sourceProject, Project targetProject, String identifierType,
-                String identifier) {
-            return String
-                    .format("The '%s' %s has a different class identity in %s than in %s.", identifier, identifierType,
-                            targetProject.toString(), sourceProject.toString());
+    private static boolean isDisabled() {
+        boolean disabled = Boolean.getBoolean(System.getProperty(KILL_SWITCH, "false"));
+        if (disabled) {
+            LOGGER.info("PluginClasspathChecker has been disabled.");
         }
-
-        public PluginClasspathPollutionException(Project sourceProject, Project targetProject, String pluginId) {
-            super(createMessage(sourceProject, targetProject, "plugin", pluginId)
-                    + String.format("\nDefine the %s plugin once in your root project to fix this problem.", pluginId));
-        }
-
-        public PluginClasspathPollutionException(Project sourceProject, Project targetProject, Task task) {
-            super(createMessage(sourceProject, targetProject, "task", task.getPath())
-                    + "\nDefine the plugin that created this task once in your root project to fix this problem.");
-        }
+        return disabled;
     }
 
-    private static boolean isDisabled() {
-        return Boolean.getBoolean(System.getProperty(KILL_SWITCH, "false"));
+    private static String buildClassChain(Class<?> clazz) {
+        StringBuilder classString = new StringBuilder();
+        do {
+            classString.append(clazz)
+                    .append('[')
+                    .append(clazz.getClassLoader())
+                    .append(']')
+                    .append(" -> ");
+            clazz = clazz.getSuperclass();
+        } while (clazz != Object.class && clazz != null);
+
+        return classString.substring(0, classString.length() - 4);
+    }
+
+    private static String buildClassChain(Object instance) {
+        return instance + "{" + buildClassChain(instance) + "}";
     }
 
     public PluginClasspathChecker(Project project) {
@@ -58,8 +64,9 @@ public class PluginClasspathChecker {
      * @param pluginId      Plugin id that will be checked for consistency (at the time the plugin is applied)
      */
     public void checkPlugin(Project targetProject, Class<? extends Plugin<Project>> plugin, String pluginId) {
-        if(isDisabled())
+        if (isDisabled()) {
             return;
+        }
         withPlugin(targetProject, plugin, pluginId, appliedPlugin -> {
             // Empty
         });
@@ -79,10 +86,15 @@ public class PluginClasspathChecker {
      */
     public <T extends Plugin<Project>> void withPlugin(Project targetProject, Class<T> plugin, String pluginId,
             Action<? super T> action) {
-        if(isDisabled()) {
+        if (isDisabled()) {
             targetProject.getPlugins().withType(plugin, action);
         }
         targetProject.getPlugins().withId(pluginId, appliedPlugin -> {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Plugin with id {} (from {}): {}", pluginId, targetProject,
+                        buildClassChain(appliedPlugin));
+                LOGGER.debug("Expected plugin type (from {}): {}", project, buildClassChain(plugin));
+            }
             if (!plugin.isAssignableFrom(appliedPlugin.getClass())) {
                 throw new PluginClasspathPollutionException(project, targetProject, pluginId);
             }
@@ -91,8 +103,21 @@ public class PluginClasspathChecker {
             // Plugins applied by class first trigger the withType(), before the plugin id itself is registered.
             // Try to find the plugin with hasPlugin(), and if it does not exist, try to apply it again.
             // If a plugin has already been applied, it will return the same instance. If not, we have a classpath problem here
-            if (!targetProject.getPlugins().hasPlugin(pluginId)
-                    && targetProject.getPlugins().apply(pluginId) != appliedPlugin) {
+            boolean hasPlugin = targetProject.getPlugins().hasPlugin(pluginId);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Found plugin with type {} in {}: {}", plugin, targetProject,
+                        buildClassChain(appliedPlugin));
+                LOGGER.debug("Has plugin with id {} in {}?: {}", pluginId, targetProject, hasPlugin);
+            }
+            if (!hasPlugin) {
+                Plugin<Project> applyResult = targetProject.getPlugins().apply(pluginId);
+                hasPlugin = applyResult == appliedPlugin;
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Result of applying plugin {} to {}: {}", pluginId, targetProject,
+                            buildClassChain(applyResult));
+                }
+            }
+            if (!hasPlugin) {
                 throw new PluginClasspathPollutionException(project, targetProject, pluginId);
             }
             action.execute(appliedPlugin);

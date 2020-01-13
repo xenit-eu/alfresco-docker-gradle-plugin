@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import eu.xenit.gradle.docker.DockerPlugin;
 import eu.xenit.gradle.docker.alfresco.tasks.MergeWarsTask;
-import eu.xenit.gradle.docker.compose.PluginClasspathChecker.PluginClasspathPollutionException;
 import eu.xenit.gradle.docker.tasks.internal.DockerBuildImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -146,7 +145,8 @@ public class PluginClasspathCheckerTest {
         assertTrue(projectB.getPlugins().hasPlugin(DockerPlugin.PLUGIN_ID));
 
         expectedException.expect(PluginClasspathPollutionException.class);
-        expectedException.expectMessage(new PluginClasspathPollutionException(projectA, projectB, DockerPlugin.PLUGIN_ID).getMessage());
+        expectedException.expectMessage(
+                new PluginClasspathPollutionException(projectA, projectB, DockerPlugin.PLUGIN_ID).getMessage());
 
         classpathChecker.checkPlugin(projectB, dockerPluginA, DockerPlugin.PLUGIN_ID);
     }
@@ -197,7 +197,8 @@ public class PluginClasspathCheckerTest {
         projectB.evaluate();
 
         expectedException.expect(PluginClasspathPollutionException.class);
-        expectedException.expectMessage(new PluginClasspathPollutionException(projectA, projectB, projectB.getTasks().getByName("dockerBuildImage")).getMessage());
+        expectedException.expectMessage(new PluginClasspathPollutionException(projectA, projectB,
+                projectB.getTasks().getByName("dockerBuildImage")).getMessage());
 
         classpathChecker.checkTask(taskA, projectB.getTasks().getByName("dockerBuildImage"));
     }
