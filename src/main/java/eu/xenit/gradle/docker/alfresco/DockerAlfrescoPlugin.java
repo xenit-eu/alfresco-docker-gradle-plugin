@@ -21,6 +21,8 @@ import org.gradle.api.artifacts.Configuration;
  */
 public class DockerAlfrescoPlugin implements Plugin<Project> {
 
+    public static final String PLUGIN_ID = "eu.xenit.docker-alfresco";
+
     public static final String BASE_ALFRESCO_WAR = "baseAlfrescoWar";
     public static final String ALFRESCO_AMP = "alfrescoAmp";
     public static final String BASE_SHARE_WAR = "baseShareWar";

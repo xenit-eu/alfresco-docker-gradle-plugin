@@ -19,6 +19,8 @@ import org.gradle.util.GradleVersion;
  */
 public class DockerConfigPlugin implements Plugin<Project> {
 
+    public static final String PLUGIN_ID = "eu.xenit.docker-config";
+
     @Override
     public void apply(Project project) {
         if (GradleVersion.current().compareTo(GradleVersion.version("5.2")) < 0) {

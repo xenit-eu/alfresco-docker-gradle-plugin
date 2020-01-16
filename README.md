@@ -353,6 +353,25 @@ task buildXYZDockerImage(type: DockerBuildImage) {
 }
 ```
 
+> **Important:** Because Gradle uses plugin classpath isolation, this plugin needs to be present on the root project
+> (or on a common parent of the docker-compose subproject and the subprojects that build docker images)
+> 
+> You can add the plugin to the root project without applying it by using `apply false`.
+>
+> ```groovy
+> plugins {
+>     id "eu.xenit.docker-compose" version "5.0.0" apply false
+> }
+> ```
+> 
+> In the subprojects, you can then apply plugins without specifying versions.
+>
+> ```groovy
+> plugins {
+>     id "eu.xenit.docker-compose"
+> }
+> ```
+
 #### Environment variable naming
 
 To generate an environment name for a docker image of a task, we concatenate project name, `_`, task name, `_DOCKER_IMAGE`.
