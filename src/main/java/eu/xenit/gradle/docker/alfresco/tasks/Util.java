@@ -21,7 +21,20 @@ final class Util {
     static void withGlobalTvfsLock(Runnable runnable) {
         Objects.requireNonNull(runnable);
         synchronized (TVFS_LOCK) {
-            runnable.run();
+            try {
+                runnable.run();
+            } finally {
+                try {
+                    // After doing something with truezip, unmount all the filesystems.
+                    // This code can be run in the gradle daemon, and truezip is keeping global caches there
+                    // When files change from underneath it, it may have cached wrong information about it
+                    TVFS.umount();
+                } catch (FsSyncException e) {
+                    // This exception is intentionally ignored.
+                    // Throwing exceptions in a finally block would swallow the original exception
+                    // And it is no big deal if the archive can not be unmounted now, it will be unmounted during process shutdown anyways
+                }
+            }
         }
     }
 
@@ -32,17 +45,7 @@ final class Util {
             TConfig config = TConfig.get();
             config.setArchiveDetector(new TArchiveDetector("war|amp", new JarDriver(IOPoolLocator.SINGLETON)));
             TFile archive = new TFile(warFile);
-            try {
-                closure.accept(archive);
-            } finally {
-                try {
-                    TVFS.umount(archive);
-                } catch (FsSyncException ignored) {
-                    // This exception is intentionally ignored.
-                    // Throwing exceptions in a finally block would swallow the original exception
-                    // And it is no big deal if the archive can not be unmounted now, it will be unmounted during process shutdown anyways
-                }
-            }
+            closure.accept(archive);
         });
     }
 }
