@@ -14,6 +14,7 @@ import java.util.function.Consumer;
 final class Util {
 
     private static final Object TVFS_LOCK = new Object();
+    private static Exception tvfsUmountException = null;
 
     private Util() {
     }
@@ -22,6 +23,9 @@ final class Util {
         Objects.requireNonNull(runnable);
         synchronized (TVFS_LOCK) {
             try {
+                if(tvfsUmountException != null) {
+                    throw new IllegalStateException("A previous truezip unmount operation failed. This process (gradle daemon?) is in an undefined state and can not perform truezip operations anymore.", tvfsUmountException);
+                }
                 runnable.run();
             } finally {
                 try {
@@ -30,6 +34,7 @@ final class Util {
                     // When files change from underneath it, it may have cached wrong information about it
                     TVFS.umount();
                 } catch (FsSyncException e) {
+                    tvfsUmountException = e;
                     // This exception is intentionally ignored.
                     // Throwing exceptions in a finally block would swallow the original exception
                     // And it is no big deal if the archive can not be unmounted now, it will be unmounted during process shutdown anyways
