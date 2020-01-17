@@ -1,0 +1,10 @@
+plugins {
+    id 'eu.xenit.docker'
+}
+
+dockerFile {
+    dockerFile = file("Dockerfile")
+    dockerBuild {
+        repository = "configure-registry-credentials"
+    }
+}

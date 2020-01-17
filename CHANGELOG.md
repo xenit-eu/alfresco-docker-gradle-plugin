@@ -2,6 +2,40 @@
 
 ## Unreleased
 
+## Version 5.0.0 - 2020-01-10
+
+### Fixes
+
+ * [#86](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/86) - Configure docker-compose correctly when expose IP is set to something else than 0.0.0.0 or 127.0.0.1
+
+### Changed
+
+ * [#55](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/55) - Update com.bmushko.docker-remote-api plugin from 4.6.2 to 6.1.1
+ * [#82](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/82) - Update com.avast.gradle.docker-compose plugin from 0.8.12 to 0.10.7
+ * [#75](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/75) - Use Gradle lazy `Property<>` for all task and configuration properties
+ * [#83](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/83) - Move task classes to better namespaced packages & move internal classes to internal packages
+
+### Added
+
+ * [#59](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/59) - Add docker-compose plugin that sets docker images from docker build tasks
+ * [#65](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/65) - Support reading credentials from docker credentials store
+ * [#71](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/71) - Support Gradle 6.0
+ 
+### Removed
+
+ * [#58](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/58) - Do not automatically apply docker-compose plugin when applying docker or docker-alfresco
+ * [#78](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/78) - Remove deprecated functionality
+    - [#48](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/48) - automaticTags defaults to `false` now
+    - Remove `ResolveWarTask` task type
+    - Remove `labelDockerFile` task
+    - Remove `buildLabels` task
+    - Remove `mergeAlfrescoWar` task
+    - Remove `dockerAlfresco.baseImage` configuration setting
+    - Remove `dockerAlfresco.dockerBuild.repositoryBase` configuration setting
+    - Remove `dockerFile.dockerBuild.repositoryBase` configuration setting
+    - Remove `DockerfileWithWarsTask#baseImage` task property
+    - Remove `DockerfileWithWarsTask#alfrescoWar` task property
+    - Remove `DockerfileWithWarsTask#shareWar` task property
 
 ## Version 4.1.2 - 2019-12-17
 

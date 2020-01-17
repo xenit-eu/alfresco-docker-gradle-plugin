@@ -78,4 +78,10 @@ public class Reproductions extends AbstractIntegrationTest {
         testProjectFolder(REPRODUCTIONS.resolve("alfresco-amp-dependency-order"), ":applyAlfrescoAmp");
 
     }
+
+    @Test
+    public void testConfigureRegistryCredentials() throws IOException {
+        testProjectFolder(REPRODUCTIONS.resolve("configure-registry-credentials"), ":buildDockerImage");
+
+    }
 }

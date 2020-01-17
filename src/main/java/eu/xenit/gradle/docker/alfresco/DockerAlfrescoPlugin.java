@@ -77,7 +77,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         dockerfile.getRemoveExistingWar().set(dockerAlfrescoExtension.getLeanImage().map(b -> !b));
         Configuration alfrescoBaseWar = project1.getConfigurations().getByName(BASE_ALFRESCO_WAR);
         dockerfile.addWar("alfresco", dockerAlfrescoExtension.getLeanImage().flatMap(isLeanImage -> {
-            if(alfrescoBaseWar.isEmpty()) {
+            if (alfrescoBaseWar.isEmpty()) {
                 return project1.provider(() -> null);
             } else {
                 return project1.getLayout().file(project1.provider(alfrescoBaseWar::getSingleFile));
@@ -91,7 +91,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
 
         Configuration shareBaseWar = project1.getConfigurations().getByName(BASE_SHARE_WAR);
         dockerfile.addWar("share", dockerAlfrescoExtension.getLeanImage().flatMap(isLeanImage -> {
-            if(shareBaseWar.isEmpty()) {
+            if (shareBaseWar.isEmpty()) {
                 return project1.provider(() -> null);
             } else {
                 return project1.getLayout().file(project1.provider(shareBaseWar::getSingleFile));

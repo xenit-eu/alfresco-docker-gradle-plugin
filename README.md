@@ -65,7 +65,7 @@ First, you need to apply the plugin to your `build.gradle`
 
 ```groovy
 plugins {
-    id "eu.xenit.docker-alfresco" version "4.1.0" // See https://plugins.gradle.org/plugin/eu.xenit.docker-alfresco for the latest version
+    id "eu.xenit.docker-alfresco" version "5.0.0" // See https://plugins.gradle.org/plugin/eu.xenit.docker-alfresco for the latest version
 }
 ```
 
@@ -289,7 +289,7 @@ createDockerFile {
 First, you need to apply the plugin to your `build.gradle`
 ```groovy
 plugins {
-    id "eu.xenit.docker" version "4.1.0" // See https://plugins.gradle.org/plugin/eu.xenit.docker for the latest version
+    id "eu.xenit.docker" version "5.0.0" // See https://plugins.gradle.org/plugin/eu.xenit.docker for the latest version
 }
 ```
 
@@ -390,6 +390,12 @@ e.g. project `:projectA` -> `PROJECT_A_DOCKER_IMAGE` and `PROJECT_A_BUILD_DOCKER
 This plugin is an extension of [`eu.xenit.docker-compose`](#plugin-eu-xenit-docker-compose) that automatically uses `dockerCompose.fromProject()` for all projects in your Gradle build.
 
 It does not require you to explicitly list which projects you want to depend on.
+
+```groovy
+plugins {
+    id "eu.xenit.docker-compose.auto" version "5.0.0" // See https://plugins.gradle.org/plugin/eu.xenit.docker-compose.auto for the latest version
+}
+```
 
 ## Tagging behavior
 

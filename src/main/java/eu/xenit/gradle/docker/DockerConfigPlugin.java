@@ -1,16 +1,18 @@
 package eu.xenit.gradle.docker;
 
 import com.avast.gradle.dockercompose.ComposeExtension;
-import com.avast.gradle.dockercompose.DockerComposePlugin;
+import com.avast.gradle.dockercompose.ComposeSettings;
 import com.bmuschko.gradle.docker.DockerExtension;
 import com.bmuschko.gradle.docker.DockerRegistryCredentials;
 import com.bmuschko.gradle.docker.DockerRemoteApiPlugin;
+import eu.xenit.gradle.docker.compose.DockerComposePlugin;
 import eu.xenit.gradle.docker.internal.Deprecation;
 import java.io.File;
+import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.plugins.ExtensionAware;
+import org.gradle.api.internal.plugins.PluginApplicationException;
 import org.gradle.util.GradleVersion;
 
 /**
@@ -25,7 +27,7 @@ public class DockerConfigPlugin implements Plugin<Project> {
     public void apply(Project project) {
         if (GradleVersion.current().compareTo(GradleVersion.version("5.2")) < 0) {
             throw new GradleException(
-                    "The  eu.xenit.docker-config plugin requires at least Gradle 5.2. You are running "
+                    "The "+PLUGIN_ID+" plugin requires at least Gradle 5.2. You are running "
                             + GradleVersion.current());
         }
         // Set up deprecation warnings
@@ -49,15 +51,14 @@ public class DockerConfigPlugin implements Plugin<Project> {
         }
 
         if (dockerConfig.getRegistryUrl() != null) {
-            DockerRegistryCredentials registryCredentials = (DockerRegistryCredentials) ((ExtensionAware) dockerExtension)
-                    .getExtensions().getByName("registryCredentials");
+            DockerRegistryCredentials registryCredentials = dockerExtension.getRegistryCredentials();
             registryCredentials.getUrl().set(dockerConfig.getRegistryUrl());
             registryCredentials.getUsername().set(dockerConfig.getRegistryUsername());
             registryCredentials.getPassword().set(dockerConfig.getRegistryPassword());
         }
 
         project.getPlugins().withType(DockerComposePlugin.class, dockerComposePlugin -> {
-            ComposeExtension composeExtension = (ComposeExtension) project.getExtensions().getByName("dockerCompose");
+            ComposeSettings composeExtension = dockerComposePlugin.getComposeSettings();
             composeExtension.getUseComposeFiles().add("docker-compose.yml");
             composeExtension.getEnvironment().put("DOCKER_HOST", dockerExtension.getUrl().get());
             composeExtension.getEnvironment().put("SERVICES_HOST", dockerConfig.getExposeIp());
@@ -65,6 +66,13 @@ public class DockerConfigPlugin implements Plugin<Project> {
             if (dockerConfig.getCertPath() != null) {
                 composeExtension.getEnvironment().put("DOCKER_CERT_PATH", dockerConfig.getCertPath());
             }
+        });
+
+        project.getPlugins().withType(com.avast.gradle.dockercompose.DockerComposePlugin.class, dockerComposePlugin -> {
+            throw new GradleException(
+                    "The com.avast.gradle.docker-compose plugin does not work together with "+PLUGIN_ID+".\n"+
+                            "Use "+DockerComposePlugin.PLUGIN_ID+" for docker-compose functionality."
+            );
         });
 
     }
