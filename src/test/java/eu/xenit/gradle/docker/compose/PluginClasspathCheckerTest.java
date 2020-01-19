@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.function.Supplier;
+import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -21,7 +22,9 @@ import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 public class PluginClasspathCheckerTest {
 
@@ -87,6 +90,9 @@ public class PluginClasspathCheckerTest {
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
+    @Rule
+    public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
     @Before
     public void setupClassLoader() throws ClassNotFoundException {
         ClassLoader parentClassLoader = DockerPlugin.class.getClassLoader().getParent();
@@ -149,6 +155,49 @@ public class PluginClasspathCheckerTest {
                 new PluginClasspathPollutionException(projectA, projectB, DockerPlugin.PLUGIN_ID).getMessage());
 
         classpathChecker.checkPlugin(projectB, dockerPluginA, DockerPlugin.PLUGIN_ID);
+    }
+
+    @Test
+    public void testWithPluginSameClasspath() {
+        withClassloader(classLoaderA, () -> {
+            projectB.getPlugins().apply(dockerPluginA);
+            return null;
+        });
+
+        projectA.evaluate();
+        projectB.evaluate();
+
+        assertTrue(projectB.getPlugins().hasPlugin(DockerPlugin.PLUGIN_ID));
+
+        Action action = Mockito.mock(Action.class);
+
+        classpathChecker.withPlugin(projectB, dockerPluginA, DockerPlugin.PLUGIN_ID, action);
+
+        Mockito.verify(action).execute(Mockito.any(dockerPluginA));
+        Mockito.verifyNoMoreInteractions(action);
+    }
+
+    @Test
+    public void testWithPluginDifferentClasspath() {
+        withClassloader(classLoaderB, () -> {
+            projectB.getPlugins().apply(dockerPluginB);
+            return null;
+        });
+
+        projectA.evaluate();
+        projectB.evaluate();
+
+        assertTrue(projectB.getPlugins().hasPlugin(DockerPlugin.PLUGIN_ID));
+
+        Action action = Mockito.mock(Action.class);
+
+        expectedException.expect(PluginClasspathPollutionException.class);
+        expectedException.expectMessage(
+                new PluginClasspathPollutionException(projectA, projectB, DockerPlugin.PLUGIN_ID).getMessage());
+
+        classpathChecker.withPlugin(projectB, dockerPluginA, DockerPlugin.PLUGIN_ID, action);
+
+        Mockito.verifyNoMoreInteractions(action);
     }
 
     @Test
