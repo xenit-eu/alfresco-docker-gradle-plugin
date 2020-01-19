@@ -18,14 +18,14 @@ import org.gradle.api.logging.Logging;
  */
 class PluginClasspathChecker {
 
-    private static final String KILL_SWITCH = "eu.xenit.gradle.docker.flags.PluginClasspathChecker.v1.disabled";
+    static final String KILL_SWITCH = "eu.xenit.gradle.docker.flags.PluginClasspathChecker.v1.disabled";
 
     private static final Logger LOGGER = Logging.getLogger(PluginClasspathChecker.class);
 
     private final Project project;
 
     private static boolean isDisabled() {
-        boolean disabled = Boolean.getBoolean(System.getProperty(KILL_SWITCH, "false"));
+        boolean disabled = Boolean.parseBoolean(System.getProperty(KILL_SWITCH, "false"));
         if (disabled) {
             LOGGER.info("PluginClasspathChecker has been disabled.");
         }
@@ -88,6 +88,7 @@ class PluginClasspathChecker {
             Action<? super T> action) {
         if (isDisabled()) {
             targetProject.getPlugins().withType(plugin, action);
+            return;
         }
         targetProject.getPlugins().withId(pluginId, appliedPlugin -> {
             if (LOGGER.isDebugEnabled()) {

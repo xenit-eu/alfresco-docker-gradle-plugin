@@ -1,7 +1,9 @@
 package eu.xenit.gradle.docker.compose;
 
+import static eu.xenit.gradle.docker.compose.PluginClasspathChecker.KILL_SWITCH;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import eu.xenit.gradle.docker.DockerPlugin;
@@ -195,6 +197,50 @@ public class PluginClasspathCheckerTest {
         expectedException.expectMessage(
                 new PluginClasspathPollutionException(projectA, projectB, DockerPlugin.PLUGIN_ID).getMessage());
 
+        try {
+            classpathChecker.withPlugin(projectB, dockerPluginA, DockerPlugin.PLUGIN_ID, action);
+        } finally {
+            Mockito.verifyNoMoreInteractions(action);
+        }
+
+    }
+
+    @Test
+    public void testWithPluginSameClasspathDisabled() {
+        System.setProperty(KILL_SWITCH, "true");
+        withClassloader(classLoaderA, () -> {
+            projectB.getPlugins().apply(dockerPluginA);
+            return null;
+        });
+
+        projectA.evaluate();
+        projectB.evaluate();
+
+        assertTrue(projectB.getPlugins().hasPlugin(DockerPlugin.PLUGIN_ID));
+
+        Action action = Mockito.mock(Action.class);
+
+        classpathChecker.withPlugin(projectB, dockerPluginA, DockerPlugin.PLUGIN_ID, action);
+
+        Mockito.verify(action).execute(Mockito.any(dockerPluginA));
+        Mockito.verifyNoMoreInteractions(action);
+    }
+
+    @Test
+    public void testWithPluginDifferentClasspathDisabled() {
+        System.setProperty(KILL_SWITCH, "true");
+        withClassloader(classLoaderB, () -> {
+            projectB.getPlugins().apply(dockerPluginB);
+            return null;
+        });
+
+        projectA.evaluate();
+        projectB.evaluate();
+
+        assertTrue(projectB.getPlugins().hasPlugin(DockerPlugin.PLUGIN_ID));
+
+        Action action = Mockito.mock(Action.class);
+
         classpathChecker.withPlugin(projectB, dockerPluginA, DockerPlugin.PLUGIN_ID, action);
 
         Mockito.verifyNoMoreInteractions(action);
@@ -269,6 +315,86 @@ public class PluginClasspathCheckerTest {
         expectedException.expect(not(instanceOf(PluginClasspathPollutionException.class)));
 
         classpathChecker.checkTask(taskA, projectB.getTasks().getByName("mergeWarsTask"));
+    }
+
+    @Test
+    public void testCheckTaskSameClasspathDisabled() throws ClassNotFoundException {
+        System.setProperty(KILL_SWITCH, "true");
+        Class<Task> taskA = loadClassWithClassloader(classLoaderA, DockerBuildImage.class);
+
+        projectA.getTasks().register("dockerBuildImage", taskA);
+        projectB.getTasks().register("dockerBuildImage", taskA);
+
+        projectA.evaluate();
+        projectB.evaluate();
+
+        assertThat(classpathChecker.checkTask(taskA, projectA.getTasks().getByName("dockerBuildImage")), instanceOf(taskA));
+        assertThat(classpathChecker.checkTask(taskA, projectB.getTasks().getByName("dockerBuildImage")), instanceOf(taskA));
+    }
+
+    @Test
+    public void testCheckTaskSameClasspathDifferentTaskTypeDisabled() throws ClassNotFoundException {
+        System.setProperty(KILL_SWITCH, "true");
+        Class<DockerBuildImage> taskA = loadClassWithClassloader(classLoaderA, DockerBuildImage.class);
+        Class<MergeWarsTask> taskAOther = loadClassWithClassloader(classLoaderA, MergeWarsTask.class);
+
+        projectA.getTasks().register("dockerBuildImage", taskA);
+        projectA.getTasks().register("mergeWarsTask", taskAOther);
+
+        projectB.getTasks().register("dockerBuildImage", taskA);
+        projectB.getTasks().register("mergeWarsTask", taskAOther);
+
+        projectA.evaluate();
+        projectB.evaluate();
+
+        expectedException.expect(ClassCastException.class);
+        expectedException.expect(not(instanceOf(PluginClasspathPollutionException.class)));
+
+        // Exception will only be thrown upon typecast due to assignment
+        DockerBuildImage dockerBuildImage = classpathChecker
+                .checkTask(taskA, projectB.getTasks().getByName("mergeWarsTask"));
+    }
+
+    @Test
+    public void testCheckTaskDifferentClasspathDisabled() throws ClassNotFoundException {
+        System.setProperty(KILL_SWITCH, "true");
+        Class<DockerBuildImage> taskA = loadClassWithClassloader(classLoaderA, DockerBuildImage.class);
+        Class<DockerBuildImage> taskB = loadClassWithClassloader(classLoaderB, DockerBuildImage.class);
+
+        projectA.getTasks().register("dockerBuildImage", taskA);
+        projectB.getTasks().register("dockerBuildImage", taskB);
+
+        projectA.evaluate();
+        projectB.evaluate();
+
+        expectedException.expect(ClassCastException.class);
+        expectedException.expect(not(instanceOf(PluginClasspathPollutionException.class)));
+
+        // Exception will only be thrown upon typecast due to assignment
+        DockerBuildImage dockerBuildImage = classpathChecker
+                .checkTask(taskA, projectB.getTasks().getByName("dockerBuildImage"));
+    }
+
+    @Test
+    public void testCheckTaskDifferentClasspathDifferentTaskTypeDisabled() throws ClassNotFoundException {
+        System.setProperty(KILL_SWITCH, "true");
+        Class<DockerBuildImage> taskA = loadClassWithClassloader(classLoaderA, DockerBuildImage.class);
+        Class<MergeWarsTask> taskAOther = loadClassWithClassloader(classLoaderA, MergeWarsTask.class);
+        Class<MergeWarsTask> taskBOther = loadClassWithClassloader(classLoaderB, MergeWarsTask.class);
+
+        projectA.getTasks().register("mergeWarsTask", taskAOther);
+
+        projectB.getTasks().register("mergeWarsTask", taskBOther);
+
+        projectA.evaluate();
+        projectB.evaluate();
+
+        expectedException.expect(ClassCastException.class);
+        expectedException.expect(not(instanceOf(PluginClasspathPollutionException.class)));
+
+        // Exception will only be thrown upon typecast due to assignment
+        DockerBuildImage dockerBuildImage = classpathChecker
+                .checkTask(taskA, projectB.getTasks().getByName("mergeWarsTask"));
     }
 
 }
