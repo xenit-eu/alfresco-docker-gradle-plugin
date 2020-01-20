@@ -1,7 +1,7 @@
 # Upgrade guide: 4.x -> 5.0
 
 1. The [`com.avast.gradle.docker-compose`](https://github.com/avast/gradle-docker-compose-plugin) plugin is no longer automatically applied.
-   You have to apply the `eu.xenit.docker-compose` plugin it when you need `composeUp` and `composeDown` tasks.
+   You have to apply the `eu.xenit.docker-compose` plugin when you need `composeUp` and `composeDown` tasks.
    
    <table>
     <tr>
@@ -33,6 +33,23 @@
     <td>
     
     ```groovy
+   apply plugin: "eu.xenit.docker-alfresco"
+    ```
+   
+    </td>
+    <td>
+    
+    ```groovy
+   apply plugin: "eu.xenit.docker-alfresco"
+   apply plugin: "eu.xenit.docker-compose"
+    ```
+   
+    </td>
+    </tr>
+    <tr>
+    <td>
+    
+    ```groovy
     plugins {
         id "eu.xenit.docker" version "4.1.2"
     }
@@ -46,6 +63,23 @@
        id "eu.xenit.docker" version "5.0.0"
        id "eu.xenit.docker-compose" version "5.0.0"
    }
+    ```
+   
+    </td>
+    </tr>
+    <tr>
+    <td>
+    
+    ```groovy
+   apply plugin: "eu.xenit.docker"
+    ```
+   
+    </td>
+    <td>
+    
+    ```groovy
+   apply plugin: "eu.xenit.docker"
+   apply plugin: "eu.xenit.docker-compose"
     ```
    
     </td>
