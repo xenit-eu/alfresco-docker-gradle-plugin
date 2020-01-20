@@ -7,6 +7,7 @@
 ### Fixes
 
  * [#86](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/86) - Configure docker-compose correctly when expose IP is set to something else than 0.0.0.0 or 127.0.0.1
+ * [#72](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/72)/[#89](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/89) - Truezip IO exception during applyAlfrescoAmp task
 
 ### Changed
 
