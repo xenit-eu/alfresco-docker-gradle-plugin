@@ -2,7 +2,13 @@
 
 ## Unreleased
 
-## Version 5.0.0 - 2020-01-10
+## Version 5.0.1 - 2020-01-22
+
+### Fixes
+
+ * [#91](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/91) - Make pushDockerImage task depend on the buildDockerImage task
+
+## Version 5.0.0 - 2020-01-20
 
 ### Fixes
 
