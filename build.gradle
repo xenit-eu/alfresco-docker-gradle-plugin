@@ -136,12 +136,12 @@ dependencies {
 
 task classesJar(type: Jar) {
     from sourceSets.main.output
-    classifier = "classes"
+    archiveClassifier = "classes"
 }
 
 task shadowJar(type: ShadowJar, dependsOn: classesJar) {
     configurations = [project.configurations.packaged]
-    classifier = "shadow"
+    archiveClassifier = "shadow"
 }
 
 jar {
@@ -178,14 +178,12 @@ task integrationTest(type: Test, group: "verification") {
 }
 
 jacocoTestReport {
-    dependsOn(test)
-    mustRunAfter(integrationTest)
+    dependsOn(test, integrationTest)
     executionData(test, integrationTest)
     reports {
         xml.enabled = true
     }
 }
-check.dependsOn(jacocoTestReport)
 
 sonarqube {
     properties {
@@ -195,5 +193,5 @@ sonarqube {
 
 check.dependsOn(integrationTest)
 reckonTagCreate.dependsOn(check)
-tasks.sonarqube.dependsOn(check)
+tasks.sonarqube.dependsOn(check, jacocoTestReport)
 
