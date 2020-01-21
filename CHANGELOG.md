@@ -7,6 +7,7 @@
 ### Fixes
 
  * [#91](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/91) - Make pushDockerImage task depend on the buildDockerImage task
+ * [#92](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/92) - Fix pushDockerImage does not work with plain credentials in .docker/config.json
 
 ## Version 5.0.0 - 2020-01-20
 
