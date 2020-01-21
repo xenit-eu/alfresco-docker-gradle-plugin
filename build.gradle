@@ -4,12 +4,13 @@ plugins {
     id "idea"
     id "jacoco"
     id "com.gradle.plugin-publish" version "0.10.1"
-    id 'org.ajoberstar.reckon' version "0.9.0"
-    id 'com.github.johnrengelman.shadow' version '4.0.4' apply false
-    id "org.sonarqube" version "2.7.1"
+    id 'org.ajoberstar.reckon' version "0.12.0"
+    id 'com.github.johnrengelman.shadow' version '5.2.0' apply false
+    id "org.sonarqube" version "2.8"
 }
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
 
 group 'eu.xenit.gradle'
 
@@ -120,25 +121,33 @@ repositories {
 
 dependencies {
     packaged 'org.alfresco:alfresco-mmt:5.2.g'
+    packaged group: 'commons-io', name: 'commons-io', version: '2.5'
+    packaged 'org.eclipse.jgit:org.eclipse.jgit:4.6.0.201612231935-r'
+
     compile 'com.bmuschko:gradle-docker-plugin:6.1.2'
-    compile group: 'commons-io', name: 'commons-io', version: '2.5'
     compile 'com.avast.gradle:gradle-docker-compose-plugin:0.10.7'
-    compile 'org.eclipse.jgit:org.eclipse.jgit:4.6.0.201612231935-r'
     testCompile group: 'junit', name: 'junit', version: '4.11'
     testCompile gradleTestKit()
     testCompile "org.mockito:mockito-core:2.+"
     testCompile 'com.github.stefanbirkner:system-rules:1.19.0'
 }
 
-task classesJar(type: Jar) {
-    from sourceSets.main.output
-    archiveClassifier = "classes"
-}
 
-task shadowJar(type: ShadowJar, dependsOn: classesJar) {
+task shadowJar(type: ShadowJar) {
+    from sourceSets.main.output
     configurations = [project.configurations.packaged]
     archiveClassifier = "shadow"
+    mergeServiceFiles()
+    exclude "META-INF/*.SF"
+    exclude "META-INF/*.RSA"
 }
+
+task configureShadowJar(type: ConfigureShadowRelocation) {
+    target = shadowJar
+    prefix = "eu.xenit.gradle.docker.internal.shadow"
+}
+
+shadowJar.dependsOn(configureShadowJar)
 
 jar {
     from zipTree(shadowJar.outputs.files.singleFile)
