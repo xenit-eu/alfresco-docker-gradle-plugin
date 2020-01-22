@@ -86,7 +86,7 @@ public class DockerBuildBehavior {
             dockerPushImage.setGroup("Docker");
             dockerPushImage.setDescription("Collection of all the pushTags");
             dockerPushImage.getImages().set(buildDockerImageProvider.flatMap(DockerBuildImage::getImages));
-            dockerPushImage.dependsOn(dockerPushImage);
+            dockerPushImage.dependsOn(buildDockerImageProvider);
         });
 
         project.getPlugins().withType(DockerComposePlugin.class, dockerComposePlugin -> {
