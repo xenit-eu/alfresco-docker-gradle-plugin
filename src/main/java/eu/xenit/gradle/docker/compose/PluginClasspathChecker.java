@@ -35,9 +35,16 @@ class PluginClasspathChecker {
     private static String buildClassChain(Class<?> clazz) {
         StringBuilder classString = new StringBuilder();
         do {
-            classString.append(clazz)
+            classString
+                    .append("Class<")
+                    .append(clazz.getName())
+                    .append(">")
+                    .append("@")
+                    .append(Integer.toHexString(clazz.hashCode()))
                     .append('[')
                     .append(clazz.getClassLoader())
+                    .append("@")
+                    .append(Integer.toHexString(clazz.getClassLoader().hashCode()))
                     .append(']')
                     .append(" -> ");
             clazz = clazz.getSuperclass();
@@ -47,7 +54,7 @@ class PluginClasspathChecker {
     }
 
     private static String buildClassChain(Object instance) {
-        return instance + "{" + buildClassChain(instance) + "}";
+        return instance + "{" + buildClassChain(instance.getClass()) + "}";
     }
 
     public PluginClasspathChecker(Project project) {
