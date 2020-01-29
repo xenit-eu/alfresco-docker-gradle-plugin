@@ -11,13 +11,13 @@ import org.gradle.api.Task;
 import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.TaskProvider;
 
-public class DockerComposeConventionImpl implements DockerComposeConvention {
+class DockerComposeConventionImpl implements DockerComposeConvention {
 
     private final ComposeSettings composeSettings;
     private final PluginClasspathChecker pluginClasspathChecker;
     static final String CONFIGURE_COMPOSE_ACTION_NAME = "Configure docker-compose image";
 
-    public DockerComposeConventionImpl(ComposeSettings composeSettings) {
+    DockerComposeConventionImpl(ComposeSettings composeSettings) {
         this.composeSettings = composeSettings;
         this.pluginClasspathChecker = new PluginClasspathChecker(composeSettings.getProject());
     }

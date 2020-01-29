@@ -6,7 +6,7 @@ import java.util.List;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskProvider;
 
-public class ReplayableComposeConventionImpl implements DockerComposeConvention {
+class ReplayableComposeConventionImpl implements DockerComposeConvention {
 
     private final DockerComposeConvention convention;
 
@@ -15,7 +15,7 @@ public class ReplayableComposeConventionImpl implements DockerComposeConvention 
     @FunctionalInterface
     private interface ReplayableChange {
 
-        public void replayInto(DockerComposeConvention convention);
+        void replayInto(DockerComposeConvention convention);
     }
 
     public ReplayableComposeConventionImpl(DockerComposeConvention convention) {

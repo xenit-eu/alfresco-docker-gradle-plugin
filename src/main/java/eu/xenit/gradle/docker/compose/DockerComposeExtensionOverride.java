@@ -8,7 +8,7 @@ import java.util.HashMap;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskProvider;
 
-public class DockerComposeExtensionOverride extends ComposeExtension implements DockerComposeConvention {
+class DockerComposeExtensionOverride extends ComposeExtension implements DockerComposeConvention {
 
     private final ReplayableComposeConventionImpl dockerComposeConvention;
 

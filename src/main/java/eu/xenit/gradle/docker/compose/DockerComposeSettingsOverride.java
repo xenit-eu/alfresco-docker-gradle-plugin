@@ -5,7 +5,8 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskProvider;
 
-public class DockerComposeSettingsOverride extends ComposeSettings implements DockerComposeConvention {
+class DockerComposeSettingsOverride extends ComposeSettings implements DockerComposeConvention {
+
     private DockerComposeConvention dockerComposeConvention;
 
     public DockerComposeSettingsOverride(Project project, String name) {
