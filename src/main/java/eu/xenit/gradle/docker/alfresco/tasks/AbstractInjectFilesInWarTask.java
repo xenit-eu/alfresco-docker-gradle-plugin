@@ -22,7 +22,8 @@ abstract class AbstractInjectFilesInWarTask extends AbstractWarEnrichmentTask {
     }
 
     public void setSourceFiles(Object files) {
-        sourceFiles.setFrom(files);
+        // Do not access field to work around https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/98
+        getSourceFiles().setFrom(files);
     }
 
     protected void configureLabels() {
