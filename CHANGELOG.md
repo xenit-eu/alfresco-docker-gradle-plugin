@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+ * [#95](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/95) - Nested dockerCompose configurations
+
 ## Version 5.0.1 - 2020-01-22
 
 ### Fixes

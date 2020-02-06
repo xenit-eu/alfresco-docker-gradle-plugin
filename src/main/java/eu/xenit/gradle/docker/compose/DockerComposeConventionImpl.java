@@ -3,21 +3,21 @@ package eu.xenit.gradle.docker.compose;
 import com.avast.gradle.dockercompose.ComposeSettings;
 import com.bmuschko.gradle.docker.DockerRemoteApiPlugin;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
-import eu.xenit.gradle.docker.alfresco.DockerAlfrescoPlugin;
 import eu.xenit.gradle.docker.DockerPlugin;
+import eu.xenit.gradle.docker.alfresco.DockerAlfrescoPlugin;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.TaskProvider;
 
-public class DockerComposeConventionImpl implements DockerComposeConvention {
+class DockerComposeConventionImpl implements DockerComposeConvention {
 
     private final ComposeSettings composeSettings;
     private final PluginClasspathChecker pluginClasspathChecker;
     static final String CONFIGURE_COMPOSE_ACTION_NAME = "Configure docker-compose image";
 
-    public DockerComposeConventionImpl(ComposeSettings composeSettings) {
+    DockerComposeConventionImpl(ComposeSettings composeSettings) {
         this.composeSettings = composeSettings;
         this.pluginClasspathChecker = new PluginClasspathChecker(composeSettings.getProject());
     }
