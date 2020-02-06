@@ -1,0 +1,67 @@
+plugins {
+    id 'eu.xenit.docker-alfresco'
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+    }
+}
+
+dependencies {
+    baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
+    alfrescoAmp "de.fmaul:javascript-console-repo:0.6@amp"
+    alfrescoSM(group: 'eu.xenit', name: 'care4alf', version: '1.1.0') {
+        transitive = false
+    }
+    alfrescoDE(group: 'eu.xenit', name: 'care4alf', version: '1.1.0') {
+        transitive = false
+    }
+}
+
+dockerAlfresco {
+    // Base image used in the FROM of the docker build. Should be a compatible image.
+    baseImage = "tomcat:7-jre8"
+    dockerBuild {
+        // Repository to publish on. On Jenkins, branches other than master will be appended with -branch.
+        // Local build will be appended with -local
+        repository = 'issue-98'
+    }
+}
+
+// Check if modules are applied correctly
+import com.bmuschko.gradle.docker.tasks.container.*
+
+task createContainer(type: DockerCreateContainer) {
+    imageId = buildDockerImage.imageId
+    // Just run a command so the container stays active in the background without starting Alfresco
+    cmd = ["bash", "-c", "while true; do sleep 100; done"]
+    dependsOn(buildDockerImage)
+    hostConfig.autoRemove = true
+}
+
+task startContainer(type: DockerStartContainer) {
+    containerId = createContainer.containerId
+    dependsOn(createContainer)
+}
+
+task checkAmpApplied(type: DockerExecContainer) {
+    containerId = createContainer.containerId
+    withCommand(["stat", "/usr/local/tomcat/webapps/alfresco/WEB-INF/classes/alfresco/module/de.fme.alfresco.JavascriptConsole-repo/module.properties"])
+    withCommand(["stat", "/usr/local/tomcat/webapps/alfresco/WEB-INF/classes/dynamic-extensions/bundles/care4alf-1.1.0.jar"])
+    withCommand(["stat", "/usr/local/tomcat/webapps/alfresco/WEB-INF/lib/care4alf-1.1.0.jar"])
+    successOnExitCodes.add(0)
+    dependsOn(startContainer)
+}
+
+task terminateContainer(type: DockerKillContainer) {
+    containerId = createContainer.containerId
+    dependsOn(createContainer)
+}
+
+task functionalTest {
+    dependsOn(checkAmpApplied)
+    finalizedBy(terminateContainer)
+}

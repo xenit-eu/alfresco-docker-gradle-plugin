@@ -84,4 +84,9 @@ public class Reproductions extends AbstractIntegrationTest {
         testProjectFolder(REPRODUCTIONS.resolve("configure-registry-credentials"), ":buildDockerImage");
 
     }
+
+    @Test
+    public void testIssue98() throws IOException {
+        testProjectFolder(REPRODUCTIONS.resolve("issue-98"), ":functionalTest");
+    }
 }
