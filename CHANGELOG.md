@@ -1,10 +1,17 @@
-# XeniT Gradle Plugin - Changelog
+# Alfresco Docker Gradle Plugins - Changelog
 
 ## Unreleased
+
+## Version 5.0.2 - 2020-01-17
 
 ### Added
 
  * [#95](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/95) - Nested dockerCompose configurations
+
+### Fixed
+
+ * [#96](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/96) - eu.xenit.docker-compose plugin breaks up-to-date for buildDockerImage
+ * [#98](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/98) - Alfresco extensions are not applied on Gradle 6.1
 
 ## Version 5.0.1 - 2020-01-22
 
