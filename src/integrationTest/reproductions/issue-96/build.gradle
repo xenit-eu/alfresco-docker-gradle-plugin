@@ -1,0 +1,8 @@
+plugins {
+    id 'eu.xenit.docker'
+    id 'eu.xenit.docker-compose.auto'
+}
+
+dockerFile {
+    dockerFile = file('docker/Dockerfile')
+}

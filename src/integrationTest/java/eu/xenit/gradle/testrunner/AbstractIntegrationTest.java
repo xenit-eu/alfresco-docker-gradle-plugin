@@ -5,9 +5,16 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
@@ -85,18 +92,27 @@ public abstract class AbstractIntegrationTest {
     }
 
     protected GradleRunner getGradleRunner(Path projectFolder, String task) throws IOException {
-        File tempExample = temporaryFolder.newFolder(projectFolder.getFileName().toString());
+        return getGradleRunner(projectFolder, task, "--rerun-tasks");
+    }
+
+    protected GradleRunner getGradleRunner(Path projectFolder, String task, String... additionalArguments) throws IOException {
+        File tempExample = getOrCreateTemporaryFolder(projectFolder.getFileName().toString());
         FileUtils.copyDirectory(projectFolder.toFile(), tempExample);
         File gitDir = tempExample.toPath().resolve("_git").toFile();
         if (gitDir.exists()) {
             FileUtils.moveDirectory(gitDir, tempExample.toPath().resolve(".git").toFile());
         }
 
-        GradleRunner runner =  GradleRunner.create()
+        Set<String> arguments = new LinkedHashSet<>();
+        arguments.add(task);
+        arguments.add("--stacktrace");
+        arguments.add("--info");
+        arguments.addAll(Arrays.asList(additionalArguments));
+
+        GradleRunner runner = GradleRunner.create()
                 .withProjectDir(tempExample)
-                .withArguments(task, "--stacktrace", "--rerun-tasks", "--info")
+                .withArguments(new ArrayList<>(arguments))
                 .withPluginClasspath()
-                .withDebug(true)
                 .forwardOutput();
 
         if(System.getProperty("eu.xenit.gradle.integration.useGradleVersion") == null) {
@@ -108,5 +124,13 @@ public abstract class AbstractIntegrationTest {
 
     protected void testProjectFolder(Path projectFolder) throws IOException {
         testProjectFolder(projectFolder, ":buildDockerImage");
+    }
+
+    private File getOrCreateTemporaryFolder(final String name) throws IOException {
+        Path folder = temporaryFolder.getRoot().toPath().resolve(name);
+        if (Files.exists(folder)) {
+            return folder.toFile();
+        }
+        return temporaryFolder.newFolder(name);
     }
 }
