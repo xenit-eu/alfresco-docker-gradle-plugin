@@ -11,7 +11,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
@@ -89,7 +92,7 @@ public abstract class AbstractIntegrationTest {
     }
 
     protected GradleRunner getGradleRunner(Path projectFolder, String task) throws IOException {
-        return getGradleRunner(projectFolder, task, "--stacktrace", "--rerun-tasks", "--info");
+        return getGradleRunner(projectFolder, task, "--rerun-tasks");
     }
 
     protected GradleRunner getGradleRunner(Path projectFolder, String task, String... additionalArguments) throws IOException {
@@ -100,13 +103,15 @@ public abstract class AbstractIntegrationTest {
             FileUtils.moveDirectory(gitDir, tempExample.toPath().resolve(".git").toFile());
         }
 
-        List<String> arguments = new ArrayList<>();
+        Set<String> arguments = new LinkedHashSet<>();
         arguments.add(task);
+        arguments.add("--stacktrace");
+        arguments.add("--info");
         arguments.addAll(Arrays.asList(additionalArguments));
 
-        GradleRunner runner =  GradleRunner.create()
+        GradleRunner runner = GradleRunner.create()
                 .withProjectDir(tempExample)
-                .withArguments(arguments)
+                .withArguments(new ArrayList<>(arguments))
                 .withPluginClasspath()
                 .forwardOutput();
 

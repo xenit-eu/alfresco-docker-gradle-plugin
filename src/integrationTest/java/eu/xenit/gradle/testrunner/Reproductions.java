@@ -102,7 +102,7 @@ public class Reproductions extends AbstractIntegrationTest {
 
         testProjectFolder(REPRODUCTIONS.resolve(folder), ":buildDockerImage");
 
-        BuildResult buildResult = getGradleRunner(REPRODUCTIONS.resolve(folder), task, "--stacktrace", "--info")
+        BuildResult buildResult = getGradleRunner(REPRODUCTIONS.resolve(folder), task, "--info")
                 .build();
         assertEquals("buildDockerImage should be UP-TO-DATE",
                 TaskOutcome.UP_TO_DATE, Objects.requireNonNull(buildResult.task(task)).getOutcome());
