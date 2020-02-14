@@ -43,9 +43,12 @@ class DockerComposeConventionImpl implements DockerComposeConvention {
 
     private void configureBuildImageTask(Task buildImage, Action<? super DockerBuildImage> action) {
         DockerBuildImage dockerBuildImage = pluginClasspathChecker.checkTask(DockerBuildImage.class, buildImage);
-        dockerBuildImage.doLast(CONFIGURE_COMPOSE_ACTION_NAME, t -> {
-            action.execute(dockerBuildImage);
-        });
+        dockerBuildImage.doLast(CONFIGURE_COMPOSE_ACTION_NAME, new Action<Task>() { // no lambda -> see #96
+            @Override
+            public void execute(Task task) {
+                action.execute(dockerBuildImage);
+
+            }});
     }
 
     private Action<? super DockerBuildImage> createSetComposeEnvironmentAction(String environmentVariable) {
