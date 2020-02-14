@@ -1,12 +1,16 @@
 package eu.xenit.gradle.testrunner;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import eu.xenit.gradle.docker.alfresco.tasks.DockerfileWithWarsTask;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Objects;
 import org.gradle.testkit.runner.BuildResult;
+import org.gradle.testkit.runner.TaskOutcome;
 import org.junit.Test;
 
 /**
@@ -68,7 +72,8 @@ public class Reproductions extends AbstractIntegrationTest {
 
     @Test
     public void testDockerAlfrescoPluginWithoutConfiguration() throws IOException {
-        BuildResult buildResult = getGradleRunner(REPRODUCTIONS.resolve("docker-alfresco-plugin-without-config"), ":buildDockerImage").buildAndFail();
+        BuildResult buildResult = getGradleRunner(REPRODUCTIONS.resolve("docker-alfresco-plugin-without-config"),
+                ":buildDockerImage").buildAndFail();
         assertTrue(buildResult.getOutput().contains(DockerfileWithWarsTask.MESSAGE_BASE_IMAGE_NOT_SET) || buildResult
                 .getOutput().contains("No value has been specified for property 'baseImage'"));
     }
@@ -88,5 +93,18 @@ public class Reproductions extends AbstractIntegrationTest {
     @Test
     public void testIssue98() throws IOException {
         testProjectFolder(REPRODUCTIONS.resolve("issue-98"), ":functionalTest");
+    }
+
+    @Test
+    public void testIssue96() throws IOException {
+        final String folder = "issue-96";
+        final String task = ":buildDockerImage";
+
+        testProjectFolder(REPRODUCTIONS.resolve(folder), ":buildDockerImage");
+
+        BuildResult buildResult = getGradleRunner(REPRODUCTIONS.resolve(folder), task, "--stacktrace", "--info")
+                .build();
+        assertEquals("buildDockerImage should be UP-TO-DATE",
+                TaskOutcome.UP_TO_DATE, Objects.requireNonNull(buildResult.task(task)).getOutcome());
     }
 }
