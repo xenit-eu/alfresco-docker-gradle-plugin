@@ -87,6 +87,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
             dockerfile.addWar("alfresco",
                     project1.provider(() -> alfrescoBaseWar.isEmpty() ? null : t.getOutputWar().get()));
             dockerfile.dependsOn(t);
+            dockerfile.withLabels(t.getLabels());
         });
 
         Configuration shareBaseWar = project1.getConfigurations().getByName(BASE_SHARE_WAR);
@@ -100,6 +101,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         shareTasks.forEach(t -> {
             dockerfile.addWar("share", project1.provider(() -> shareBaseWar.isEmpty() ? null : t.getOutputWar().get()));
             dockerfile.dependsOn(t);
+            dockerfile.withLabels(t.getLabels());
         });
     }
 

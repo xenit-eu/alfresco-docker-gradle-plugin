@@ -1,0 +1,65 @@
+plugins {
+    id 'eu.xenit.docker-alfresco'
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+    }
+}
+
+dependencies {
+    baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
+    alfrescoAmp "de.fmaul:javascript-console-repo:0.6@amp"
+    alfrescoSM(group: 'eu.xenit', name: 'care4alf', version: '1.1.0') {
+        transitive = false
+    }
+    alfrescoDE(group: 'eu.xenit', name: 'care4alf', version: '1.1.0') {
+        transitive = false
+    }
+}
+
+dockerAlfresco {
+    // Base image used in the FROM of the docker build. Should be a compatible image.
+    baseImage = "tomcat:7-jre8"
+    dockerBuild {
+        // Repository to publish on. On Jenkins, branches other than master will be appended with -branch.
+        // Local build will be appended with -local
+        repository = 'issue-97'
+    }
+}
+
+// Check if modules are applied correctly
+import com.bmuschko.gradle.docker.tasks.image.DockerInspectImage
+
+tasks.withType(eu.xenit.gradle.docker.alfresco.tasks.LabelSupplierTask) {
+    doFirst {
+        println(getLabels().get())
+    }
+    println(getName())
+
+    println(getLabels().get())
+    doLast {
+        println(getLabels().get())
+    }
+}
+
+task checkImageLabels(type: DockerInspectImage) {
+    imageId = buildDockerImage.imageId
+    dependsOn(buildDockerImage)
+    onNext({ image ->
+        assert image.config.labels != null
+        assert image.config.labels["eu.xenit.gradle-plugin.stripAlfrescoWar"] == "content-services-community-6.0.a.war"
+        assert image.config.labels["eu.xenit.gradle-plugin.applyAlfrescoAmp"] == "javascript-console-repo-0.6.amp"
+        assert image.config.labels["eu.xenit.gradle-plugin.applyAlfrescoSM"] == "care4alf-1.1.0.jar"
+        assert image.config.labels["eu.xenit.gradle-plugin.applyAlfrescoDE"] == "care4alf-1.1.0.jar"
+    })
+
+}
+
+
+task functionalTest {
+    dependsOn(checkImageLabels)
+}

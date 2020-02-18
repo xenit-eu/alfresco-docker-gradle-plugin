@@ -96,6 +96,11 @@ public class Reproductions extends AbstractIntegrationTest {
     }
 
     @Test
+    public void testIssue97() throws IOException {
+        testProjectFolder(REPRODUCTIONS.resolve("issue-97"), ":functionalTest");
+    }
+
+    @Test
     public void testIssue96() throws IOException {
         final String folder = "issue-96";
         final String task = ":buildDockerImage";

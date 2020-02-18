@@ -18,10 +18,6 @@ public class StripAlfrescoWarTask extends AbstractWarEnrichmentTask {
 
     private SetProperty<String> pathsToCopy = getProject().getObjects().setProperty(String.class);
 
-    public StripAlfrescoWarTask() {
-        getLabels().put(LABEL_PREFIX + getName(), getInputWar().map(f -> f.getAsFile().getName()));
-    }
-
     @Input
     public SetProperty<String> getPathsToCopy() {
         return pathsToCopy;
@@ -33,6 +29,7 @@ public class StripAlfrescoWarTask extends AbstractWarEnrichmentTask {
 
     @TaskAction
     public void copyWar() {
+        getLabels().put(LABEL_PREFIX + getName(), getInputWar().map(f -> f.getAsFile().getName()));
         Util.withWar(getInputWar().getAsFile().get(), inputWar -> {
             Util.withWar(getOutputWar().get().getAsFile(), outputWar -> {
                 try {
