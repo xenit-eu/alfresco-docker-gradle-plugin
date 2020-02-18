@@ -39,11 +39,12 @@ public abstract class AbstractIntegrationTest {
     public static Collection<Object[]> testData() {
         String forceGradleVersion = System.getProperty("eu.xenit.gradle.integration.useGradleVersion");
         if (forceGradleVersion != null) {
-        return Arrays.asList(new Object[][]{
+            return Arrays.asList(new Object[][]{
                     {forceGradleVersion},
             });
         }
         return Arrays.asList(new Object[][]{
+                {"6.2"},
                 {"6.1.1"},
                 {"6.0.1"},
                 {"5.6.4"},
