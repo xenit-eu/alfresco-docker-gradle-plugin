@@ -5,6 +5,7 @@ import com.bmuschko.gradle.docker.DockerRemoteApiPlugin;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
 import eu.xenit.gradle.docker.DockerPlugin;
 import eu.xenit.gradle.docker.alfresco.DockerAlfrescoPlugin;
+import java.util.function.Supplier;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -15,7 +16,7 @@ class DockerComposeConventionImpl implements DockerComposeConvention {
 
     private final ComposeSettings composeSettings;
     private final PluginClasspathChecker pluginClasspathChecker;
-    static final String CONFIGURE_COMPOSE_ACTION_NAME = "Configure docker-compose image";
+    static final String CONFIGURE_COMPOSE_ACTION_NAME = "Configure docker-compose image id from DockerBuildImage task";
 
     DockerComposeConventionImpl(ComposeSettings composeSettings) {
         this.composeSettings = composeSettings;
@@ -23,32 +24,27 @@ class DockerComposeConventionImpl implements DockerComposeConvention {
     }
 
     private void configureComposeDependencies(Object dependencies) {
-        composeSettings.getUpTask().configure(composeUp -> {
-            composeUp.dependsOn(dependencies);
-        });
-        composeSettings.getBuildTask().configure(composeBuild -> {
-            composeBuild.dependsOn(dependencies);
-        });
-        composeSettings.getPushTask().configure(composePush -> {
-            composePush.dependsOn(dependencies);
+        configureComposeTasks(composeTask -> {
+            composeTask.dependsOn(dependencies);
         });
     }
 
-    private void configureBuildImageTask(TaskProvider<? extends Task> buildImageTaskProvider,
-            Action<? super DockerBuildImage> action) {
-        buildImageTaskProvider.configure(dockerBuildImage -> {
-            configureBuildImageTask(dockerBuildImage, action);
-        });
+    private void configureComposeTasks(Action<? super Task> action) {
+        composeSettings.getUpTask().configure(action);
+        composeSettings.getBuildTask().configure(action);
+        composeSettings.getPushTask().configure(action);
     }
 
-    private void configureBuildImageTask(Task buildImage, Action<? super DockerBuildImage> action) {
-        DockerBuildImage dockerBuildImage = pluginClasspathChecker.checkTask(DockerBuildImage.class, buildImage);
-        dockerBuildImage.doLast(CONFIGURE_COMPOSE_ACTION_NAME, new Action<Task>() { // no lambda -> see #96
-            @Override
-            public void execute(Task task) {
-                action.execute(dockerBuildImage);
-
-            }});
+    private void configureComposeEnvironment(Action<? super DockerBuildImage> action,
+            Supplier<DockerBuildImage> dockerBuildImageSupplier) {
+        configureComposeTasks(composeTask -> {
+            composeTask.doFirst(CONFIGURE_COMPOSE_ACTION_NAME, new Action<Task>() { // No lambda -> see #96
+                @Override
+                public void execute(Task t) {
+                    action.execute(dockerBuildImageSupplier.get());
+                }
+            });
+        });
     }
 
     private Action<? super DockerBuildImage> createSetComposeEnvironmentAction(String environmentVariable) {
@@ -66,53 +62,63 @@ class DockerComposeConventionImpl implements DockerComposeConvention {
     }
 
     @Override
-    public void fromBuildImage(String environmentVariable, TaskProvider<? extends DockerBuildImage> buildImageTaskProvider) {
+    public void fromBuildImage(String environmentVariable,
+            TaskProvider<? extends DockerBuildImage> buildImageTaskProvider) {
         configureComposeDependencies(buildImageTaskProvider);
-        configureBuildImageTask(buildImageTaskProvider, createSetComposeEnvironmentAction(environmentVariable));
+        configureComposeEnvironment(createSetComposeEnvironmentAction(environmentVariable), buildImageTaskProvider::get);
     }
 
     @Override
     public void fromBuildImage(String environmentVariable, DockerBuildImage buildImage) {
         configureComposeDependencies(buildImage);
-        configureBuildImageTask(buildImage, createSetComposeEnvironmentAction(environmentVariable));
+        configureComposeEnvironment(createSetComposeEnvironmentAction(environmentVariable), () -> buildImage);
     }
 
     @Override
     public void fromBuildImage(TaskProvider<? extends DockerBuildImage> buildImageTaskProvider) {
         configureComposeDependencies(buildImageTaskProvider);
-        configureComposeDependencies(buildImageTaskProvider);
-        configureBuildImageTask(buildImageTaskProvider, createSetComposeEnvironmentFromPathAction());
+        configureComposeEnvironment(createSetComposeEnvironmentFromPathAction(), buildImageTaskProvider::get);
     }
 
     @Override
     public void fromBuildImage(DockerBuildImage buildImage) {
         configureComposeDependencies(buildImage);
-        configureBuildImageTask(buildImage, createSetComposeEnvironmentFromPathAction());
+        configureComposeEnvironment(createSetComposeEnvironmentFromPathAction(), () -> buildImage);
     }
 
     public void fromBuildImage(Task buildImage) {
         fromBuildImage(pluginClasspathChecker.checkTask(DockerBuildImage.class, buildImage));
     }
 
-    private void fromProjectBuildImage(Task buildImage) {
-        configureBuildImageTask(buildImage, createSetComposeEnvironmentFromPathAction());
-    }
-
     @Override
     public void fromProject(Project project) {
         TaskCollection<DockerBuildImage> dockerBuildImages = project.getTasks().withType(DockerBuildImage.class);
         configureComposeDependencies(dockerBuildImages);
-        dockerBuildImages.configureEach(this::fromProjectBuildImage);
+        configureComposeTasks(composeTask -> {
+            dockerBuildImages.forEach(buildImage -> {
+                DockerBuildImage dockerBuildImage = pluginClasspathChecker
+                        .checkTask(DockerBuildImage.class, buildImage);
+                composeTask.doFirst(CONFIGURE_COMPOSE_ACTION_NAME, new Action<Task>() { // No lambda -> see #96
+                    @Override
+                    public void execute(Task t) {
+                        createSetComposeEnvironmentFromPathAction().execute(dockerBuildImage);
+                    }
+                });
+            });
+        });
 
         // Register shortened environment variables for `buildDockerImage` tasks created with the docker or docker-alfresco plugin
         pluginClasspathChecker.withPlugin(project, DockerPlugin.class, DockerPlugin.PLUGIN_ID, plugin -> {
             String environmentName = Util.safeEnvironmentVariableName(project.getPath().substring(1)) + "_DOCKER_IMAGE";
             fromBuildImage(environmentName, project.getTasks().named("buildDockerImage", DockerBuildImage.class));
         });
-        pluginClasspathChecker.withPlugin(project, DockerAlfrescoPlugin.class, DockerAlfrescoPlugin.PLUGIN_ID, plugin -> {
-            String environmentName = Util.safeEnvironmentVariableName(project.getPath().substring(1)) + "_DOCKER_IMAGE";
-            fromBuildImage(environmentName, project.getTasks().named("buildDockerImage", DockerBuildImage.class));
-        });
+        pluginClasspathChecker
+                .withPlugin(project, DockerAlfrescoPlugin.class, DockerAlfrescoPlugin.PLUGIN_ID, plugin -> {
+                    String environmentName =
+                            Util.safeEnvironmentVariableName(project.getPath().substring(1)) + "_DOCKER_IMAGE";
+                    fromBuildImage(environmentName,
+                            project.getTasks().named("buildDockerImage", DockerBuildImage.class));
+                });
         // Check plugin classpath for docker remote api plugin
         pluginClasspathChecker.checkPlugin(project, DockerRemoteApiPlugin.class, "com.bmuschko.docker-remote-api");
     }
