@@ -1,0 +1,4 @@
+version: '2.3'
+services:
+  issue_104:
+    image: ${DOCKER_IMAGE}

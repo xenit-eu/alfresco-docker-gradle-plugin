@@ -107,4 +107,15 @@ public class Reproductions extends AbstractIntegrationTest {
         assertEquals("buildDockerImage should be UP-TO-DATE",
                 TaskOutcome.UP_TO_DATE, Objects.requireNonNull(buildResult.task(task)).getOutcome());
     }
+
+    @Test
+    public void testIssue104() throws IOException {
+        final String folder = "issue-104";
+        final String task = ":functionalTest";
+
+        testProjectFolder(REPRODUCTIONS.resolve(folder), task);
+
+        // Check if second time it does complete succesfully too
+        getGradleRunner(REPRODUCTIONS.resolve(folder), task, "--info").build();
+    }
 }
