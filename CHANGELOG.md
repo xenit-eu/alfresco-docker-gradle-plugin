@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## Version 5.0.3 - 2020-02-24
+
+### Fixed
+
+ * [#97](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/97) - Fix labelling image with applied AMPs, DEs and SMs
+ * [#104](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/104) - composeUp task fails because buildDockerImage is up-to-date
+
 ## Version 5.0.2 - 2020-01-17
 
 ### Added
