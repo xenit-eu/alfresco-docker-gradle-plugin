@@ -7,7 +7,6 @@ import eu.xenit.gradle.docker.alfresco.tasks.DockerfileWithWarsTask;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.Objects;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.TaskOutcome;
@@ -122,5 +121,10 @@ public class Reproductions extends AbstractIntegrationTest {
 
         // Check if second time it does complete succesfully too
         getGradleRunner(REPRODUCTIONS.resolve(folder), task, "--info").build();
+    }
+
+    @Test
+    public void testIssue107() throws IOException {
+        testProjectFolder(REPRODUCTIONS.resolve("issue-107"), ":functionalTest");
     }
 }

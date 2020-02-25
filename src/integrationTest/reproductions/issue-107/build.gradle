@@ -1,0 +1,83 @@
+plugins {
+    id 'eu.xenit.docker-alfresco'
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+    }
+}
+
+dependencies {
+    baseAlfrescoWar "org.alfresco:content-services-community:6.0.7-ga@war"
+    alfrescoAmp "de.fmaul:javascript-console-repo:0.6@amp"
+    alfrescoSM(group: 'eu.xenit', name: 'care4alf', version: '1.1.0') {
+        transitive = false
+    }
+    alfrescoDE(group: 'eu.xenit', name: 'care4alf', version: '1.1.0') {
+        transitive = false
+    }
+
+    baseShareWar "org.alfresco:share:6.0.c@war"
+    shareAmp "de.fmaul:javascript-console-share:0.6@amp"
+}
+
+dockerAlfresco {
+    baseImage = "alfresco/alfresco-content-repository-community:6.0.7-ga"
+    leanImage = true
+    dockerBuild {
+        repository = 'issue-107'
+    }
+}
+
+import com.bmuschko.gradle.docker.tasks.image.*
+
+task saveDockerImage(type: DockerSaveImage) {
+    dependsOn(buildDockerImage)
+    image = buildDockerImage.imageId
+    destFile = project.layout.buildDirectory.file("builtImage.tar")
+}
+
+task saveBaseDockerImage(type: DockerSaveImage) {
+    image = dockerAlfresco.baseImage
+    destFile = project.layout.buildDirectory.file("originalImage.tar")
+}
+import java.util.stream.Collectors
+import java.util.stream.Stream
+
+def dependencySizes(configs) {
+    return configs.stream()
+            .flatMap({ it.resolve().stream() })
+            .flatMap({
+                // Extract AMP & WARs, because these are extracted in the final result
+                (it.name.endsWith(".amp") || it.name.endsWith(".war")) ? project.zipTree(it).getFiles().stream() : Stream.of(it)
+            })
+            .collect(Collectors.summingLong({ it.size() }))
+
+}
+
+task functionalTest {
+    dependsOn(saveDockerImage, saveBaseDockerImage)
+    doLast {
+        def dependencySize = dependencySizes([configurations.alfrescoAmp, configurations.alfrescoSM, configurations.alfrescoDE, configurations.shareAmp])
+        def baseSize = dependencySizes([configurations.baseAlfrescoWar, configurations.baseShareWar])
+        def imageSizeDiff = saveDockerImage.destFile.getAsFile().get().size() - saveBaseDockerImage.destFile.getAsFile().get().size()
+
+        println([
+                "dependencySize": dependencySize,
+                "baseSize"      : baseSize,
+                "imageSizeDiff" : imageSizeDiff,
+        ]);
+
+        // Multiplications are to give some leeway to calculations, because not everything is added exactly
+        // Making sure all dependencies are installed
+        assert imageSizeDiff >= (dependencySize * 0.95): "Image should at least be larger than the size of the dependencies"
+        // Making sure ONLY dependencies are installed (no base wars)
+        assert imageSizeDiff < (dependencySize * 1.05): "Image should not be much larger than the size of the dependencies"
+        // Making sure no base war can hide itself -> subtract dependency size from image size and ensure it is smaller than the base wars
+        assert (imageSizeDiff - dependencySize) < baseSize * 1.05: "Image minus dependencies should not be larger than the size of base wars"
+
+    }
+}
