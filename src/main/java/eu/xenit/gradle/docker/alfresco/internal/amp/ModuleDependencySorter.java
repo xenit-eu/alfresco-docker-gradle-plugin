@@ -44,7 +44,7 @@ public final class ModuleDependencySorter {
         return orderedDependencyList;
     }
 
-    public static List<File> sortByInstallOrder(Set<File> modules, File warFile) {
+    public static List<ModuleInformation> sortByInstallOrder(Set<File> modules, File warFile) {
         Set<ModuleInformation> moduleDependencies = modules.stream()
                 .map(ModuleInformationAmp::new)
                 .collect(Collectors.toSet());
@@ -57,7 +57,7 @@ public final class ModuleDependencySorter {
 
         return installOrder.stream()
                 .filter(m -> m.getModuleInformation() instanceof ModuleInformationAmp)
-                .map(m -> m.getModuleInformation().getFile())
+                .map(ModuleWithDependencies::getModuleInformation)
                 .collect(Collectors.toList());
     }
 }

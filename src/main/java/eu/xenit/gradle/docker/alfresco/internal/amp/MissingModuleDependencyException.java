@@ -1,6 +1,6 @@
 package eu.xenit.gradle.docker.alfresco.internal.amp;
 
-public class MissingModuleDependencyException extends RuntimeException {
+public class MissingModuleDependencyException extends ModuleException {
 
     private final ModuleInformation thisModule;
     private final String dependencyId;
