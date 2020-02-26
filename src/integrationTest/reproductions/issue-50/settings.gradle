@@ -1,0 +1,2 @@
+include ':'
+include ':prepare-alfresco-war'

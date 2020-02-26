@@ -1,0 +1,46 @@
+plugins {
+    id "eu.xenit.amp" version "1.0.1"
+    id "eu.xenit.alfresco" version "1.0.1"
+    id "eu.xenit.docker-alfresco"
+}
+
+sourceSets {
+    moduleA {
+        amp {
+            module([
+                    "module.id"         : "module.a",
+                    "module.version"    : "1.0.0",
+                    "module.title"      : "module.a",
+                    "module.description": "module.a",
+            ])
+        }
+    }
+    moduleB {
+        amp {
+            module([
+                    "module.id"              : "module.b",
+                    "module.version"         : "1.0.0",
+                    "module.title"           : "module.b",
+                    "module.description"     : "module.b",
+                    "module.depends.module.a": "*",
+            ])
+        }
+    }
+    moduleC {
+        amp {
+            module([
+                    "module.id"              : "module.c",
+                    "module.version"         : "1.0.0",
+                    "module.title"           : "module.c",
+                    "module.description"     : "module.c",
+                    "module.depends.module.a": "*",
+                    "module.depends.module.d": "*",
+            ])
+        }
+    }
+}
+
+dependencies {
+    baseAlfrescoWar project(path: ':prepare-alfresco-war', configuration: 'alfrescoWar')
+    alfrescoAmp files(moduleAAmp, moduleBAmp, moduleCAmp)
+}

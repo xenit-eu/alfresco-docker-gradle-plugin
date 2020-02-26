@@ -127,4 +127,9 @@ public class Reproductions extends AbstractIntegrationTest {
     public void testIssue107() throws IOException {
         testProjectFolder(REPRODUCTIONS.resolve("issue-107"), ":functionalTest");
     }
+
+    @Test
+    public void testIssue50() throws IOException {
+        testProjectFolder(REPRODUCTIONS.resolve("issue-50"), ":alfrescoWar");
+    }
 }

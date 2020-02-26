@@ -1,0 +1,39 @@
+plugins {
+    id "eu.xenit.amp"
+    id "eu.xenit.alfresco"
+    id "eu.xenit.docker-alfresco"
+}
+
+sourceSets {
+    moduleD {
+        amp {
+            module([
+                    "module.id"         : "module.d",
+                    "module.version"    : "1.0.0",
+                    "module.title"      : "module.d",
+                    "module.description": "module.d",
+            ])
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    alfrescoPublic()
+}
+
+configurations {
+    create("alfrescoWar")
+}
+
+artifacts {
+    add("alfrescoWar", tasks.alfrescoWar) {
+        builtBy(tasks.alfrescoWar)
+    }
+}
+
+
+dependencies {
+    baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
+    alfrescoAmp files(moduleDAmp)
+}
