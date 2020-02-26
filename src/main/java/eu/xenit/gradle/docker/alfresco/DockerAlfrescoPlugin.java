@@ -159,7 +159,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         mergeWarsTask.addInputWar(project.provider(baseWar::getSingleFile));
         for (WarLabelOutputTask task : outputTasks) {
             mergeWarsTask.withLabels(task);
-            mergeWarsTask.addInputWar(project.provider(() -> task.getOutputWar().get().getAsFile()));
+            mergeWarsTask.addInputWar(task);
         }
 
         return outputTasks;
