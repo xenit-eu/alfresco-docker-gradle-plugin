@@ -49,6 +49,11 @@ public class InstallAmpsInWarTask extends AbstractInjectFilesInWarTask {
                     moduleManagementTool
                             .installModule(module.getFile().getAbsolutePath(), outputWar.getAbsolutePath(), false, true, false);
                 } catch (AlfrescoRuntimeException exception) {
+                    // Strip exception that says nothing from inbetween.
+                    if (exception.getMessage()
+                            .contains("An error was encountered during deployment of the AMP into the WAR")) {
+                        throw new ModuleInstallationException(module, exception.getCause(), exception);
+                    }
                     throw new ModuleInstallationException(module, exception);
                 }
             }

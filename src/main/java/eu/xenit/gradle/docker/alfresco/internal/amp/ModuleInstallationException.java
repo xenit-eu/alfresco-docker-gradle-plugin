@@ -6,17 +6,17 @@ import org.alfresco.error.AlfrescoRuntimeException;
 public class ModuleInstallationException extends ModuleException {
 
     public ModuleInstallationException(ModuleInformation moduleInformation, Throwable parent) {
-        super(createModuleMessage(moduleInformation) + parent.getMessage(), parent);
+        this(moduleInformation, parent, parent);
     }
 
-    public ModuleInstallationException(ModuleInformation moduleInformation,
-            AlfrescoRuntimeException alfrescoException) {
-        super(createModuleMessage(moduleInformation) + alfrescoException.getMessage().split(" ", 2)[1],
-                alfrescoException);
+    public ModuleInstallationException(ModuleInformation moduleInformation, Throwable messageParent, Throwable realParent) {
+        super("Failed to install module " + moduleInformation.getId() + " (" + moduleInformation.getFile().getPath()+"): "+createParentMessage(messageParent), realParent);
     }
 
-    private static String createModuleMessage(ModuleInformation moduleInformation) {
-        return "Failed to install module " + moduleInformation.getId() + " (" + moduleInformation.getFile().getPath()
-                + "): ";
+    private static String createParentMessage(Throwable parent) {
+        if(parent instanceof AlfrescoRuntimeException) {
+            return parent.getMessage().split(" ", 2)[1];
+        }
+        return parent.getMessage();
     }
 }
