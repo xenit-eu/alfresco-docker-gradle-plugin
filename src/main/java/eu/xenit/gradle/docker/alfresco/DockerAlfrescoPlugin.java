@@ -116,12 +116,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
                     }
                 });
         resolveTask.setGroup(TASK_GROUP);
-        resolveTask.getInputWar().set(project.getLayout().file(project.provider(() -> {
-            if (baseWar.isEmpty()) {
-                return null;
-            }
-            return baseWar.getSingleFile();
-        })));
+        resolveTask.setInputWar(baseWar);
 
         final List<WarEnrichmentTask> tasks = new ArrayList<>();
 
@@ -158,7 +153,6 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
 
         mergeWarsTask.addInputWar(project.provider(baseWar::getSingleFile));
         for (WarLabelOutputTask task : outputTasks) {
-            mergeWarsTask.withLabels(task);
             mergeWarsTask.addInputWar(task);
         }
 
