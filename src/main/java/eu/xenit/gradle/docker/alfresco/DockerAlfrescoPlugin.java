@@ -111,6 +111,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         WarEnrichmentTask resolveTask = project.getTasks()
                 .create("strip" + warName + "War", StripAlfrescoWarTask.class, stripAlfrescoWarTask -> {
                     stripAlfrescoWarTask.addPathToCopy(WarHelperImpl.MANIFEST_FILE);
+                    stripAlfrescoWarTask.addPathToCopy("WEB-INF/classes/alfresco/module/*/module.properties");
                     if (warName.equals(ALFRESCO)) {
                         stripAlfrescoWarTask.addPathToCopy(WarHelperImpl.VERSION_PROPERTIES);
                     }
