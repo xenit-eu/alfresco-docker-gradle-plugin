@@ -2,7 +2,7 @@ package eu.xenit.gradle.docker.alfresco.internal.amp;
 
 import java.util.Set;
 
-public class CircularModuleDependencyException extends RuntimeException {
+public class CircularModuleDependencyException extends ModuleException {
 
     private final Set<ModuleInformation> dependencyLoop;
 

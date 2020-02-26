@@ -1,6 +1,8 @@
 package eu.xenit.gradle.docker.alfresco.tasks;
 
 import eu.xenit.gradle.docker.alfresco.internal.amp.ModuleDependencySorter;
+import eu.xenit.gradle.docker.alfresco.internal.amp.ModuleInformation;
+import eu.xenit.gradle.docker.alfresco.internal.amp.ModuleInstallationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -8,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.module.tool.ModuleManagementTool;
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.tasks.TaskAction;
@@ -37,11 +40,22 @@ public class InstallAmpsInWarTask extends AbstractInjectFilesInWarTask {
                     .stream()
                     .flatMap(InstallAmpsInWarTask::listFilesRecursively)
                     .collect(Collectors.toSet());
-            List<File> filesInInstallationOrder = ModuleDependencySorter.sortByInstallOrder(sourceFiles, outputWar);
+            List<ModuleInformation> modulesInInstallationOrder = ModuleDependencySorter.sortByInstallOrder(sourceFiles, outputWar);
 
-            for (File file : filesInInstallationOrder) {
-                getLogger().debug("installing amp from {} in war {}", file.getAbsolutePath(), outputWar.getAbsolutePath());
-                moduleManagementTool.installModule(file.getAbsolutePath(), outputWar.getAbsolutePath(), false, true, false);
+            for (ModuleInformation module : modulesInInstallationOrder) {
+                getLogger()
+                        .debug("installing module {} ({}) in war {}", module.getId(), module.getFile(), outputWar.getAbsolutePath());
+                try {
+                    moduleManagementTool
+                            .installModule(module.getFile().getAbsolutePath(), outputWar.getAbsolutePath(), false, true, false);
+                } catch (AlfrescoRuntimeException exception) {
+                    // Strip exception that says nothing from inbetween.
+                    if (exception.getMessage()
+                            .contains("An error was encountered during deployment of the AMP into the WAR")) {
+                        throw new ModuleInstallationException(module, exception.getCause(), exception);
+                    }
+                    throw new ModuleInstallationException(module, exception);
+                }
             }
 
         });
