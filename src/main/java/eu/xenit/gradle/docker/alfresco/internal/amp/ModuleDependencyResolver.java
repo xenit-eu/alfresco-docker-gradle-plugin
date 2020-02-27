@@ -15,7 +15,10 @@ class ModuleDependencyResolver {
         Map<String, ModuleInformation> moduleIds = new HashMap<>(dependencies.size());
         for (ModuleInformation dependency : dependencies) {
             for (String alias : dependency.getIds()) {
-                moduleIds.put(alias, dependency);
+                ModuleInformation previousDependency = moduleIds.put(alias, dependency);
+                if(previousDependency != null) {
+                    throw new DuplicateModuleException(dependency, previousDependency);
+                }
             }
         }
         return moduleIds;

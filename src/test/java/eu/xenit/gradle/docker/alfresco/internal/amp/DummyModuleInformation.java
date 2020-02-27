@@ -47,24 +47,6 @@ class DummyModuleInformation implements ModuleInformation {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        DummyModuleInformation that = (DummyModuleInformation) o;
-        return moduleId.equals(that.moduleId) &&
-                moduleDependencies.equals(that.moduleDependencies);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(moduleId, moduleDependencies);
-    }
-
-    @Override
     public String toString() {
         return "DummyModuleInformation{" +
                 "moduleId='" + moduleId + '\'' +

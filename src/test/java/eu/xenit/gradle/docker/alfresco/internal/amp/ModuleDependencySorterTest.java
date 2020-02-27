@@ -73,4 +73,32 @@ public class ModuleDependencySorterTest {
         assertTrue("module.b is installed before module.c", moduleBIndex < moduleCIndex);
     }
 
+    @Test
+    public void sortDoesNotListWarModules() {
+        Set<ModuleInformation> amps = new HashSet<>();
+        Set<ModuleInformation> warModules = new HashSet<>();
+
+        warModules.add(new DummyModuleInformation("module.a", Collections.emptySet()));
+        amps.add(new DummyModuleInformation("module.b", Collections.emptySet()));
+        amps.add(new DummyModuleInformation("module.c", new HashSet<>(Arrays.asList("module.a", "module.b"))));
+
+        List<ModuleInformation> sortedInInstallationOrder = ModuleDependencySorter.sortByInstallOrder(amps, warModules);
+
+        List<String> modulesToInstall = sortedInInstallationOrder.stream()
+                .map(ModuleInformation::getId)
+                .collect(Collectors.toList());
+
+        assertEquals(Arrays.asList("module.b", "module.c"), modulesToInstall);
+    }
+
+    @Test(expected = ModuleAlreadyInstalledException.class)
+    public void sortRejectsAlreadyInstalledModules() {
+        Set<ModuleInformation> amps = new HashSet<>();
+        Set<ModuleInformation> warModules = new HashSet<>();
+
+        warModules.add(new DummyModuleInformation("module.a", Collections.emptySet()));
+        amps.add(new DummyModuleInformation("module.a", Collections.emptySet()));
+
+        ModuleDependencySorter.sortByInstallOrder(amps, warModules);
+    }
 }

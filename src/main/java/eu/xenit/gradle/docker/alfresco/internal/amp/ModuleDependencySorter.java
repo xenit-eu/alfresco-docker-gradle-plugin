@@ -3,8 +3,10 @@ package eu.xenit.gradle.docker.alfresco.internal.amp;
 import de.schlichtherle.truezip.file.TFile;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.alfresco.repo.module.tool.WarHelper;
@@ -44,8 +46,33 @@ public final class ModuleDependencySorter {
         return orderedDependencyList;
     }
 
+    private static Map<String, ModuleInformation> mapModulesById(Set<ModuleInformation> modules)  {
+        Map<String, ModuleInformation> modulesMap = new HashMap<>();
+        for (ModuleInformation module : modules) {
+            for(String id: module.getIds()) {
+                modulesMap.put(id, module);
+            }
+        }
+        return modulesMap;
+    }
+
+    private static void checkModuleNotDuplicated(Set<ModuleInformation> ampModules, Set<ModuleInformation> warModules) {
+        Map<String, ModuleInformation> ampMap = mapModulesById(ampModules);
+        Map<String, ModuleInformation> warMap = mapModulesById(warModules);
+
+        Set<String> commonModuleIds = new HashSet<>(ampMap.keySet());
+        commonModuleIds.retainAll(warMap.keySet());
+
+        for(String commonModuleId: commonModuleIds) {
+            ModuleInformation ampModuleInformation = ampMap.get(commonModuleId);
+            ModuleInformation warModuleInformation = warMap.get(commonModuleId);
+            throw new ModuleAlreadyInstalledException(ampModuleInformation, warModuleInformation);
+        }
+    }
+
     static List<ModuleInformation> sortByInstallOrder(Set<ModuleInformation> modules,
             Set<ModuleInformation> warModules) {
+        checkModuleNotDuplicated(modules, warModules);
         Set<ModuleInformation> moduleDependencies = new HashSet<>(modules);
         moduleDependencies.addAll(warModules);
 
