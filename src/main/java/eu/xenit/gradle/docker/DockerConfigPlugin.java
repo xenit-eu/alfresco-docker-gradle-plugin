@@ -1,10 +1,10 @@
 package eu.xenit.gradle.docker;
 
-import com.avast.gradle.dockercompose.ComposeExtension;
 import com.avast.gradle.dockercompose.ComposeSettings;
 import com.bmuschko.gradle.docker.DockerExtension;
 import com.bmuschko.gradle.docker.DockerRegistryCredentials;
 import com.bmuschko.gradle.docker.DockerRemoteApiPlugin;
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
 import eu.xenit.gradle.docker.compose.DockerComposePlugin;
 import eu.xenit.gradle.docker.internal.Deprecation;
 import java.io.File;
@@ -12,7 +12,9 @@ import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.internal.plugins.PluginApplicationException;
+import org.gradle.api.Task;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 import org.gradle.util.GradleVersion;
 
 /**
@@ -20,6 +22,8 @@ import org.gradle.util.GradleVersion;
  * This plugin configures the docker environment.
  */
 public class DockerConfigPlugin implements Plugin<Project> {
+
+    private static final Logger LOGGER = Logging.getLogger(DockerConfigPlugin.class);
 
     public static final String PLUGIN_ID = "eu.xenit.docker-config";
 
@@ -74,6 +78,20 @@ public class DockerConfigPlugin implements Plugin<Project> {
                             "Use "+DockerComposePlugin.PLUGIN_ID+" for docker-compose functionality."
             );
         });
+
+        if(project.getGradle().getStartParameter().isOffline()) {
+            project.getTasks().withType(DockerBuildImage.class).configureEach(dockerBuildImage -> {
+                dockerBuildImage.doFirst("Disable pull because Gradle is run offline", new Action<Task>() {
+                    @Override
+                    public void execute(Task task) {
+                        if(dockerBuildImage.getPull().get()) {
+                            LOGGER.warn("Gradle is running with --offline, disabling automatic pull.");
+                            dockerBuildImage.getPull().set(false);
+                        }
+                    }
+                });
+            });
+        }
 
     }
 }
