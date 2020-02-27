@@ -9,9 +9,15 @@ class DummyModuleInformation implements ModuleInformation {
 
     private final String moduleId;
     private final Set<String> moduleDependencies;
+    private final String version;
 
     public DummyModuleInformation(String moduleId, Set<String> moduleDependencies) {
+        this(moduleId, "0.0.0", moduleDependencies);
+    }
+
+    public DummyModuleInformation(String moduleId, String version, Set<String> moduleDependencies) {
         this.moduleId = moduleId;
+        this.version = version;
         this.moduleDependencies = Collections.unmodifiableSet(moduleDependencies);
     }
 
@@ -23,6 +29,11 @@ class DummyModuleInformation implements ModuleInformation {
     @Override
     public String getId() {
         return moduleId;
+    }
+
+    @Override
+    public String getVersion() {
+        return version;
     }
 
     @Override
@@ -57,6 +68,7 @@ class DummyModuleInformation implements ModuleInformation {
     public String toString() {
         return "DummyModuleInformation{" +
                 "moduleId='" + moduleId + '\'' +
+                "version='" + version+ '\'' +
                 '}';
     }
 }

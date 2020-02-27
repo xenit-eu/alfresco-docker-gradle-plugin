@@ -10,6 +10,8 @@ public interface ModuleInformation extends Serializable {
 
     String getId();
 
+    String getVersion();
+
     Set<String> getIds();
 
     Set<String> getDependencyModuleIds();

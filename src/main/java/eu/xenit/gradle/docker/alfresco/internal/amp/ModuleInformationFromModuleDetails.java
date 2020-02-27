@@ -29,4 +29,10 @@ abstract class ModuleInformationFromModuleDetails implements ModuleInformation {
                 .map(ModuleDependency::getDependencyId)
                 .collect(Collectors.toSet());
     }
+
+    @Override
+    public String getVersion() {
+        return getModuleDetails()
+                .getModuleVersionNumber().toString();
+    }
 }
