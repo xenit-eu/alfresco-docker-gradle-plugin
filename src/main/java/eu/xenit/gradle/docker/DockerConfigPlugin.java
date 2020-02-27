@@ -8,13 +8,16 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
 import eu.xenit.gradle.docker.compose.DockerComposePlugin;
 import eu.xenit.gradle.docker.internal.Deprecation;
 import java.io.File;
+import java.util.UUID;
 import org.gradle.api.Action;
+import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
+import org.gradle.api.tasks.TaskProvider;
 import org.gradle.util.GradleVersion;
 
 /**
@@ -80,16 +83,28 @@ public class DockerConfigPlugin implements Plugin<Project> {
         });
 
         if(project.getGradle().getStartParameter().isOffline()) {
-            project.getTasks().withType(DockerBuildImage.class).configureEach(dockerBuildImage -> {
-                dockerBuildImage.doFirst("Disable pull because Gradle is run offline", new Action<Task>() {
+            // We need to create a separate task to disable pull on DockerBuildImage tasks, because in a doFirst block, providers are already finalized.
+            TaskProvider<DefaultTask> disableDockerBuildImagePull = project.getTasks().register("_"+PLUGIN_ID+"_disableDockerBuildImagePull_"+ UUID.randomUUID(), DefaultTask.class, task -> {
+                task.setDescription("["+PLUGIN_ID+" internal] Disables pull flag on DockerBuildImage tasks when Gradle runs in offline mode.");
+                task.doLast(new Action<Task>() {
                     @Override
                     public void execute(Task task) {
-                        if(dockerBuildImage.getPull().get()) {
-                            LOGGER.warn("Gradle is running with --offline, disabling automatic pull.");
-                            dockerBuildImage.getPull().set(false);
-                        }
+                        project.getTasks().withType(DockerBuildImage.class).configureEach(dockerBuildImage -> {
+                            if(dockerBuildImage.getPull().get()) {
+                                dockerBuildImage.doFirst(new Action<Task>() {
+                                    @Override
+                                    public void execute(Task task) {
+                                        LOGGER.warn("Gradle is running in offline mode, automatic pull has been disabled.");
+                                    }
+                                });
+                                dockerBuildImage.getPull().set(false);
+                            }
+                        });
                     }
                 });
+            });
+            project.getTasks().withType(DockerBuildImage.class).configureEach(dockerBuildImage -> {
+                dockerBuildImage.dependsOn(disableDockerBuildImagePull);
             });
         }
 
