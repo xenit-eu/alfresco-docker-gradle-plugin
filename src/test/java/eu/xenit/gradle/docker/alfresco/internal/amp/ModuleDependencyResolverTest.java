@@ -113,7 +113,19 @@ public class ModuleDependencyResolverTest {
         assertEquals("module.c has a dependency on module.a and module.b",
                 new HashSet<>(Arrays.asList(moduleAWithDependencies, moduleBWithDependencies)),
                 moduleCWithDependencies.getDependencies());
+    }
 
+    @Test(expected = DuplicateModuleException.class)
+    public void resolveDuplicateModules() {
+        Set<ModuleInformation> modules = new HashSet<>();
+        ModuleInformation moduleA = new DummyModuleInformation("module.a", Collections.emptySet());
+        modules.add(moduleA);
+        ModuleInformation moduleB = new DummyModuleInformation("module.b", Collections.singleton(moduleA.getId()));
+        modules.add(moduleB);
+        ModuleInformation moduleBbis = new DummyModuleInformation("module.b", Collections.singleton(moduleA.getId()));
+        modules.add(moduleBbis);
+
+        new ModuleDependencyResolver(Collections.unmodifiableSet(modules));
     }
 
 }

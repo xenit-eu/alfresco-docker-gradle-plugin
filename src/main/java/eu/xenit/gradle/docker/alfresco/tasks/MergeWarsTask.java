@@ -42,4 +42,12 @@ public class MergeWarsTask extends Zip implements LabelConsumerTask, LabelSuppli
     public void addInputWar(Provider<File> inputWar) {
         childWars.from(getProject().provider(() -> getProject().zipTree(inputWar)));
     }
+
+    public void addInputWar(WarOutputTask inputWar) {
+        if(inputWar instanceof WarLabelOutputTask) {
+            withLabels((WarLabelOutputTask)inputWar);
+        }
+        addInputWar(inputWar.getOutputWar().map(f -> f.getAsFile()));
+        dependsOn(inputWar);
+    }
 }

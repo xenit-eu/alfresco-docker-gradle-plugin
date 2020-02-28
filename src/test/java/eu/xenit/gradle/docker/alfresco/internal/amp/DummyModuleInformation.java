@@ -9,9 +9,15 @@ class DummyModuleInformation implements ModuleInformation {
 
     private final String moduleId;
     private final Set<String> moduleDependencies;
+    private final String version;
 
     public DummyModuleInformation(String moduleId, Set<String> moduleDependencies) {
+        this(moduleId, "0.0.0", moduleDependencies);
+    }
+
+    public DummyModuleInformation(String moduleId, String version, Set<String> moduleDependencies) {
         this.moduleId = moduleId;
+        this.version = version;
         this.moduleDependencies = Collections.unmodifiableSet(moduleDependencies);
     }
 
@@ -26,6 +32,11 @@ class DummyModuleInformation implements ModuleInformation {
     }
 
     @Override
+    public String getVersion() {
+        return version;
+    }
+
+    @Override
     public Set<String> getIds() {
         return Collections.singleton(moduleId);
     }
@@ -36,27 +47,10 @@ class DummyModuleInformation implements ModuleInformation {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        DummyModuleInformation that = (DummyModuleInformation) o;
-        return moduleId.equals(that.moduleId) &&
-                moduleDependencies.equals(that.moduleDependencies);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(moduleId, moduleDependencies);
-    }
-
-    @Override
     public String toString() {
         return "DummyModuleInformation{" +
                 "moduleId='" + moduleId + '\'' +
+                "version='" + version+ '\'' +
                 '}';
     }
 }

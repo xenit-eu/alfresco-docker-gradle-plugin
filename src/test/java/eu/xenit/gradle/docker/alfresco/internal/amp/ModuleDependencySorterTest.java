@@ -23,58 +23,82 @@ public class ModuleDependencySorterTest {
 
     @Test
     public void sortWithoutDependencies() {
-        Set<ModuleWithDependencies> modules = new HashSet<>();
-        ModuleWithDependencies moduleA = createModuleWithDependencies("module.a", Collections.emptySet());
-        modules.add(moduleA);
-        ModuleWithDependencies moduleB = createModuleWithDependencies("module.b", Collections.emptySet());
-        modules.add(moduleB);
-        ModuleWithDependencies moduleC = createModuleWithDependencies("module.c", Collections.emptySet());
-        modules.add(moduleC);
+        Set<ModuleInformation> modules = new HashSet<>();
+        modules.add(new DummyModuleInformation("module.a", Collections.emptySet()));
+        modules.add(new DummyModuleInformation("module.b", Collections.emptySet()));
+        modules.add(new DummyModuleInformation("module.c", Collections.emptySet()));
 
-        List<ModuleWithDependencies> sortedModules = ModuleDependencySorter.sortByDependencies(modules);
+        List<String> sortedModules = ModuleDependencySorter.sortByInstallOrder(modules, Collections.emptySet()).stream()
+                .map(ModuleInformation::getId)
+                .collect(Collectors.toList());
 
-        assertTrue("Sorted by dependencies contains module.a", sortedModules.contains(moduleA));
-        assertTrue("Sorted by dependencies contains module.b", sortedModules.contains(moduleB));
-        assertTrue("Sorted by dependencies contains module.c", sortedModules.contains(moduleC));
+        assertTrue("Sorted by dependencies contains module.a", sortedModules.contains("module.a"));
+        assertTrue("Sorted by dependencies contains module.b", sortedModules.contains("module.b"));
+        assertTrue("Sorted by dependencies contains module.c", sortedModules.contains("module.c"));
     }
 
     @Test
     public void sortWithSingleDependencies() {
-        Set<ModuleWithDependencies> modules = new HashSet<>();
-        ModuleWithDependencies moduleA = createModuleWithDependencies("module.a", Collections.emptySet());
-        modules.add(moduleA);
-        ModuleWithDependencies moduleB = createModuleWithDependencies("module.b", Collections.singleton(moduleA));
-        modules.add(moduleB);
-        ModuleWithDependencies moduleC = createModuleWithDependencies("module.c", Collections.singleton(moduleB));
-        modules.add(moduleC);
+        Set<ModuleInformation> modules = new HashSet<>();
+        modules.add(new DummyModuleInformation("module.a", Collections.emptySet()));
+        modules.add(new DummyModuleInformation("module.b", Collections.singleton("module.a")));
+        modules.add(new DummyModuleInformation("module.c", Collections.singleton("module.b")));
 
-        List<ModuleWithDependencies> sortedModules = ModuleDependencySorter.sortByDependencies(modules);
+        List<String> sortedModules = ModuleDependencySorter.sortByInstallOrder(modules, Collections.emptySet()).stream()
+                .map(ModuleInformation::getId)
+                .collect(Collectors.toList());
 
-        assertEquals(Arrays.asList(moduleA, moduleB, moduleC), sortedModules);
+        assertEquals(Arrays.asList("module.a", "module.b", "module.c"), sortedModules);
     }
 
     @Test
     public void sortWithMultipleDependencies() {
-        Set<ModuleWithDependencies> modules = new HashSet<>();
-        ModuleWithDependencies moduleA = createModuleWithDependencies("module.a", Collections.emptySet());
-        modules.add(moduleA);
-        ModuleWithDependencies moduleB = createModuleWithDependencies("module.b", Collections.emptySet());
-        modules.add(moduleB);
-        ModuleWithDependencies moduleC = createModuleWithDependencies("module.c",
-                new HashSet<>(Arrays.asList(moduleA, moduleB)));
-        modules.add(moduleC);
+        Set<ModuleInformation> modules = new HashSet<>();
+        modules.add(new DummyModuleInformation("module.a", Collections.emptySet()));
+        modules.add(new DummyModuleInformation("module.b", Collections.emptySet()));
+        modules.add(new DummyModuleInformation("module.c", new HashSet<>(Arrays.asList("module.a", "module.b"))));
 
-        List<ModuleWithDependencies> sortedModules = ModuleDependencySorter.sortByDependencies(modules);
+        List<String> sortedModules = ModuleDependencySorter.sortByInstallOrder(modules, Collections.emptySet()).stream()
+                .map(ModuleInformation::getId)
+                .collect(Collectors.toList());
 
-        assertTrue("module.a is in the sorted modules", sortedModules.contains(moduleA));
-        assertTrue("module.c is in the sorted modules", sortedModules.contains(moduleB));
-        assertTrue("module.c is in the sorted modules", sortedModules.contains(moduleC));
+        assertTrue("module.a is in the sorted modules", sortedModules.contains("module.a"));
+        assertTrue("module.c is in the sorted modules", sortedModules.contains("module.b"));
+        assertTrue("module.c is in the sorted modules", sortedModules.contains("module.c"));
 
-        int moduleAIndex = sortedModules.indexOf(moduleA);
-        int moduleBIndex = sortedModules.indexOf(moduleB);
-        int moduleCIndex = sortedModules.indexOf(moduleC);
+        int moduleAIndex = sortedModules.indexOf("module.a");
+        int moduleBIndex = sortedModules.indexOf("module.b");
+        int moduleCIndex = sortedModules.indexOf("module.c");
         assertTrue("module.a is installed before module.c", moduleAIndex < moduleCIndex);
         assertTrue("module.b is installed before module.c", moduleBIndex < moduleCIndex);
     }
 
+    @Test
+    public void sortDoesNotListWarModules() {
+        Set<ModuleInformation> amps = new HashSet<>();
+        Set<ModuleInformation> warModules = new HashSet<>();
+
+        warModules.add(new DummyModuleInformation("module.a", Collections.emptySet()));
+        amps.add(new DummyModuleInformation("module.b", Collections.emptySet()));
+        amps.add(new DummyModuleInformation("module.c", new HashSet<>(Arrays.asList("module.a", "module.b"))));
+
+        List<ModuleInformation> sortedInInstallationOrder = ModuleDependencySorter.sortByInstallOrder(amps, warModules);
+
+        List<String> modulesToInstall = sortedInInstallationOrder.stream()
+                .map(ModuleInformation::getId)
+                .collect(Collectors.toList());
+
+        assertEquals(Arrays.asList("module.b", "module.c"), modulesToInstall);
+    }
+
+    @Test(expected = ModuleAlreadyInstalledException.class)
+    public void sortRejectsAlreadyInstalledModules() {
+        Set<ModuleInformation> amps = new HashSet<>();
+        Set<ModuleInformation> warModules = new HashSet<>();
+
+        warModules.add(new DummyModuleInformation("module.a", Collections.emptySet()));
+        amps.add(new DummyModuleInformation("module.a", Collections.emptySet()));
+
+        ModuleDependencySorter.sortByInstallOrder(amps, warModules);
+    }
 }

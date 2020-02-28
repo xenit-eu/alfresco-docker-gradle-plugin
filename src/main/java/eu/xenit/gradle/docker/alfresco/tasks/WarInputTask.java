@@ -13,7 +13,12 @@ public interface WarInputTask extends Task {
     RegularFileProperty getInputWar();
 
     default void setInputWar(FileCollection configuration) {
-        getInputWar().set(configuration::getSingleFile);
+        dependsOn(configuration);
+        getInputWar().set(getProject().getLayout().file(getProject().provider(() -> {
+            if(configuration.isEmpty())
+                return null;
+            return configuration.getSingleFile();
+        })));
     }
 
     default void setInputWar(WarOutputTask task) {

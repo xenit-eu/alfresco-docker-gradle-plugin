@@ -111,17 +111,13 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         WarEnrichmentTask resolveTask = project.getTasks()
                 .create("strip" + warName + "War", StripAlfrescoWarTask.class, stripAlfrescoWarTask -> {
                     stripAlfrescoWarTask.addPathToCopy(WarHelperImpl.MANIFEST_FILE);
+                    stripAlfrescoWarTask.addPathToCopy("WEB-INF/classes/alfresco/module/*/module.properties");
                     if (warName.equals(ALFRESCO)) {
                         stripAlfrescoWarTask.addPathToCopy(WarHelperImpl.VERSION_PROPERTIES);
                     }
                 });
         resolveTask.setGroup(TASK_GROUP);
-        resolveTask.getInputWar().set(project.getLayout().file(project.provider(() -> {
-            if (baseWar.isEmpty()) {
-                return null;
-            }
-            return baseWar.getSingleFile();
-        })));
+        resolveTask.setInputWar(baseWar);
 
         final List<WarEnrichmentTask> tasks = new ArrayList<>();
 
@@ -158,8 +154,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
 
         mergeWarsTask.addInputWar(project.provider(baseWar::getSingleFile));
         for (WarLabelOutputTask task : outputTasks) {
-            mergeWarsTask.withLabels(task);
-            mergeWarsTask.addInputWar(project.provider(() -> task.getOutputWar().get().getAsFile()));
+            mergeWarsTask.addInputWar(task);
         }
 
         return outputTasks;
