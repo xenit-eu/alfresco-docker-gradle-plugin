@@ -122,7 +122,9 @@ repositories {
 dependencies {
     packaged 'org.alfresco:alfresco-mmt:5.2.g'
     packaged group: 'commons-io', name: 'commons-io', version: '2.5'
-    packaged 'org.eclipse.jgit:org.eclipse.jgit:4.6.0.201612231935-r'
+    packaged('org.eclipse.jgit:org.eclipse.jgit:4.6.0.201612231935-r'){
+        exclude group: 'org.slf4j'
+    }
 
     compile 'com.bmuschko:gradle-docker-plugin:6.1.2'
     compile 'com.avast.gradle:gradle-docker-compose-plugin:0.10.7'
