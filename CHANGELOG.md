@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+## Version 5.0.4 - 2020-02-28
+
+### Added
+
+ * [#112](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/112) - Disable automatic pulling of images when Gradle runs in `--offline` mode
+ * [#80](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/81) - A better error message when an AMP fails to apply
+
+### Fixed
+
+ * [#107](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/107) - Fix lean image
+ * [#50](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/50) - Installing AMPs in a war that already has AMPs installed
+ * [#111](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/111) - log4j warning when running some tasks
+
 ## Version 5.0.3 - 2020-02-24
 
 ### Fixed
