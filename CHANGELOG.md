@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+ * [#115](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/115) - Update com.bmushko:gradle-docker-plugin to 6.4.0, supports Docker credentials store
+
 ## Version 5.0.4 - 2020-02-28
 
 ### Added
