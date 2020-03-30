@@ -2,14 +2,13 @@ package eu.xenit.gradle.docker;
 
 import static eu.xenit.gradle.docker.internal.git.JGitInfoProvider.GetProviderForProject;
 
-import com.avast.gradle.dockercompose.ComposeExtension;
-import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import eu.xenit.gradle.docker.compose.DockerComposePlugin;
 import eu.xenit.gradle.docker.internal.JenkinsUtil;
-import eu.xenit.gradle.docker.tasks.internal.DockerBuildImage;
 import eu.xenit.gradle.docker.internal.git.CannotConvertToUrlException;
 import eu.xenit.gradle.docker.internal.git.GitInfoProvider;
+import eu.xenit.gradle.docker.tasks.internal.DockerBuildImage;
+import eu.xenit.gradle.docker.tasks.internal.DockerPushImage;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

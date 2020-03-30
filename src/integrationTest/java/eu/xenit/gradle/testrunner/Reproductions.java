@@ -1,6 +1,7 @@
 package eu.xenit.gradle.testrunner;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import eu.xenit.gradle.docker.alfresco.tasks.DockerfileWithWarsTask;
@@ -9,6 +10,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 import org.gradle.testkit.runner.BuildResult;
+import org.gradle.testkit.runner.BuildTask;
+import org.gradle.testkit.runner.GradleRunner;
 import org.gradle.testkit.runner.TaskOutcome;
 import org.junit.Test;
 
@@ -131,5 +134,16 @@ public class Reproductions extends AbstractIntegrationTest {
     @Test
     public void testIssue50() throws IOException {
         testProjectFolder(REPRODUCTIONS.resolve("issue-50"), ":alfrescoWar");
+    }
+
+    @Test
+    public void testIssue114() throws IOException {
+        BuildResult result = getGradleRunner(REPRODUCTIONS.resolve("issue-114"), ":pushDockerImage").buildAndFail();
+
+        BuildTask pushDockerImage = result.task(":pushDockerImage");
+        assertNotNull(pushDockerImage);
+        assertEquals(TaskOutcome.FAILED, pushDockerImage.getOutcome());
+
+
     }
 }
