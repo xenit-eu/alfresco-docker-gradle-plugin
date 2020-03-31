@@ -35,16 +35,8 @@ public class DockerAlfrescoPluginTest {
         return project;
     }
 
-
     @Rule
     public final TemporaryFolder testProjectFolder = new TemporaryFolder();
-    private File buildFile;
-
-    @Before
-    public void setup() throws IOException {
-        buildFile = testProjectFolder.newFile("build.gradle");
-    }
-
 
     @Test
     public void testApplyAlfrescoAmps() {

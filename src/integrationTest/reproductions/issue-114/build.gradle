@@ -1,0 +1,23 @@
+plugins {
+    id 'eu.xenit.docker-alfresco'
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+    }
+}
+
+dependencies {
+    baseAlfrescoWar "org.alfresco:content-services-community:6.0.7-ga@war"
+}
+
+dockerAlfresco {
+    baseImage = "alfresco/alfresco-content-repository-community:6.0.7-ga"
+    leanImage = true
+    dockerBuild {
+        repository = 'issue-107'
+    }
+}
