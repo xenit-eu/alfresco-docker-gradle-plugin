@@ -2,9 +2,13 @@
 
 ## Unreleased
 
+## Version 5.0.5 - 2020-04-06
+
 ### Changed
 
+ * [#116](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/116) - `pushDockerImage` now fails when no image-tags are configured
  * [#115](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/115) - Update com.bmushko:gradle-docker-plugin to 6.4.0, supports Docker credentials store
+ * [#121](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/121) - Bump gradle-docker-compose-plugin from 0.10.7 to 0.10.9
 
 ## Version 5.0.4 - 2020-02-28
 
