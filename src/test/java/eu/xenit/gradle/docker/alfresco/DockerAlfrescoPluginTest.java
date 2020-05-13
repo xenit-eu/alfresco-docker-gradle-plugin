@@ -4,12 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
-import eu.xenit.gradle.docker.internal.JenkinsUtil;
 import eu.xenit.gradle.docker.alfresco.tasks.DockerfileWithWarsTask;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import eu.xenit.gradle.docker.internal.JenkinsUtil;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -19,7 +15,6 @@ import org.gradle.api.internal.artifacts.configurations.DefaultConfiguration;
 import org.gradle.api.internal.project.DefaultProject;
 import org.gradle.internal.impldep.org.junit.Assert;
 import org.gradle.testfixtures.ProjectBuilder;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -111,6 +106,26 @@ public class DockerAlfrescoPluginTest {
         DockerfileWithWarsTask dockerfileWithWarsTask = (DockerfileWithWarsTask) project.getTasks()
                 .getAt("createDockerFile");
         assertFalse("webapps/${war} folders should not be removed", dockerfileWithWarsTask.getRemoveExistingWar().get());
+    }
+
+    @Test
+    public void testLeanImage_removeExistingWarExplicitlyOverwritten() {
+        DefaultProject project = getDefaultProject();
+        project.getDependencies().add("baseAlfrescoWar",
+                project.files(this.getClass().getClassLoader().getResource("test123.war").getFile()));
+        project.getDependencies().add("alfrescoAmp",
+                project.files(this.getClass().getClassLoader().getResource("test123.amp").getFile()));
+        DockerAlfrescoExtension dockerAlfrescoExtension = (DockerAlfrescoExtension) project.getExtensions()
+                .getByName("dockerAlfresco");
+        DockerfileWithWarsTask dockerfileWithWarsTask = (DockerfileWithWarsTask) project.getTasks()
+                .getByName("createDockerFile");
+        dockerAlfrescoExtension.getLeanImage().set(false);
+        dockerfileWithWarsTask.getRemoveExistingWar().set(false);
+
+        project.evaluate();
+
+        assertFalse("webapps/${war} folders should not be removed",
+                dockerfileWithWarsTask.getRemoveExistingWar().get());
     }
 
     @Test
