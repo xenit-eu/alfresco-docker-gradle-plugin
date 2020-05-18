@@ -7,7 +7,7 @@ init:
         $config.exposeDockerAPIOnTCP2375=$true
         $config | ConvertTo-Json | Set-Content "C:\Users\appveyor\AppData\Roaming\Docker\settings.json" 
     - ps: Start-Service "com.docker.service"
-    - cmd: '"C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe"'
+    - ps: '& "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe"'
     - ps: Switch-DockerLinux
     - cmd: docker -H tcp://localhost:2375 info
 install:
