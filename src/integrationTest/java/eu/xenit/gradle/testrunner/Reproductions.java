@@ -143,7 +143,15 @@ public class Reproductions extends AbstractIntegrationTest {
         BuildTask pushDockerImage = result.task(":pushDockerImage");
         assertNotNull(pushDockerImage);
         assertEquals(TaskOutcome.FAILED, pushDockerImage.getOutcome());
+    }
 
+    @Test
+    public void testIssue133Extension() throws IOException {
+        testProjectFolder(REPRODUCTIONS.resolve("issue-133-extension"), ":buildDockerImage", true);
+    }
 
+    @Test
+    public void testIssue133Label() throws IOException {
+        testProjectFolder(REPRODUCTIONS.resolve("issue-133-label"), ":buildDockerImage", true);
     }
 }

@@ -1,9 +1,9 @@
 package eu.xenit.gradle.docker.alfresco.tasks;
 
-import static eu.xenit.gradle.docker.alfresco.tasks.VersionMatchChecking.getCanAddWarsCheckCommands;
 
 import de.schlichtherle.truezip.file.TArchiveDetector;
 import de.schlichtherle.truezip.file.TFile;
+import eu.xenit.gradle.docker.alfresco.internal.version.AlfrescoVersion;
 import eu.xenit.gradle.docker.internal.Deprecation;
 import eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask;
 import java.io.IOException;
@@ -224,7 +224,14 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
                     runCommand("rm -rf " + getTargetDirectory().get() + name);
                 }
                 if (getCheckAlfrescoVersion().get()) {
-                    getCanAddWarsCheckCommands(destinationDir, getTargetDirectory().get()).forEach(this::runCommand);
+                    try {
+                        AlfrescoVersion alfrescoVersion = AlfrescoVersion.fromAlfrescoWar(destinationDir.toPath());
+                        if (alfrescoVersion != null) {
+                            this.runCommand(alfrescoVersion.getCheckCommand(getTargetDirectory().get() + name));
+                        }
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
                 }
                 copyFile("./" + name, getTargetDirectory().get() + name);
             }
