@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Properties;
@@ -22,14 +21,16 @@ public class AlfrescoVersion {
             "version.edition"
     };
 
-    private static final Path VERSION_PROPERTIES_PATH = Paths
-            .get("WEB-INF", "classes", "alfresco", "version.properties");
+    private static final String[] VERSION_PROPERTIES_PATH = {"WEB-INF", "classes", "alfresco", "version.properties"};
 
     private final VersionComponent[] parts;
 
     @Nullable
     public static AlfrescoVersion fromAlfrescoWar(@Nonnull Path warPath) throws IOException {
-        Path versionPropertiesPath = warPath.resolve(VERSION_PROPERTIES_PATH);
+        Path versionPropertiesPath = warPath;
+        for(String pathComponent: VERSION_PROPERTIES_PATH) {
+            versionPropertiesPath = versionPropertiesPath.resolve(pathComponent);
+        }
         return fromAlfrescoVersionProperties(versionPropertiesPath);
     }
 
@@ -67,7 +68,7 @@ public class AlfrescoVersion {
     @Nonnull
     public String getCheckCommand(@Nonnull String pathInContainer) {
         return Arrays.stream(parts)
-                .map(part -> part.getCheckCommand(pathInContainer + "/" + VERSION_PROPERTIES_PATH.toString()))
+                .map(part -> part.getCheckCommand(pathInContainer + "/" + String.join("/", VERSION_PROPERTIES_PATH)))
                 .collect(Collectors.joining(" && ")) + " # Alfresco version mismatch between base image and base war";
     }
 
