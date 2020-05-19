@@ -1,0 +1,18 @@
+init:
+    - ps: Stop-Service "com.docker.service"
+    - ps: Stop-Process -Name "Docker Desktop"
+    # Configure docker to run with tcp://localhost:2375 exposed
+    - ps: |
+        $config = Get-Content "C:\Users\appveyor\AppData\Roaming\Docker\settings.json" -raw | ConvertFrom-Json
+        $config.exposeDockerAPIOnTCP2375=$true
+        $config | ConvertTo-Json | Set-Content "C:\Users\appveyor\AppData\Roaming\Docker\settings.json" 
+    - ps: Start-Service "com.docker.service"
+    - ps: '& "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe"'
+    - ps: Switch-DockerLinux
+    - cmd: docker -H tcp://localhost:2375 info
+install:
+    - cmd: choco install docker-compose
+build_script:
+    - cmd: gradlew assemble
+test_script:
+    - cmd: gradlew check -i -PintegrationTestGradleVersions=6.4
