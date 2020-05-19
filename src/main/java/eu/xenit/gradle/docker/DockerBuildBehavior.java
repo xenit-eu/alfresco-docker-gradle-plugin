@@ -121,9 +121,6 @@ public class DockerBuildBehavior {
             labels.put(labelPrefix + "branch", gitInfoProvider.getBranch());
             labels.put(labelPrefix + "commit.id", gitInfoProvider.getCommitChecksum());
             labels.put(labelPrefix + "commit.author", gitInfoProvider.getCommitAuthor());
-            labels.put(labelPrefix + "commit.message", '"' + gitInfoProvider.getCommitMessage()
-                    .replaceAll("\"", "\\\\\"")
-                    .replaceAll("(\r)*\n", "\\\\\n") + '"');
         }
         return labels;
     }
