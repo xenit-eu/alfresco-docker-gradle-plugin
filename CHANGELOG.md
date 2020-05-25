@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+## Version 5.0.6 - 2020-05-25
+
+### Fixed
+
+ * [#133](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/133) - Alfresco version check does not check `version.label`
+ * [#128](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/128) - `createDockerFile#removeExistingWar` config modified after configuration phase
+ * [#126](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/126) - Fix build failures with special characters in commit messages
+
+### Changed
+
+ * [#124](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/124), [#127](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/127), [#131](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/131), [#135](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/135) - Update gradle-docker-compose-plugin from 0.10.9 to 0.12.1
+    - [Add `checkContainersRunning` option](https://github.com/avast/gradle-docker-compose-plugin/releases/tag/0.10.10): Early error when container does not start up
+    - [Fix reconnecting for nested settings](https://github.com/avast/gradle-docker-compose-plugin/releases/tag/0.12.1)
+
 ## Version 5.0.5 - 2020-04-06
 
 ### Changed

@@ -19,7 +19,7 @@ class DockerComposeExtensionOverride extends ComposeExtension implements DockerC
 
     @Override
     public ComposeSettings createNested(String name) {
-        DockerComposeSettingsOverride r = new DockerComposeSettingsOverride(getProject(), name);
+        DockerComposeSettingsOverride r = new DockerComposeSettingsOverride(getProject(), name, getNestedName());
         DockerComposeConvention convention = new DockerComposeConventionImpl(r);
         dockerComposeConvention.replayChangesInto(convention);
         r.setDockerComposeConvention(convention);
@@ -27,6 +27,7 @@ class DockerComposeExtensionOverride extends ComposeExtension implements DockerC
         // Keep in sync with {@link ComposeSettings#createNested(String)}
         r.setBuildBeforeUp(getBuildBeforeUp());
         r.setBuildBeforePull(getBuildBeforePull());
+
         r.setWaitForTcpPorts(getWaitForTcpPorts());
         r.setTcpPortsToIgnoreWhenWaiting(new ArrayList<>(this.getTcpPortsToIgnoreWhenWaiting()));
         r.setWaitAfterTcpProbeFailure(this.getWaitAfterTcpProbeFailure());
@@ -34,6 +35,7 @@ class DockerComposeExtensionOverride extends ComposeExtension implements DockerC
         r.setWaitForTcpPortsDisconnectionProbeTimeout(this.getWaitForTcpPortsDisconnectionProbeTimeout());
         r.setWaitAfterHealthyStateProbeFailure(this.getWaitAfterHealthyStateProbeFailure());
         r.setWaitForHealthyStateTimeout(this.getWaitForHealthyStateTimeout());
+        r.setCheckContainersRunning(this.getCheckContainersRunning());
 
         r.setCaptureContainersOutput(this.isCaptureContainersOutput());
 
@@ -46,6 +48,8 @@ class DockerComposeExtensionOverride extends ComposeExtension implements DockerC
         r.setPullAdditionalArgs(new ArrayList<>(this.getPullAdditionalArgs()));
         r.setUpAdditionalArgs(new ArrayList<>(this.getUpAdditionalArgs()));
         r.setDownAdditionalArgs(new ArrayList<>(this.getDownAdditionalArgs()));
+
+        r.setProjectNamePrefix(this.getProjectNamePrefix());
 
         r.setStopContainers(this.isStopContainers());
         r.setRemoveContainers(this.isRemoveContainers());
