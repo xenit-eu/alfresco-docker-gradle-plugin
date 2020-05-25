@@ -1,0 +1,31 @@
+plugins {
+    id 'eu.xenit.docker-alfresco'
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+    }
+}
+
+dependencies {
+    baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
+}
+
+dockerAlfresco {
+    baseImage = "alfresco/alfresco-content-repository-community:6.0.7-ga"
+    dockerBuild {
+        repository = 'issue-133-label'
+    }
+    leanImage = true
+
+}
+
+createDockerFile {
+    // Hack to make alfresco version.properties match the expected
+    runCommand('sed s/version.revision=7/version.revision=0/ -i /usr/local/tomcat/webapps/alfresco/WEB-INF/classes/alfresco/version.properties')
+    // Hack to make the label differ
+    runCommand('sed s/version.label=/version.label=3/ -i /usr/local/tomcat/webapps/alfresco/WEB-INF/classes/alfresco/version.properties')
+}
