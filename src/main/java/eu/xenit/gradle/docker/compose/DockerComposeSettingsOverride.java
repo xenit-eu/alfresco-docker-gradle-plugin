@@ -9,8 +9,8 @@ class DockerComposeSettingsOverride extends ComposeSettings implements DockerCom
 
     private DockerComposeConvention dockerComposeConvention;
 
-    public DockerComposeSettingsOverride(Project project, String name) {
-        super(project, name);
+    public DockerComposeSettingsOverride(Project project, String name, String parentName) {
+        super(project, name, parentName);
     }
 
     @Override
