@@ -97,36 +97,6 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
     }
 
     /**
-     * Adds a prefix to log4j log lines inside an extracted WAR
-     *
-     * @param destinationDir
-     * @param logName
-     */
-    private void improveLog4j(java.io.File destinationDir, String logName) {
-        Path path = destinationDir.toPath().resolve(Paths.get("WEB-INF", "classes", "log4j.properties"));
-        if (Files.exists(path)) {
-            getLogger().info("Prefixing logs for {} with [{}]", destinationDir.getName(), logName);
-            Charset charset = StandardCharsets.UTF_8;
-            try {
-                String content = new String(Files.readAllBytes(path), charset);
-                content = content.replaceAll("log4j\\.rootLogger=error,\\ Console,\\ File",
-                        "log4j\\.rootLogger=error,\\ Console");
-                //prefix the loglines with the base
-                content = content
-                        .replaceAll("log4j\\.appender\\.Console\\.layout\\.ConversionPattern=\\%d\\{ISO8601\\}",
-                                "log4j\\.appender\\.Console\\.layout\\.ConversionPattern=\\[" + logName
-                                        + "\\]\\ %d\\{ISO8601\\}");
-                Files.write(path, content.getBytes(charset));
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
-        } else {
-            getLogger().info("No log4j.properties available in {}. Not changing the console appender",
-                    destinationDir.getName());
-        }
-    }
-
-    /**
      * Unzips a war file to a directory
      *
      * @param warFile
@@ -217,8 +187,6 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
             });
 
             if (destinationDir.exists()) {
-                improveLog4j(destinationDir, name.toUpperCase());
-
                 // COPY
                 if (getRemoveExistingWar().get()) {
                     runCommand("rm -rf " + getTargetDirectory().get() + name);

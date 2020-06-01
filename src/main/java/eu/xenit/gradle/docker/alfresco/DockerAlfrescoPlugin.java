@@ -6,6 +6,7 @@ import eu.xenit.gradle.docker.alfresco.tasks.DockerfileWithWarsTask;
 import eu.xenit.gradle.docker.alfresco.tasks.InjectFilesInWarTask;
 import eu.xenit.gradle.docker.alfresco.tasks.InstallAmpsInWarTask;
 import eu.xenit.gradle.docker.alfresco.tasks.MergeWarsTask;
+import eu.xenit.gradle.docker.alfresco.tasks.PrefixLog4JWarTask;
 import eu.xenit.gradle.docker.alfresco.tasks.StripAlfrescoWarTask;
 import eu.xenit.gradle.docker.alfresco.tasks.WarEnrichmentTask;
 import eu.xenit.gradle.docker.alfresco.tasks.WarLabelOutputTask;
@@ -116,6 +117,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
                 .create("strip" + warName + "War", StripAlfrescoWarTask.class, stripAlfrescoWarTask -> {
                     stripAlfrescoWarTask.addPathToCopy(WarHelperImpl.MANIFEST_FILE);
                     stripAlfrescoWarTask.addPathToCopy("WEB-INF/classes/alfresco/module/*/module.properties");
+                    stripAlfrescoWarTask.addPathToCopy("WEB-INF/classes/log4j.properties");
                     if (warName.equals(ALFRESCO)) {
                         stripAlfrescoWarTask.addPathToCopy(WarHelperImpl.VERSION_PROPERTIES);
                     }
@@ -124,6 +126,12 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         resolveTask.setInputWar(baseWar);
 
         final List<WarEnrichmentTask> tasks = new ArrayList<>();
+
+        tasks.add(project.getTasks()
+                .create("prefix" + warName + "Log4j", PrefixLog4JWarTask.class, prefixLog4JWarTask -> {
+                    prefixLog4JWarTask.getPrefix().set(warName.toUpperCase());
+                })
+        );
 
         tasks.add(project.getTasks()
                 .create("apply" + warName + "SM", InjectFilesInWarTask.class, injectFilesInWarTask -> {
