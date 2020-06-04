@@ -8,16 +8,15 @@ import eu.xenit.gradle.docker.internal.Deprecation;
 import eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.gradle.api.artifacts.Configuration;
@@ -35,6 +34,7 @@ import org.gradle.util.GradleVersion;
 public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements LabelConsumerTask {
 
     public static final String MESSAGE_BASE_IMAGE_NOT_SET = "Base image not set. You need to configure your base image to build docker images.";
+    private static final String COMMAND_NO_OP = "true # NO-OP from " + DockerfileWithWarsTask.class.getCanonicalName();
     /**
      * Base image used to build the dockerfile
      */
@@ -47,9 +47,12 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
             .mapProperty(String.class, String.class);
 
     /**
-     * Map of directories in the tomcat folder to the war file to place there
+     * Names of WAR files that have already been added
+     *
+     * This is tracked so multiple WARs with the same name can be overlayed on top of each other,
+     * without removing the previously added contents.
      */
-    private final Map<String, List<Provider<java.io.File>>> warFiles = new HashMap<>();
+    private final Set<String> addedWarNames = new HashSet<>();
 
     /**
      * Target directory inside the docker container where war files will be placed
@@ -96,43 +99,9 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
         return checkAlfrescoVersion;
     }
 
-    /**
-     * Unzips a war file to a directory
-     *
-     * @param warFile
-     * @param destinationDir
-     */
-    private static void unzipWar(java.io.File warFile, java.io.File destinationDir) {
-        if (warFile == null) {
-            return;
-        }
-        Util.withWar(warFile, archive -> {
-            TFile directory = new TFile(destinationDir);
-            directory.mkdirs();
-            try {
-                TFile.cp_rp(archive, directory, TArchiveDetector.NULL);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        });
-    }
-
     @Input
     public Property<String> getBaseImage() {
         return baseImage;
-    }
-
-    @InputFiles
-    public FileCollection getWarFiles() {
-        ConfigurableFileCollection mappedWarFiles = getProject().files(getProject().provider(() -> {
-            return warFiles.values().stream()
-                    .flatMap(Collection::stream)
-                    .filter(Provider::isPresent)
-                    .map(Provider::get)
-                    .collect(Collectors.toList());
-        }));
-        // Filter with an always matching filter, so the returned FileCollection is no longer a ConfigurableFileCollection
-        return mappedWarFiles.filter(x -> true);
     }
 
     public void addWar(String name, WarLabelOutputTask task) {
@@ -150,10 +119,44 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
     }
 
     private void _addWar(String name, Provider<java.io.File> file) {
-        if (!warFiles.containsKey(name)) {
-            warFiles.put(name, new ArrayList<>());
+        if (!addedWarNames.contains(name)) {
+            runCommand(getRemoveExistingWar()
+                    .map(removeExistingWar -> {
+                        if (!removeExistingWar) {
+                            return COMMAND_NO_OP;
+                        }
+                        return "rm -rf " + getTargetDirectory().get() + name;
+                    }));
         }
-        warFiles.get(name).add(file);
+        runCommand(getCheckAlfrescoVersion().map(checkAlfrescoVersion -> {
+            if (!checkAlfrescoVersion) {
+                return COMMAND_NO_OP;
+            }
+            try {
+                Path warPath = file.get().toPath();
+                FileSystem zipFs = FileSystems.newFileSystem(warPath, null);
+                AlfrescoVersion alfrescoVersion = AlfrescoVersion.fromAlfrescoWar(zipFs.getPath("/"));
+                if (alfrescoVersion != null) {
+                    return alfrescoVersion.getCheckCommand(getTargetDirectory().get() + name);
+                }
+                return COMMAND_NO_OP;
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+
+        }));
+        ConfigurableFileCollection fc = getProject().files();
+        fc.from(getProject().provider(() -> {
+            java.io.File resolvedFile = file.getOrNull();
+            if (resolvedFile == null) {
+                // Return empty collection when we resolved to null, else the FileCollection will throw an exception,
+                // because it tries to unpack the provider with Provider#get()
+                return getProject().files();
+            }
+            return getProject().zipTree(resolvedFile);
+        }));
+        smartCopy(fc, getTargetDirectory().map(targetDirectory -> targetDirectory + name));
+        addedWarNames.add(name);
     }
 
     @Deprecated
@@ -171,39 +174,13 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
     @TaskAction
     @Override
     public void create() {
-        // Unpack & COPY into container
-        warFiles.forEach((name, wars) -> {
-            java.io.File destinationDir = getDestFile().getAsFile().get().toPath().resolveSibling(name).toFile();
-            if (destinationDir.exists()) {
-                try {
-                    TFile.rm_r(destinationDir);
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            }
-            wars.forEach(war -> {
-                // Unpack war
-                unzipWar(war.getOrNull(), destinationDir);
-            });
-
-            if (destinationDir.exists()) {
-                // COPY
-                if (getRemoveExistingWar().get()) {
-                    runCommand("rm -rf " + getTargetDirectory().get() + name);
-                }
-                if (getCheckAlfrescoVersion().get()) {
-                    try {
-                        AlfrescoVersion alfrescoVersion = AlfrescoVersion.fromAlfrescoWar(destinationDir.toPath());
-                        if (alfrescoVersion != null) {
-                            this.runCommand(alfrescoVersion.getCheckCommand(getTargetDirectory().get() + name));
-                        }
-                    } catch (IOException e) {
-                        throw new UncheckedIOException(e);
-                    }
-                }
-                copyFile("./" + name, getTargetDirectory().get() + name);
-            }
-        });
+        // Strip No-op instructions
+        List<Instruction> instructions = getInstructions().get()
+                .stream()
+                .filter(instruction -> !(instruction instanceof RunCommandInstruction && instruction.getText()
+                        .equals(instruction.getKeyword() + " " + COMMAND_NO_OP)))
+                .collect(Collectors.toList());
+        getInstructions().set(instructions);
 
         // LABEL
         if (!getLabels().get().isEmpty()) {
