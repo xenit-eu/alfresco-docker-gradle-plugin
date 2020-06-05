@@ -1,8 +1,6 @@
 package eu.xenit.gradle.docker.alfresco.tasks;
 
 
-import de.schlichtherle.truezip.file.TArchiveDetector;
-import de.schlichtherle.truezip.file.TFile;
 import eu.xenit.gradle.docker.alfresco.internal.version.AlfrescoVersion;
 import eu.xenit.gradle.docker.internal.Deprecation;
 import eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask;
@@ -11,23 +9,21 @@ import java.io.UncheckedIOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.gradle.api.Action;
+import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.ConfigurableFileCollection;
-import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.util.GradleVersion;
 
@@ -69,6 +65,12 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
             from(baseImage.map(From::new));
         }
         baseImage.set((String) null);
+
+        // This runs in afterEvaluate, because we want this doFirst action to really run *before*
+        // any other doFirst actions, as we need to clean up our own mess with no-op instructions
+        getProject().afterEvaluate(p -> {
+            doFirst("Remove no-op instructions", new RemoveNoOpInstructionsAction());
+        });
     }
 
     @Input
@@ -174,14 +176,6 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
     @TaskAction
     @Override
     public void create() {
-        // Strip No-op instructions
-        List<Instruction> instructions = getInstructions().get()
-                .stream()
-                .filter(instruction -> !(instruction instanceof RunCommandInstruction && instruction.getText()
-                        .equals(instruction.getKeyword() + " " + COMMAND_NO_OP)))
-                .collect(Collectors.toList());
-        getInstructions().set(instructions);
-
         // LABEL
         if (!getLabels().get().isEmpty()) {
             label(getLabels());
@@ -198,5 +192,26 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
     @Input
     public MapProperty<String, String> getLabels() {
         return labels;
+    }
+
+    public static class RemoveNoOpInstructionsAction implements Action<Task> {
+
+        @Override
+        public void execute(Task task) {
+            if (task instanceof DockerfileWithWarsTask) {
+                execute((DockerfileWithWarsTask) task);
+            } else {
+                throw new IllegalArgumentException("Task must be a DockerfileWithWarsTask");
+            }
+        }
+
+        public void execute(DockerfileWithWarsTask dockerfile) {
+            List<Instruction> instructions = dockerfile.getInstructions().get()
+                    .stream()
+                    .filter(instruction -> !(instruction instanceof RunCommandInstruction && instruction.getText()
+                            .equals(instruction.getKeyword() + " " + COMMAND_NO_OP)))
+                    .collect(Collectors.toList());
+            dockerfile.getInstructions().set(instructions);
+        }
     }
 }
