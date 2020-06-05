@@ -7,6 +7,7 @@ import eu.xenit.gradle.docker.compose.DockerComposePlugin;
 import eu.xenit.gradle.docker.internal.JenkinsUtil;
 import eu.xenit.gradle.docker.internal.git.CannotConvertToUrlException;
 import eu.xenit.gradle.docker.internal.git.GitInfoProvider;
+import eu.xenit.gradle.docker.tasks.internal.ConsolidateFileCopyInstructionsAction;
 import eu.xenit.gradle.docker.tasks.internal.DockerBuildImage;
 import eu.xenit.gradle.docker.tasks.internal.DockerPushImage;
 import java.util.HashMap;
@@ -50,6 +51,9 @@ public class DockerBuildBehavior {
 
     public void apply(Project project) {
         this.execute(project);
+        project.getTasks().withType(Dockerfile.class).configureEach(dockerfile -> {
+            dockerfile.doFirst("Consolidate COPY instructions", new ConsolidateFileCopyInstructionsAction());
+        });
     }
 
     public void execute(Project project) {

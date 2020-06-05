@@ -1,7 +1,6 @@
 package eu.xenit.gradle.docker.tasks;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
-import java.nio.file.Path;
 import org.gradle.api.UncheckedIOException;
 import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.Directory;
@@ -105,7 +104,7 @@ public class DockerfileWithCopyTask extends Dockerfile {
         copyFileCopySpec.into(stagingDirectory, copySpec -> {
             copySpec.from(files);
         });
-        copyFile(destinationInImage.map(d -> new CopyFile(stagingDirectory, d)));
+        copyFile(destinationInImage.map(d -> new CopyFile(stagingDirectory + "/", d + "/")));
         getInputs().files(files).withPropertyName("copyFile." + copyFileCounter);
     }
 
