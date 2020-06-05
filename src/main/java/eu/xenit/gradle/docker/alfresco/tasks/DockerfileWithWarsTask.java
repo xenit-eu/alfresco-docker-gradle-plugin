@@ -9,9 +9,11 @@ import java.io.UncheckedIOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -20,6 +22,8 @@ import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.RegularFile;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
@@ -31,6 +35,7 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
 
     public static final String MESSAGE_BASE_IMAGE_NOT_SET = "Base image not set. You need to configure your base image to build docker images.";
     private static final String COMMAND_NO_OP = "true # NO-OP from " + DockerfileWithWarsTask.class.getCanonicalName();
+    private static final String COMMAND_ELIDABLE = " # Elidable command from " + DockerfileWithWarsTask.class.getCanonicalName();
     /**
      * Base image used to build the dockerfile
      */
@@ -70,6 +75,7 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
         // any other doFirst actions, as we need to clean up our own mess with no-op instructions
         getProject().afterEvaluate(p -> {
             doFirst("Remove no-op instructions", new RemoveNoOpInstructionsAction());
+            doFirst("Elide duplicate version check instructions", new ElideDuplicateVersionChecksAction());
         });
     }
 
@@ -130,21 +136,23 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
                         return "rm -rf " + getTargetDirectory().get() + name;
                     }));
         }
-        runCommand(getCheckAlfrescoVersion().map(checkAlfrescoVersion -> {
+        runCommand(getCheckAlfrescoVersion().flatMap(checkAlfrescoVersion -> {
             if (!checkAlfrescoVersion) {
-                return COMMAND_NO_OP;
+                return getProject().provider(() -> COMMAND_NO_OP);
             }
-            try {
-                Path warPath = file.get().toPath();
-                FileSystem zipFs = FileSystems.newFileSystem(warPath, null);
-                AlfrescoVersion alfrescoVersion = AlfrescoVersion.fromAlfrescoWar(zipFs.getPath("/"));
-                if (alfrescoVersion != null) {
-                    return alfrescoVersion.getCheckCommand(getTargetDirectory().get() + name);
+            return file.map(f -> {
+                try {
+                    Path warPath = f.toPath();
+                    FileSystem zipFs = FileSystems.newFileSystem(warPath, null);
+                    AlfrescoVersion alfrescoVersion = AlfrescoVersion.fromAlfrescoWar(zipFs.getPath("/"));
+                    if (alfrescoVersion != null) {
+                        return alfrescoVersion.getCheckCommand(getTargetDirectory().get() + name) + COMMAND_ELIDABLE;
+                    }
+                    return COMMAND_NO_OP;
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
                 }
-                return COMMAND_NO_OP;
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
+            });
 
         }));
         ConfigurableFileCollection fc = getProject().files();
@@ -208,10 +216,50 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
         public void execute(DockerfileWithWarsTask dockerfile) {
             List<Instruction> instructions = dockerfile.getInstructions().get()
                     .stream()
-                    .filter(instruction -> !(instruction instanceof RunCommandInstruction && instruction.getText()
-                            .equals(instruction.getKeyword() + " " + COMMAND_NO_OP)))
+                    .filter(instruction -> !(instruction instanceof RunCommandInstruction && Objects.equals(instruction.getText(), instruction.getKeyword() + " " + COMMAND_NO_OP)))
                     .collect(Collectors.toList());
             dockerfile.getInstructions().set(instructions);
         }
+    }
+
+    public static class ElideDuplicateVersionChecksAction implements Action<Task> {
+        private static final Logger LOGGER = Logging.getLogger(ElideDuplicateVersionChecksAction.class);
+
+        @Override
+        public void execute(Task task) {
+            if (task instanceof DockerfileWithWarsTask) {
+                execute((DockerfileWithWarsTask) task);
+            } else {
+                throw new IllegalArgumentException("Task must be a DockerfileWithWarsTask");
+            }
+        }
+
+        public void execute(DockerfileWithWarsTask dockerfile) {
+            List<Instruction> instructions = dockerfile.getInstructions().get();
+            Set<String> elidableCommands = new HashSet<>();
+            List<Instruction> newInstructions = new ArrayList<>(instructions.size());
+
+            for(Instruction instruction: instructions) {
+                if(instruction instanceof RunCommandInstruction) {
+                    if(instruction.getText() != null) {
+                        if (instruction.getText().endsWith(COMMAND_ELIDABLE)) {
+                            if (!elidableCommands.add(instruction.getText())) {
+                                LOGGER.debug("Eliding command '{}' because we have already seen it.",
+                                        instruction.getText());
+                                continue;
+                            } else {
+                                String command = instruction.getText();
+                                String newCommand = command.substring(instruction.getKeyword().length()+1, command.length()-COMMAND_ELIDABLE.length());
+                                LOGGER.debug("Stripped elidable suffix from command: '{}'", newCommand);
+                                instruction = new RunCommandInstruction(newCommand);
+                            }
+                        }
+                    }
+                }
+                newInstructions.add(instruction);
+            }
+            dockerfile.getInstructions().set(newInstructions);
+        }
+
     }
 }
