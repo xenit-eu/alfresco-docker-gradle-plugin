@@ -6,9 +6,6 @@ import eu.xenit.gradle.docker.internal.Deprecation;
 import eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -35,7 +32,8 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
 
     public static final String MESSAGE_BASE_IMAGE_NOT_SET = "Base image not set. You need to configure your base image to build docker images.";
     private static final String COMMAND_NO_OP = "true # NO-OP from " + DockerfileWithWarsTask.class.getCanonicalName();
-    private static final String COMMAND_ELIDABLE = " # Elidable command from " + DockerfileWithWarsTask.class.getCanonicalName();
+    private static final String COMMAND_ELIDABLE =
+            " # Elidable command from " + DockerfileWithWarsTask.class.getCanonicalName();
     /**
      * Base image used to build the dockerfile
      */
@@ -142,9 +140,7 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
             }
             return file.map(f -> {
                 try {
-                    Path warPath = f.toPath();
-                    FileSystem zipFs = FileSystems.newFileSystem(warPath, null);
-                    AlfrescoVersion alfrescoVersion = AlfrescoVersion.fromAlfrescoWar(zipFs.getPath("/"));
+                    AlfrescoVersion alfrescoVersion = AlfrescoVersion.fromAlfrescoWar(f.toPath());
                     if (alfrescoVersion != null) {
                         return alfrescoVersion.getCheckCommand(getTargetDirectory().get() + name) + COMMAND_ELIDABLE;
                     }
@@ -216,13 +212,15 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
         public void execute(DockerfileWithWarsTask dockerfile) {
             List<Instruction> instructions = dockerfile.getInstructions().get()
                     .stream()
-                    .filter(instruction -> !(instruction instanceof RunCommandInstruction && Objects.equals(instruction.getText(), instruction.getKeyword() + " " + COMMAND_NO_OP)))
+                    .filter(instruction -> !(instruction instanceof RunCommandInstruction && Objects
+                            .equals(instruction.getText(), instruction.getKeyword() + " " + COMMAND_NO_OP)))
                     .collect(Collectors.toList());
             dockerfile.getInstructions().set(instructions);
         }
     }
 
     public static class ElideDuplicateVersionChecksAction implements Action<Task> {
+
         private static final Logger LOGGER = Logging.getLogger(ElideDuplicateVersionChecksAction.class);
 
         @Override
@@ -239,9 +237,9 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
             Set<String> elidableCommands = new HashSet<>();
             List<Instruction> newInstructions = new ArrayList<>(instructions.size());
 
-            for(Instruction instruction: instructions) {
-                if(instruction instanceof RunCommandInstruction) {
-                    if(instruction.getText() != null) {
+            for (Instruction instruction : instructions) {
+                if (instruction instanceof RunCommandInstruction) {
+                    if (instruction.getText() != null) {
                         if (instruction.getText().endsWith(COMMAND_ELIDABLE)) {
                             if (!elidableCommands.add(instruction.getText())) {
                                 LOGGER.debug("Eliding command '{}' because we have already seen it.",
@@ -249,7 +247,8 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
                                 continue;
                             } else {
                                 String command = instruction.getText();
-                                String newCommand = command.substring(instruction.getKeyword().length()+1, command.length()-COMMAND_ELIDABLE.length());
+                                String newCommand = command.substring(instruction.getKeyword().length() + 1,
+                                        command.length() - COMMAND_ELIDABLE.length());
                                 LOGGER.debug("Stripped elidable suffix from command: '{}'", newCommand);
                                 instruction = new RunCommandInstruction(newCommand);
                             }
