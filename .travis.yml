@@ -42,14 +42,9 @@ before_script:
 
 script:
   - >
-    if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then
-      export SONAR_BRANCH="$TRAVIS_BRANCH";
-    else
-      export SONAR_BRANCH="$TRAVIS_PULL_REQUEST_BRANCH";
-    fi;
     GRADLE_ARGS="check -i -PintegrationTestGradleVersions=$GRADLE_INTEGRATION_TEST_VERSIONS";
     if [[ "$PUBLISH_SONAR" == "true" && "$TRAVIS_SECURE_ENV_VARS" == "true" ]]; then
-      GRADLE_ARGS="${GRADLE_ARGS} sonarqube -Dsonar.projectKey=xenit-eu_alfresco-docker-gradle-plugin -Dsonar.organization=xenit-eu -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.branch.name=$SONAR_BRANCH"
+      GRADLE_ARGS="${GRADLE_ARGS} sonarqube -Dsonar.projectKey=xenit-eu_alfresco-docker-gradle-plugin -Dsonar.organization=xenit-eu -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN"
     fi;
     ./gradlew $GRADLE_ARGS;
 
