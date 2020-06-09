@@ -4,7 +4,6 @@ import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
 import de.schlichtherle.truezip.file.TFileOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -61,7 +60,7 @@ public class PrefixLog4JWarTask extends AbstractWarEnrichmentTask {
     private void prefixProperties(Properties log4jProperties) {
         if (log4jProperties.containsKey(LOG4J_ROOT_LOGGER)) {
             String rootLogger = log4jProperties.getProperty(LOG4J_ROOT_LOGGER);
-            log4jProperties.setProperty(LOG4J_ROOT_LOGGER, rootLogger.replaceAll(", File", ""));
+            log4jProperties.setProperty(LOG4J_ROOT_LOGGER, rootLogger.replace(", File", ""));
         }
         if (log4jProperties.containsKey(LOG4J_CONVERSION_PATTERN)) {
             String conversionPattern = log4jProperties.getProperty(LOG4J_CONVERSION_PATTERN);

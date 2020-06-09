@@ -51,9 +51,9 @@ public class DockerBuildBehavior {
 
     public void apply(Project project) {
         this.execute(project);
-        project.getTasks().withType(Dockerfile.class).configureEach(dockerfile -> {
-            dockerfile.doFirst("Consolidate COPY instructions", new ConsolidateFileCopyInstructionsAction());
-        });
+        project.getTasks().withType(Dockerfile.class).configureEach(dockerfile -> dockerfile
+                .doFirst("Consolidate COPY instructions", new ConsolidateFileCopyInstructionsAction())
+        );
     }
 
     public void execute(Project project) {

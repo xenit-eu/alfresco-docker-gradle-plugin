@@ -127,15 +127,15 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
     private void _addWar(String name, Provider<java.io.File> file) {
         if (!addedWarNames.contains(name)) {
             runCommand(getRemoveExistingWar()
-                    .map(removeExistingWar -> {
-                        if (!removeExistingWar) {
+                    .map(removeWar -> {
+                        if (!Boolean.TRUE.equals(removeWar)) {
                             return COMMAND_NO_OP;
                         }
                         return "rm -rf " + getTargetDirectory().get() + name;
                     }));
         }
-        runCommand(getCheckAlfrescoVersion().flatMap(checkAlfrescoVersion -> {
-            if (!checkAlfrescoVersion) {
+        runCommand(getCheckAlfrescoVersion().flatMap(checkVersion -> {
+            if (!Boolean.TRUE.equals(checkVersion)) {
                 return getProject().provider(() -> COMMAND_NO_OP);
             }
             return file.map(f -> {
@@ -161,7 +161,7 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
             }
             return getProject().zipTree(resolvedFile);
         }));
-        smartCopy(fc, getTargetDirectory().map(targetDirectory -> targetDirectory + name));
+        smartCopy(fc, getTargetDirectory().map(target -> target + name));
         addedWarNames.add(name);
     }
 
@@ -238,21 +238,17 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
             List<Instruction> newInstructions = new ArrayList<>(instructions.size());
 
             for (Instruction instruction : instructions) {
-                if (instruction instanceof RunCommandInstruction) {
-                    if (instruction.getText() != null) {
-                        if (instruction.getText().endsWith(COMMAND_ELIDABLE)) {
-                            if (!elidableCommands.add(instruction.getText())) {
-                                LOGGER.debug("Eliding command '{}' because we have already seen it.",
-                                        instruction.getText());
-                                continue;
-                            } else {
-                                String command = instruction.getText();
-                                String newCommand = command.substring(instruction.getKeyword().length() + 1,
-                                        command.length() - COMMAND_ELIDABLE.length());
-                                LOGGER.debug("Stripped elidable suffix from command: '{}'", newCommand);
-                                instruction = new RunCommandInstruction(newCommand);
-                            }
-                        }
+                if (instruction instanceof RunCommandInstruction && instruction.getText() != null && instruction.getText().endsWith(COMMAND_ELIDABLE)) {
+                    if (!elidableCommands.add(instruction.getText())) {
+                        LOGGER.debug("Eliding command '{}' because we have already seen it.",
+                                instruction.getText());
+                        continue;
+                    } else {
+                        String command = instruction.getText();
+                        String newCommand = command.substring(instruction.getKeyword().length() + 1,
+                                command.length() - COMMAND_ELIDABLE.length());
+                        LOGGER.debug("Stripped elidable suffix from command: '{}'", newCommand);
+                        instruction = new RunCommandInstruction(newCommand);
                     }
                 }
                 newInstructions.add(instruction);

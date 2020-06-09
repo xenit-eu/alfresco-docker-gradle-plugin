@@ -129,10 +129,8 @@ public class DockerfileWithCopyTask extends Dockerfile {
         // FileCollections are added with smartCopy
         for(int i = 1; i <= copyFileCounter; i++) {
             java.io.File copyFile = copyFileDirectory.get().dir(Integer.toString(i)).getAsFile();
-            if(!copyFile.exists()) {
-                if(!copyFile.mkdir()) {
-                    throw new UncheckedIOException("Cannot create folder "+copyFile);
-                }
+            if(!copyFile.exists() && !copyFile.mkdir()) {
+                throw new UncheckedIOException("Cannot create folder "+copyFile);
             }
 
         }

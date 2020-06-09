@@ -128,9 +128,8 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         final List<WarEnrichmentTask> tasks = new ArrayList<>();
 
         tasks.add(project.getTasks()
-                .create("prefix" + warName + "Log4j", PrefixLog4JWarTask.class, prefixLog4JWarTask -> {
-                    prefixLog4JWarTask.getPrefix().set(warName.toUpperCase());
-                })
+                .create("prefix" + warName + "Log4j", PrefixLog4JWarTask.class,
+                        prefixLog4JWarTask -> prefixLog4JWarTask.getPrefix().set(warName.toUpperCase()))
         );
 
         tasks.add(project.getTasks()
