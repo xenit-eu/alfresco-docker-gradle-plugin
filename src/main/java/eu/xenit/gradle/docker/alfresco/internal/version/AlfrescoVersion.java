@@ -29,12 +29,13 @@ public class AlfrescoVersion {
 
     @Nullable
     public static AlfrescoVersion fromAlfrescoWar(@Nonnull Path warPath) throws IOException {
-        FileSystem zipFs = FileSystems.newFileSystem(warPath, null);
-        Path versionPropertiesPath = zipFs.getPath("/");
-        for (String pathComponent : VERSION_PROPERTIES_PATH) {
-            versionPropertiesPath = versionPropertiesPath.resolve(pathComponent);
+        try(FileSystem zipFs = FileSystems.newFileSystem(warPath, null)) {
+            Path versionPropertiesPath = zipFs.getPath("/");
+            for (String pathComponent : VERSION_PROPERTIES_PATH) {
+                versionPropertiesPath = versionPropertiesPath.resolve(pathComponent);
+            }
+            return fromAlfrescoVersionProperties(versionPropertiesPath);
         }
-        return fromAlfrescoVersionProperties(versionPropertiesPath);
     }
 
     @Nullable
