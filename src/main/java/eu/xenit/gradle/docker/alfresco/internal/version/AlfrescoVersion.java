@@ -2,6 +2,8 @@ package eu.xenit.gradle.docker.alfresco.internal.version;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -27,11 +29,13 @@ public class AlfrescoVersion {
 
     @Nullable
     public static AlfrescoVersion fromAlfrescoWar(@Nonnull Path warPath) throws IOException {
-        Path versionPropertiesPath = warPath;
-        for(String pathComponent: VERSION_PROPERTIES_PATH) {
-            versionPropertiesPath = versionPropertiesPath.resolve(pathComponent);
+        try(FileSystem zipFs = FileSystems.newFileSystem(warPath, null)) {
+            Path versionPropertiesPath = zipFs.getPath("/");
+            for (String pathComponent : VERSION_PROPERTIES_PATH) {
+                versionPropertiesPath = versionPropertiesPath.resolve(pathComponent);
+            }
+            return fromAlfrescoVersionProperties(versionPropertiesPath);
         }
-        return fromAlfrescoVersionProperties(versionPropertiesPath);
     }
 
     @Nullable

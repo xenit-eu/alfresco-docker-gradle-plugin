@@ -1,40 +1,39 @@
 package eu.xenit.gradle.docker.alfresco.tasks;
 
 
-import de.schlichtherle.truezip.file.TArchiveDetector;
-import de.schlichtherle.truezip.file.TFile;
 import eu.xenit.gradle.docker.alfresco.internal.version.AlfrescoVersion;
 import eu.xenit.gradle.docker.internal.Deprecation;
 import eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.gradle.api.Action;
+import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.ConfigurableFileCollection;
-import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.RegularFile;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.util.GradleVersion;
 
 public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements LabelConsumerTask {
 
     public static final String MESSAGE_BASE_IMAGE_NOT_SET = "Base image not set. You need to configure your base image to build docker images.";
+    private static final String COMMAND_NO_OP = "true # NO-OP from " + DockerfileWithWarsTask.class.getCanonicalName();
+    private static final String COMMAND_ELIDABLE =
+            " # Elidable command from " + DockerfileWithWarsTask.class.getCanonicalName();
     /**
      * Base image used to build the dockerfile
      */
@@ -47,9 +46,12 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
             .mapProperty(String.class, String.class);
 
     /**
-     * Map of directories in the tomcat folder to the war file to place there
+     * Names of WAR files that have already been added
+     *
+     * This is tracked so multiple WARs with the same name can be overlayed on top of each other,
+     * without removing the previously added contents.
      */
-    private final Map<String, List<Provider<java.io.File>>> warFiles = new HashMap<>();
+    private final Set<String> addedWarNames = new HashSet<>();
 
     /**
      * Target directory inside the docker container where war files will be placed
@@ -66,6 +68,13 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
             from(baseImage.map(From::new));
         }
         baseImage.set((String) null);
+
+        // This runs in afterEvaluate, because we want this doFirst action to really run *before*
+        // any other doFirst actions, as we need to clean up our own mess with no-op instructions
+        getProject().afterEvaluate(p -> {
+            doFirst("Remove no-op instructions", new RemoveNoOpInstructionsAction());
+            doFirst("Elide duplicate version check instructions", new ElideDuplicateVersionChecksAction());
+        });
     }
 
     @Input
@@ -96,73 +105,9 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
         return checkAlfrescoVersion;
     }
 
-    /**
-     * Adds a prefix to log4j log lines inside an extracted WAR
-     *
-     * @param destinationDir
-     * @param logName
-     */
-    private void improveLog4j(java.io.File destinationDir, String logName) {
-        Path path = destinationDir.toPath().resolve(Paths.get("WEB-INF", "classes", "log4j.properties"));
-        if (Files.exists(path)) {
-            getLogger().info("Prefixing logs for {} with [{}]", destinationDir.getName(), logName);
-            Charset charset = StandardCharsets.UTF_8;
-            try {
-                String content = new String(Files.readAllBytes(path), charset);
-                content = content.replaceAll("log4j\\.rootLogger=error,\\ Console,\\ File",
-                        "log4j\\.rootLogger=error,\\ Console");
-                //prefix the loglines with the base
-                content = content
-                        .replaceAll("log4j\\.appender\\.Console\\.layout\\.ConversionPattern=\\%d\\{ISO8601\\}",
-                                "log4j\\.appender\\.Console\\.layout\\.ConversionPattern=\\[" + logName
-                                        + "\\]\\ %d\\{ISO8601\\}");
-                Files.write(path, content.getBytes(charset));
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
-        } else {
-            getLogger().info("No log4j.properties available in {}. Not changing the console appender",
-                    destinationDir.getName());
-        }
-    }
-
-    /**
-     * Unzips a war file to a directory
-     *
-     * @param warFile
-     * @param destinationDir
-     */
-    private static void unzipWar(java.io.File warFile, java.io.File destinationDir) {
-        if (warFile == null) {
-            return;
-        }
-        Util.withWar(warFile, archive -> {
-            TFile directory = new TFile(destinationDir);
-            directory.mkdirs();
-            try {
-                TFile.cp_rp(archive, directory, TArchiveDetector.NULL);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        });
-    }
-
     @Input
     public Property<String> getBaseImage() {
         return baseImage;
-    }
-
-    @InputFiles
-    public FileCollection getWarFiles() {
-        ConfigurableFileCollection mappedWarFiles = getProject().files(getProject().provider(() -> {
-            return warFiles.values().stream()
-                    .flatMap(Collection::stream)
-                    .filter(Provider::isPresent)
-                    .map(Provider::get)
-                    .collect(Collectors.toList());
-        }));
-        // Filter with an always matching filter, so the returned FileCollection is no longer a ConfigurableFileCollection
-        return mappedWarFiles.filter(x -> true);
     }
 
     public void addWar(String name, WarLabelOutputTask task) {
@@ -180,10 +125,44 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
     }
 
     private void _addWar(String name, Provider<java.io.File> file) {
-        if (!warFiles.containsKey(name)) {
-            warFiles.put(name, new ArrayList<>());
+        if (!addedWarNames.contains(name)) {
+            runCommand(getRemoveExistingWar()
+                    .map(removeWar -> {
+                        if (!Boolean.TRUE.equals(removeWar)) {
+                            return COMMAND_NO_OP;
+                        }
+                        return "rm -rf " + getTargetDirectory().get() + name;
+                    }));
         }
-        warFiles.get(name).add(file);
+        runCommand(getCheckAlfrescoVersion().flatMap(checkVersion -> {
+            if (!Boolean.TRUE.equals(checkVersion)) {
+                return getProject().provider(() -> COMMAND_NO_OP);
+            }
+            return file.map(f -> {
+                try {
+                    AlfrescoVersion alfrescoVersion = AlfrescoVersion.fromAlfrescoWar(f.toPath());
+                    if (alfrescoVersion != null) {
+                        return alfrescoVersion.getCheckCommand(getTargetDirectory().get() + name) + COMMAND_ELIDABLE;
+                    }
+                    return COMMAND_NO_OP;
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            });
+
+        }));
+        ConfigurableFileCollection fc = getProject().files();
+        fc.from(getProject().provider(() -> {
+            java.io.File resolvedFile = file.getOrNull();
+            if (resolvedFile == null) {
+                // Return empty collection when we resolved to null, else the FileCollection will throw an exception,
+                // because it tries to unpack the provider with Provider#get()
+                return getProject().files();
+            }
+            return getProject().zipTree(resolvedFile);
+        }));
+        smartCopy(fc, getTargetDirectory().map(target -> target + name));
+        addedWarNames.add(name);
     }
 
     @Deprecated
@@ -201,42 +180,6 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
     @TaskAction
     @Override
     public void create() {
-        // Unpack & COPY into container
-        warFiles.forEach((name, wars) -> {
-            java.io.File destinationDir = getDestFile().getAsFile().get().toPath().resolveSibling(name).toFile();
-            if (destinationDir.exists()) {
-                try {
-                    TFile.rm_r(destinationDir);
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            }
-            wars.forEach(war -> {
-                // Unpack war
-                unzipWar(war.getOrNull(), destinationDir);
-            });
-
-            if (destinationDir.exists()) {
-                improveLog4j(destinationDir, name.toUpperCase());
-
-                // COPY
-                if (getRemoveExistingWar().get()) {
-                    runCommand("rm -rf " + getTargetDirectory().get() + name);
-                }
-                if (getCheckAlfrescoVersion().get()) {
-                    try {
-                        AlfrescoVersion alfrescoVersion = AlfrescoVersion.fromAlfrescoWar(destinationDir.toPath());
-                        if (alfrescoVersion != null) {
-                            this.runCommand(alfrescoVersion.getCheckCommand(getTargetDirectory().get() + name));
-                        }
-                    } catch (IOException e) {
-                        throw new UncheckedIOException(e);
-                    }
-                }
-                copyFile("./" + name, getTargetDirectory().get() + name);
-            }
-        });
-
         // LABEL
         if (!getLabels().get().isEmpty()) {
             label(getLabels());
@@ -253,5 +196,65 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask implements La
     @Input
     public MapProperty<String, String> getLabels() {
         return labels;
+    }
+
+    public static class RemoveNoOpInstructionsAction implements Action<Task> {
+
+        @Override
+        public void execute(Task task) {
+            if (task instanceof DockerfileWithWarsTask) {
+                execute((DockerfileWithWarsTask) task);
+            } else {
+                throw new IllegalArgumentException("Task must be a DockerfileWithWarsTask");
+            }
+        }
+
+        public void execute(DockerfileWithWarsTask dockerfile) {
+            List<Instruction> instructions = dockerfile.getInstructions().get()
+                    .stream()
+                    .filter(instruction -> !(instruction instanceof RunCommandInstruction && Objects
+                            .equals(instruction.getText(), instruction.getKeyword() + " " + COMMAND_NO_OP)))
+                    .collect(Collectors.toList());
+            dockerfile.getInstructions().set(instructions);
+        }
+    }
+
+    public static class ElideDuplicateVersionChecksAction implements Action<Task> {
+
+        private static final Logger LOGGER = Logging.getLogger(ElideDuplicateVersionChecksAction.class);
+
+        @Override
+        public void execute(Task task) {
+            if (task instanceof DockerfileWithWarsTask) {
+                execute((DockerfileWithWarsTask) task);
+            } else {
+                throw new IllegalArgumentException("Task must be a DockerfileWithWarsTask");
+            }
+        }
+
+        public void execute(DockerfileWithWarsTask dockerfile) {
+            List<Instruction> instructions = dockerfile.getInstructions().get();
+            Set<String> elidableCommands = new HashSet<>();
+            List<Instruction> newInstructions = new ArrayList<>(instructions.size());
+
+            for (Instruction instruction : instructions) {
+                if (instruction instanceof RunCommandInstruction && instruction.getText() != null && instruction.getText().endsWith(COMMAND_ELIDABLE)) {
+                    if (!elidableCommands.add(instruction.getText())) {
+                        LOGGER.debug("Eliding command '{}' because we have already seen it.",
+                                instruction.getText());
+                        continue;
+                    } else {
+                        String command = instruction.getText();
+                        String newCommand = command.substring(instruction.getKeyword().length() + 1,
+                                command.length() - COMMAND_ELIDABLE.length());
+                        LOGGER.debug("Stripped elidable suffix from command: '{}'", newCommand);
+                        instruction = new RunCommandInstruction(newCommand);
+                    }
+                }
+                newInstructions.add(instruction);
+            }
+            dockerfile.getInstructions().set(newInstructions);
+        }
+
     }
 }

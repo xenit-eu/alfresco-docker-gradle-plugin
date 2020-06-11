@@ -1,8 +1,9 @@
 package eu.xenit.gradle.docker.tasks;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
-import java.nio.file.Path;
+import org.gradle.api.UncheckedIOException;
 import org.gradle.api.file.CopySpec;
+import org.gradle.api.file.Directory;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskAction;
@@ -103,7 +104,7 @@ public class DockerfileWithCopyTask extends Dockerfile {
         copyFileCopySpec.into(stagingDirectory, copySpec -> {
             copySpec.from(files);
         });
-        copyFile(destinationInImage.map(d -> new CopyFile(stagingDirectory, d)));
+        copyFile(destinationInImage.map(d -> new CopyFile(stagingDirectory + "/", d + "/")));
         getInputs().files(files).withPropertyName("copyFile." + copyFileCounter);
     }
 
@@ -115,13 +116,24 @@ public class DockerfileWithCopyTask extends Dockerfile {
     @TaskAction
     @Override
     public void create() {
-        Provider<Path> dockerfileDirectory = getDestFile().map(f -> f.getAsFile().getParentFile().toPath());
-        Provider<Path> copyFileDirectory = dockerfileDirectory.map(p -> p.resolve("copyFile"));
+        // copyFile base directory
+        Provider<Directory> copyFileDirectory = getDestDir().map(d -> d.dir("copyFile"));
         getProject().delete(copyFileDirectory);
+        // Ensure empty directory exists
         getProject().copy(copySpec -> {
             copySpec.with(copyFileCopySpec);
-            copySpec.into(dockerfileDirectory);
+            copySpec.into(getDestDir());
         });
+
+        // Create non-existing directories, so the COPY command in the Dockerfile does not throw an error in case empty
+        // FileCollections are added with smartCopy
+        for(int i = 1; i <= copyFileCounter; i++) {
+            java.io.File copyFile = copyFileDirectory.get().dir(Integer.toString(i)).getAsFile();
+            if(!copyFile.exists() && !copyFile.mkdir()) {
+                throw new UncheckedIOException("Cannot create folder "+copyFile);
+            }
+
+        }
 
         super.create();
     }

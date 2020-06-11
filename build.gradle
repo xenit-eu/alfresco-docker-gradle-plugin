@@ -7,6 +7,7 @@ plugins {
     id 'org.ajoberstar.reckon' version "0.12.0"
     id 'com.github.johnrengelman.shadow' version '5.2.0' apply false
     id "org.sonarqube" version "3.0"
+    id "be.vbgn.ci-detect" version "0.3.0"
 }
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
@@ -195,6 +196,13 @@ jacocoTestReport {
 sonarqube {
     properties {
         properties["sonar.tests"] += sourceSets.integrationTest.java.srcDirs
+        if (ci.isPullRequest()) {
+            properties["sonar.pullrequest.key"] = ci.pullRequest
+            properties["sonar.pullrequest.branch"] = ci.branch
+            properties["sonar.pullrequest.base"] = ci.pullRequestTargetBranch
+        } else {
+            properties["sonar.branch.name"] = ci.reference
+        }
     }
 }
 
