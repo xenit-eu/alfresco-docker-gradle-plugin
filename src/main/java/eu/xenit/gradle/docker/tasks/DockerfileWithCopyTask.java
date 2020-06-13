@@ -1,18 +1,28 @@
 package eu.xenit.gradle.docker.tasks;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import eu.xenit.gradle.docker.alfresco.tasks.LabelConsumerTask;
+import java.util.Map;
 import org.gradle.api.UncheckedIOException;
 import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 
-public class DockerfileWithCopyTask extends Dockerfile {
+public class DockerfileWithCopyTask extends Dockerfile implements LabelConsumerTask {
 
     private int copyFileCounter = 0;
 
     private final CopySpec copyFileCopySpec;
+
+    /**
+     * Map of labels to add to the dockerfile
+     */
+    private final MapProperty<String, String> labels;
+
 
     private String createCopyFileStagingDirectory() {
         copyFileCounter++;
@@ -108,9 +118,21 @@ public class DockerfileWithCopyTask extends Dockerfile {
         getInputs().files(files).withPropertyName("copyFile." + copyFileCounter);
     }
 
+    @Override
+    public void withLabels(Provider<Map<String, String>> labels) {
+        this.labels.putAll(labels);
+    }
+
+    @Input
+    public MapProperty<String, String> getLabels() {
+        return labels;
+    }
+
+
     public DockerfileWithCopyTask() {
         super();
         copyFileCopySpec = getProject().copySpec();
+        labels = getProject().getObjects().mapProperty(String.class, String.class);
     }
 
     @TaskAction
@@ -133,6 +155,10 @@ public class DockerfileWithCopyTask extends Dockerfile {
                 throw new UncheckedIOException("Cannot create folder "+copyFile);
             }
 
+        }
+
+        if (!getLabels().get().isEmpty()) {
+            label(getLabels());
         }
 
         super.create();

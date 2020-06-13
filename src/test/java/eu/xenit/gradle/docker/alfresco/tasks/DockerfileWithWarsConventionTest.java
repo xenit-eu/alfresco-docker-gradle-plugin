@@ -8,8 +8,9 @@ import static org.junit.Assert.assertTrue;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile.Instruction;
 import eu.xenit.gradle.docker.alfresco.internal.version.AlfrescoVersion;
-import eu.xenit.gradle.docker.alfresco.tasks.DockerfileWithWarsTask.ElideDuplicateVersionChecksAction;
-import eu.xenit.gradle.docker.alfresco.tasks.DockerfileWithWarsTask.RemoveNoOpInstructionsAction;
+import eu.xenit.gradle.docker.alfresco.tasks.DockerfileWithWarsConventionImpl.ElideDuplicateVersionChecksAction;
+import eu.xenit.gradle.docker.alfresco.tasks.DockerfileWithWarsConventionImpl.RemoveNoOpInstructionsAction;
+import eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,9 +27,9 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
-public class DockerfileWithWarsTaskTest {
+public class DockerfileWithWarsConventionTest {
 
-    private static DockerfileWithWarsTask createDockerfile(Action<DockerfileWithWarsTask> configure) {
+    private static DockerfileWithCopyTask createDockerfile(Action<DockerfileWithCopyTask> configure) {
         Project project = ProjectBuilder.builder().build();
         return project.getTasks().register("createDockerFile", DockerfileWithWarsTask.class, configure).get();
     }
@@ -60,46 +61,49 @@ public class DockerfileWithWarsTaskTest {
 
     @Test
     public void requiresBaseImage() {
-        DockerfileWithWarsTask dockerfileWithWarsTask = createDockerfile(dockerfile -> {
+        DockerfileWithCopyTask dockerfileWithWarsTask = createDockerfile(dockerfile -> {
 
         });
 
-        expectedException.expectMessage(is(DockerfileWithWarsTask.MESSAGE_BASE_IMAGE_NOT_SET));
+        expectedException.expectMessage(is(DockerfileWithWarsConventionImpl.MESSAGE_BASE_IMAGE_NOT_SET));
         // This results in an exception when trying to resolve the FROM instruction
         instructionsToString(dockerfileWithWarsTask);
     }
 
     @Test
     public void defaultAddWarSettings() {
-        DockerfileWithWarsTask dockerfileWithWarsTask = createDockerfile(dockerfile -> {
-            dockerfile.getBaseImage().set("scratch");
-            dockerfile.addWar("abc", warFile);
-            dockerfile.addWar("abc", warFile);
-            dockerfile.addWar("def", warFile);
+        DockerfileWithCopyTask dockerfileWithWarsTask = createDockerfile(dockerfile -> {
+            DockerfileWithWarsConvention convention = DockerfileWithWarsConvention.getConvention(dockerfile);
+            convention.getBaseImage().set("scratch");
+            convention.addWar("abc", warFile);
+            convention.addWar("abc", warFile);
+            convention.addWar("def", warFile);
         });
 
         new RemoveNoOpInstructionsAction().execute(dockerfileWithWarsTask);
 
         List<String> instructions = instructionsToString(dockerfileWithWarsTask);
 
+        DockerfileWithWarsConvention convention = DockerfileWithWarsConvention.getConvention(dockerfileWithWarsTask);
+
         assertEquals(Arrays.asList(
                 "FROM scratch",
-                "RUN rm -rf "+dockerfileWithWarsTask.getTargetDirectory().get()+"abc",
-                "COPY copyFile/1/ "+dockerfileWithWarsTask.getTargetDirectory().get()+"abc/",
-                "COPY copyFile/2/ "+dockerfileWithWarsTask.getTargetDirectory().get()+"abc/",
-                "RUN rm -rf "+dockerfileWithWarsTask.getTargetDirectory().get()+"def",
-                "COPY copyFile/3/ "+dockerfileWithWarsTask.getTargetDirectory().get()+"def/"
+                "RUN rm -rf " + convention.getTargetDirectory().get() + "abc",
+                "COPY copyFile/1/ " + convention.getTargetDirectory().get() + "abc/",
+                "COPY copyFile/2/ " + convention.getTargetDirectory().get() + "abc/",
+                "RUN rm -rf " + convention.getTargetDirectory().get() + "def",
+                "COPY copyFile/3/ " + convention.getTargetDirectory().get() + "def/"
         ), instructions);
     }
 
     @Test
     public void removeNoOpInstructions() {
-        DockerfileWithWarsTask dockerfileWithWarsTask = createDockerfile(dockerfile -> {
-            dockerfile.getBaseImage().set("scratch");
-            dockerfile.getRemoveExistingWar().set(false);
-            dockerfile.addWar("abc", warFile);
+        Dockerfile dockerfileWithWarsTask = createDockerfile(dockerfile -> {
+            DockerfileWithWarsConvention convention = DockerfileWithWarsConvention.getConvention(dockerfile);
+            convention.getBaseImage().set("scratch");
+            convention.getRemoveExistingWar().set(false);
+            convention.addWar("abc", warFile);
         });
-
 
         List<String> instructionsBeforeRemove = instructionsToString(dockerfileWithWarsTask);
 
@@ -117,16 +121,19 @@ public class DockerfileWithWarsTaskTest {
     @Test
     public void elideDuplicateVersionCheckInstructions() throws IOException {
 
-        DockerfileWithWarsTask dockerfileWithWarsTask = createDockerfile(dockerfile -> {
-            dockerfile.getBaseImage().set("scratch");
-            dockerfile.getRemoveExistingWar().set(false);
-            dockerfile.addWar("abc", warFile);
-            dockerfile.addWar("abc", warFile);
-            dockerfile.addWar("def", warFile);
+        Dockerfile dockerfileWithWarsTask = createDockerfile(dockerfile -> {
+            DockerfileWithWarsConvention convention = DockerfileWithWarsConvention.getConvention(dockerfile);
+            convention.getBaseImage().set("scratch");
+            convention.getRemoveExistingWar().set(false);
+            convention.addWar("abc", warFile);
+            convention.addWar("abc", warFile);
+            convention.addWar("def", warFile);
         });
 
         String versionCheckCommand = Objects.requireNonNull(AlfrescoVersion.fromAlfrescoWar(warFile.toPath()))
-                .getCheckCommand(dockerfileWithWarsTask.getTargetDirectory().get() + "abc");
+                .getCheckCommand(
+                        DockerfileWithWarsConvention.getConvention(dockerfileWithWarsTask).getTargetDirectory().get()
+                                + "abc");
 
         List<String> instructionsBeforeRemove = instructionsToString(dockerfileWithWarsTask);
 
@@ -141,36 +148,42 @@ public class DockerfileWithWarsTaskTest {
 
         // Check that check command for other path is not elided
         String otherVersionCheckCommand = Objects.requireNonNull(AlfrescoVersion.fromAlfrescoWar(warFile.toPath()))
-                .getCheckCommand(dockerfileWithWarsTask.getTargetDirectory().get() + "def");
+                .getCheckCommand(
+                        DockerfileWithWarsConvention.getConvention(dockerfileWithWarsTask).getTargetDirectory().get()
+                                + "def");
         assertEquals(1,
                 instructionsAfterRemove.stream().filter(i -> i.startsWith("RUN " + otherVersionCheckCommand)).count());
     }
 
     @Test
     public void lazyResolveRemoveExistingWar() {
-        DockerfileWithWarsTask dockerfileWithWarsTask = createDockerfile(dockerfile -> {
-            dockerfile.getBaseImage().set("scratch");
-            dockerfile.addWar("abc", warFile);
-            dockerfile.addWar("abc", warFile);
-            dockerfile.addWar("def", warFile);
-            dockerfile.getRemoveExistingWar().set(false);
+        Dockerfile dockerfileWithWarsTask = createDockerfile(dockerfile -> {
+            DockerfileWithWarsConvention convention = DockerfileWithWarsConvention.getConvention(dockerfile);
+            convention.getBaseImage().set("scratch");
+            convention.addWar("abc", warFile);
+            convention.addWar("abc", warFile);
+            convention.addWar("def", warFile);
+            convention.getRemoveExistingWar().set(false);
         });
 
         List<String> instructions = instructionsToString(dockerfileWithWarsTask);
 
         assertEquals("Contains no rm -rf of abc war", 0, instructions.stream()
-                .filter(i -> i.startsWith("RUN rm -rf " + dockerfileWithWarsTask.getTargetDirectory().get() + "abc"))
+                .filter(i -> i.startsWith(
+                        "RUN rm -rf " + DockerfileWithWarsConvention.getConvention(dockerfileWithWarsTask)
+                                .getTargetDirectory().get() + "abc"))
                 .count());
     }
 
     @Test
     public void lazyResolveTargetDirectory() {
-        DockerfileWithWarsTask dockerfileWithWarsTask = createDockerfile(dockerfile -> {
-            dockerfile.getBaseImage().set("scratch");
-            dockerfile.addWar("abc", warFile);
-            dockerfile.addWar("abc", warFile);
-            dockerfile.addWar("def", warFile);
-            dockerfile.getTargetDirectory().set("/some/other/path");
+        Dockerfile dockerfileWithWarsTask = createDockerfile(dockerfile -> {
+            DockerfileWithWarsConvention convention = DockerfileWithWarsConvention.getConvention(dockerfile);
+            convention.getBaseImage().set("scratch");
+            convention.addWar("abc", warFile);
+            convention.addWar("abc", warFile);
+            convention.addWar("def", warFile);
+            convention.getTargetDirectory().set("/some/other/path");
         });
 
         List<String> instructions = instructionsToString(dockerfileWithWarsTask);
@@ -179,18 +192,22 @@ public class DockerfileWithWarsTaskTest {
 
     @Test
     public void lazyResolveCheckAlfrescoVersion() throws IOException {
-        DockerfileWithWarsTask dockerfileWithWarsTask = createDockerfile(dockerfile -> {
-            dockerfile.getBaseImage().set("scratch");
-            dockerfile.getRemoveExistingWar().set(false);
-            dockerfile.addWar("abc", warFile);
-            dockerfile.addWar("abc", warFile);
-            dockerfile.addWar("def", warFile);
-            dockerfile.getCheckAlfrescoVersion().set(false);
+        Dockerfile dockerfileWithWarsTask = createDockerfile(dockerfile -> {
+            DockerfileWithWarsConvention convention = DockerfileWithWarsConvention.getConvention(dockerfile);
+            convention.getBaseImage().set("scratch");
+            convention.getRemoveExistingWar().set(false);
+            convention.addWar("abc", warFile);
+            convention.addWar("abc", warFile);
+            convention.addWar("def", warFile);
+            convention.getCheckAlfrescoVersion().set(false);
         });
 
         List<String> instructions = instructionsToString(dockerfileWithWarsTask);
         String versionCheckCommand = Objects.requireNonNull(AlfrescoVersion.fromAlfrescoWar(warFile.toPath()))
-                .getCheckCommand(dockerfileWithWarsTask.getTargetDirectory().get() + "abc");
-        assertTrue("No alfresco version checks are in the instructions", instructions.stream().noneMatch(i -> i.startsWith("RUN "+versionCheckCommand)));
+                .getCheckCommand(
+                        DockerfileWithWarsConvention.getConvention(dockerfileWithWarsTask).getTargetDirectory().get()
+                                + "abc");
+        assertTrue("No alfresco version checks are in the instructions",
+                instructions.stream().noneMatch(i -> i.startsWith("RUN " + versionCheckCommand)));
     }
 }

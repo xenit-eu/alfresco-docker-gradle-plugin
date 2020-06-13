@@ -2,6 +2,7 @@ package eu.xenit.gradle.docker.alfresco;
 
 import eu.xenit.gradle.docker.DockerBuildBehavior;
 import eu.xenit.gradle.docker.DockerConfigPlugin;
+import eu.xenit.gradle.docker.alfresco.tasks.DockerfileWithWarsConvention;
 import eu.xenit.gradle.docker.alfresco.tasks.DockerfileWithWarsTask;
 import eu.xenit.gradle.docker.alfresco.tasks.InjectFilesInWarTask;
 import eu.xenit.gradle.docker.alfresco.tasks.InstallAmpsInWarTask;
@@ -10,6 +11,7 @@ import eu.xenit.gradle.docker.alfresco.tasks.PrefixLog4JWarTask;
 import eu.xenit.gradle.docker.alfresco.tasks.StripAlfrescoWarTask;
 import eu.xenit.gradle.docker.alfresco.tasks.WarEnrichmentTask;
 import eu.xenit.gradle.docker.alfresco.tasks.WarLabelOutputTask;
+import eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask;
 import java.util.ArrayList;
 import java.util.List;
 import org.alfresco.repo.module.tool.WarHelperImpl;
@@ -52,7 +54,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
 
         List<WarLabelOutputTask> alfrescoWarEnrichmentTasks = warEnrichmentChain(project, ALFRESCO);
         List<WarLabelOutputTask> shareEnrichmentTasks = warEnrichmentChain(project, SHARE);
-        DockerfileWithWarsTask dockerfile = getDockerFileTask(dockerAlfrescoExtension, project);
+        DockerfileWithCopyTask dockerfile = getDockerFileTask(dockerAlfrescoExtension, project);
 
         DockerBuildBehavior dockerBuildBehavior = new DockerBuildBehavior(dockerAlfrescoExtension.getDockerBuild(),
                 dockerfile);
@@ -62,24 +64,27 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
                 dockerAlfrescoExtension);
     }
 
-    private DockerfileWithWarsTask getDockerFileTask(DockerAlfrescoExtension dockerAlfrescoExtension,
+    private DockerfileWithCopyTask getDockerFileTask(DockerAlfrescoExtension dockerAlfrescoExtension,
             Project project1) {
-        DockerfileWithWarsTask dockerfile = project1.getTasks().create("createDockerFile",
+        DockerfileWithCopyTask dockerfile = project1.getTasks().create("createDockerFile",
                 DockerfileWithWarsTask.class);
-        dockerfile.getBaseImage().set(dockerAlfrescoExtension.getBaseImage());
+        DockerfileWithWarsConvention.getConvention(dockerfile).getBaseImage()
+                .set(dockerAlfrescoExtension.getBaseImage());
         return dockerfile;
     }
 
-    private void updateDockerFileTask(Project project, DockerfileWithWarsTask dockerfile,
+    private void updateDockerFileTask(Project project, DockerfileWithCopyTask dockerfile,
             List<WarLabelOutputTask> alfrescoTasks, List<WarLabelOutputTask> shareTasks,
             DockerAlfrescoExtension dockerAlfrescoExtension) {
 
-        dockerfile.getRemoveExistingWar().set(dockerAlfrescoExtension.getLeanImage().map(b -> !b));
+        DockerfileWithWarsConvention withWarsConvention = DockerfileWithWarsConvention.getConvention(dockerfile);
+
+        withWarsConvention.getRemoveExistingWar().set(dockerAlfrescoExtension.getLeanImage().map(b -> !b));
 
         project.afterEvaluate(project1 -> {
 
             Configuration alfrescoBaseWar = project1.getConfigurations().getByName(BASE_ALFRESCO_WAR);
-            dockerfile.addWar("alfresco", dockerAlfrescoExtension.getLeanImage().flatMap(isLeanImage -> {
+            withWarsConvention.addWar("alfresco", dockerAlfrescoExtension.getLeanImage().flatMap(isLeanImage -> {
                 if (isLeanImage || alfrescoBaseWar.isEmpty()) {
                     return project1.provider(() -> null);
                 } else {
@@ -87,14 +92,14 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
                 }
             }));
             alfrescoTasks.forEach(t -> {
-                dockerfile.addWar("alfresco",
+                withWarsConvention.addWar("alfresco",
                         project1.provider(() -> alfrescoBaseWar.isEmpty() ? null : t.getOutputWar().get()));
                 dockerfile.dependsOn(t);
                 dockerfile.withLabels(t.getLabels());
             });
 
             Configuration shareBaseWar = project1.getConfigurations().getByName(BASE_SHARE_WAR);
-            dockerfile.addWar("share", dockerAlfrescoExtension.getLeanImage().flatMap(isLeanImage -> {
+            withWarsConvention.addWar("share", dockerAlfrescoExtension.getLeanImage().flatMap(isLeanImage -> {
                 if (isLeanImage || shareBaseWar.isEmpty()) {
                     return project1.provider(() -> null);
                 } else {
@@ -102,7 +107,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
                 }
             }));
             shareTasks.forEach(t -> {
-                dockerfile.addWar("share",
+                withWarsConvention.addWar("share",
                         project1.provider(() -> shareBaseWar.isEmpty() ? null : t.getOutputWar().get()));
                 dockerfile.dependsOn(t);
                 dockerfile.withLabels(t.getLabels());
