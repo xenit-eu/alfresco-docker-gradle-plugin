@@ -10,7 +10,7 @@ public interface DockerfileWithSmartCopyExtension {
     /**
      * smartCopy copies a file from anywhere into a docker image.
      * <p>
-     * It works similar to {@link #copyFile(String, String)}, except smartCopy is able to directly copy a file from anywhere into the docker image.
+     * It works similar to {@link Dockerfile#copyFile(String, String)}, except smartCopy is able to directly copy a file from anywhere into the docker image.
      * Copying to the build context is not necessary, because smartCopy handles this automatically.
      *
      * @param file               The file to copy, as evaluated by {@link org.gradle.api.Project#file(Object)}
