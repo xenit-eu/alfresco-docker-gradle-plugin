@@ -143,6 +143,7 @@ class PluginClasspathChecker {
      * @param <T>          The specific type of the class
      * @return Task instance that has safely been casted to {@code taskClass}
      */
+    @SuppressWarnings("unchecked")
     public <T extends Task> T checkTask(Class<T> taskClass, Task taskInstance) {
         if (isDisabled() || taskClass.isAssignableFrom(taskInstance.getClass())) {
             return (T) taskInstance;

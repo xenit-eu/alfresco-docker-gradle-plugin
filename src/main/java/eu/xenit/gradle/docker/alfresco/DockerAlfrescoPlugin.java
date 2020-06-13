@@ -64,6 +64,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
                 dockerAlfrescoExtension);
     }
 
+    @SuppressWarnings("deprecation")
     private DockerfileWithCopyTask getDockerFileTask(DockerAlfrescoExtension dockerAlfrescoExtension,
             Project project1) {
         DockerfileWithCopyTask dockerfile = project1.getTasks().create("createDockerFile",
