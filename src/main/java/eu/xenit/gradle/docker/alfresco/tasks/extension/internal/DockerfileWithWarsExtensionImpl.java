@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -46,7 +47,8 @@ public class DockerfileWithWarsExtensionImpl implements DockerfileWithWarsExtens
             " # Elidable command from " + DockerfileWithWarsExtensionImpl.class.getCanonicalName();
 
     public static void applyTo(Dockerfile task) {
-        task.getExtensions().add("wars", new DockerfileWithWarsExtensionImpl(task));
+        DockerfileWithWarsExtension impl = task.getProject().getObjects().newInstance(DockerfileWithWarsExtensionImpl.class, task);
+        task.getConvention().getPlugins().put("wars", impl);
 
         // This runs in afterEvaluate, because we want this doFirst action to really run *before*
         // any other doFirst actions, as we need to clean up our own mess with no-op instructions
@@ -114,8 +116,8 @@ public class DockerfileWithWarsExtensionImpl implements DockerfileWithWarsExtens
         return baseImage;
     }
 
-
-    private DockerfileWithWarsExtensionImpl(Dockerfile dockerfile) {
+    @Inject
+    public DockerfileWithWarsExtensionImpl(Dockerfile dockerfile) {
         this.dockerfile = dockerfile;
         this.smartCopyExtension = DockerfileWithSmartCopyExtension.get(dockerfile);
         this.labelConsumerExtension = LabelConsumerExtension.get(dockerfile);

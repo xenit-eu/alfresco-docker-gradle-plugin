@@ -20,7 +20,7 @@ public interface LabelConsumerExtension {
         if (task instanceof LabelConsumerExtension) {
             return (LabelConsumerExtension) task;
         } else {
-            return task.getExtensions().getByType(LabelConsumerExtension.class);
+            return task.getConvention().getPlugin(LabelConsumerExtension.class);
         }
     }
 }

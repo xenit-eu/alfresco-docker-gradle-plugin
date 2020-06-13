@@ -36,6 +36,6 @@ public interface DockerfileWithWarsExtension {
     void addWar(String name, Configuration configuration);
 
     static DockerfileWithWarsExtension get(Dockerfile task) {
-        return task.getExtensions().getByType(DockerfileWithWarsExtension.class);
+        return task.getConvention().getPlugin(DockerfileWithWarsExtension.class);
     }
 }
