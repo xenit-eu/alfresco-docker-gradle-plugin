@@ -1,12 +1,15 @@
-package eu.xenit.gradle.docker.alfresco.tasks;
+package eu.xenit.gradle.docker.alfresco.tasks.extension.internal;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile.From;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile.Instruction;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile.RunCommandInstruction;
 import eu.xenit.gradle.docker.alfresco.internal.version.AlfrescoVersion;
+import eu.xenit.gradle.docker.alfresco.tasks.WarLabelOutputTask;
+import eu.xenit.gradle.docker.alfresco.tasks.extension.DockerfileWithWarsExtension;
+import eu.xenit.gradle.docker.alfresco.tasks.extension.LabelConsumerExtension;
 import eu.xenit.gradle.docker.internal.Deprecation;
-import eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask;
+import eu.xenit.gradle.docker.tasks.extension.DockerfileWithSmartCopyExtension;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -33,17 +36,17 @@ import org.gradle.api.reflect.TypeOf;
 import org.gradle.api.tasks.Input;
 import org.gradle.util.GradleVersion;
 
-public class DockerfileWithWarsConventionImpl implements DockerfileWithWarsConvention, HasPublicType {
+public class DockerfileWithWarsExtensionImpl implements DockerfileWithWarsExtension, HasPublicType {
 
     public static final String MESSAGE_BASE_IMAGE_NOT_SET = "Base image not set. You need to configure your base image to build docker images.";
 
     static final String COMMAND_NO_OP =
-            "true # NO-OP from " + DockerfileWithWarsConventionImpl.class.getCanonicalName();
+            "true # NO-OP from " + DockerfileWithWarsExtensionImpl.class.getCanonicalName();
     static final String COMMAND_ELIDABLE =
-            " # Elidable command from " + DockerfileWithWarsConventionImpl.class.getCanonicalName();
+            " # Elidable command from " + DockerfileWithWarsExtensionImpl.class.getCanonicalName();
 
-    public static void applyTo(DockerfileWithCopyTask task) {
-        task.getConvention().add("wars", new DockerfileWithWarsConventionImpl(task));
+    public static void applyTo(Dockerfile task) {
+        task.getExtensions().add("wars", new DockerfileWithWarsExtensionImpl(task));
 
         // This runs in afterEvaluate, because we want this doFirst action to really run *before*
         // any other doFirst actions, as we need to clean up our own mess with no-op instructions
@@ -53,8 +56,9 @@ public class DockerfileWithWarsConventionImpl implements DockerfileWithWarsConve
         });
     }
 
-    private final DockerfileWithCopyTask dockerfile;
-    private final LabelConsumerTask labelConsumer;
+    private final Dockerfile dockerfile;
+    private final DockerfileWithSmartCopyExtension smartCopyExtension;
+    private final LabelConsumerExtension labelConsumerExtension;
     private final Project project;
     private final ObjectFactory objectFactory;
 
@@ -111,13 +115,10 @@ public class DockerfileWithWarsConventionImpl implements DockerfileWithWarsConve
     }
 
 
-    private DockerfileWithWarsConventionImpl(DockerfileWithCopyTask dockerfile) {
+    private DockerfileWithWarsExtensionImpl(Dockerfile dockerfile) {
         this.dockerfile = dockerfile;
-        if (dockerfile instanceof LabelConsumerTask) {
-            this.labelConsumer = dockerfile;
-        } else {
-            this.labelConsumer = dockerfile.getConvention().getPlugin(LabelConsumerTask.class);
-        }
+        this.smartCopyExtension = DockerfileWithSmartCopyExtension.get(dockerfile);
+        this.labelConsumerExtension = LabelConsumerExtension.get(dockerfile);
         this.project = dockerfile.getProject();
         this.objectFactory = project.getObjects();
 
@@ -142,7 +143,7 @@ public class DockerfileWithWarsConventionImpl implements DockerfileWithWarsConve
     public void addWar(String name, WarLabelOutputTask task) {
         dockerfile.dependsOn(task);
         addWar(name, task.getOutputWar());
-        labelConsumer.withLabels(task);
+        labelConsumerExtension.withLabels(task);
     }
 
     @Override
@@ -193,7 +194,7 @@ public class DockerfileWithWarsConventionImpl implements DockerfileWithWarsConve
             }
             return project.zipTree(resolvedFile);
         }));
-        dockerfile.smartCopy(fc, getTargetDirectory().map(target -> target + name));
+        smartCopyExtension.smartCopy(fc, getTargetDirectory().map(target -> target + name));
         addedWarNames.add(name);
     }
 
@@ -213,7 +214,7 @@ public class DockerfileWithWarsConventionImpl implements DockerfileWithWarsConve
 
     @Override
     public TypeOf<?> getPublicType() {
-        return TypeOf.typeOf(DockerfileWithWarsConvention.class);
+        return TypeOf.typeOf(DockerfileWithWarsExtension.class);
     }
 
     public static class RemoveNoOpInstructionsAction implements Action<Task> {

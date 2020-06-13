@@ -5,8 +5,7 @@ import static org.junit.Assert.assertFalse;
 
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
-import eu.xenit.gradle.docker.alfresco.tasks.DockerfileWithWarsConvention;
-import eu.xenit.gradle.docker.alfresco.tasks.DockerfileWithWarsTask;
+import eu.xenit.gradle.docker.alfresco.tasks.extension.DockerfileWithWarsExtension;
 import eu.xenit.gradle.docker.internal.JenkinsUtil;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -115,10 +114,10 @@ public class DockerAlfrescoPluginTest {
 
         Dockerfile dockerfileWithWarsTask = (Dockerfile) project.getTasks()
                 .getAt("createDockerFile");
-        DockerfileWithWarsConvention dockerfileWithWarsConvention = DockerfileWithWarsConvention
-                .getConvention(dockerfileWithWarsTask);
+        DockerfileWithWarsExtension dockerfileWithWarsExtension = DockerfileWithWarsExtension
+                .get(dockerfileWithWarsTask);
         assertFalse("webapps/${war} folders should not be removed",
-                dockerfileWithWarsConvention.getRemoveExistingWar().get());
+                dockerfileWithWarsExtension.getRemoveExistingWar().get());
     }
 
     @Test
@@ -133,14 +132,14 @@ public class DockerAlfrescoPluginTest {
         Dockerfile dockerfileWithWarsTask = (Dockerfile) project.getTasks()
                 .getByName("createDockerFile");
         dockerAlfrescoExtension.getLeanImage().set(false);
-        DockerfileWithWarsConvention dockerfileWithWarsConvention = DockerfileWithWarsConvention
-                .getConvention(dockerfileWithWarsTask);
-        dockerfileWithWarsConvention.getRemoveExistingWar().set(false);
+        DockerfileWithWarsExtension dockerfileWithWarsExtension = DockerfileWithWarsExtension
+                .get(dockerfileWithWarsTask);
+        dockerfileWithWarsExtension.getRemoveExistingWar().set(false);
 
         project.evaluate();
 
         assertFalse("webapps/${war} folders should not be removed",
-                dockerfileWithWarsConvention.getRemoveExistingWar().get());
+                dockerfileWithWarsExtension.getRemoveExistingWar().get());
     }
 
     @Test

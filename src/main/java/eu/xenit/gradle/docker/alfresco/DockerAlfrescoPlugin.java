@@ -2,7 +2,7 @@ package eu.xenit.gradle.docker.alfresco;
 
 import eu.xenit.gradle.docker.DockerBuildBehavior;
 import eu.xenit.gradle.docker.DockerConfigPlugin;
-import eu.xenit.gradle.docker.alfresco.tasks.DockerfileWithWarsConvention;
+import eu.xenit.gradle.docker.alfresco.tasks.extension.DockerfileWithWarsExtension;
 import eu.xenit.gradle.docker.alfresco.tasks.DockerfileWithWarsTask;
 import eu.xenit.gradle.docker.alfresco.tasks.InjectFilesInWarTask;
 import eu.xenit.gradle.docker.alfresco.tasks.InstallAmpsInWarTask;
@@ -69,7 +69,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
             Project project1) {
         DockerfileWithCopyTask dockerfile = project1.getTasks().create("createDockerFile",
                 DockerfileWithWarsTask.class);
-        DockerfileWithWarsConvention.getConvention(dockerfile).getBaseImage()
+        DockerfileWithWarsExtension.get(dockerfile).getBaseImage()
                 .set(dockerAlfrescoExtension.getBaseImage());
         return dockerfile;
     }
@@ -78,7 +78,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
             List<WarLabelOutputTask> alfrescoTasks, List<WarLabelOutputTask> shareTasks,
             DockerAlfrescoExtension dockerAlfrescoExtension) {
 
-        DockerfileWithWarsConvention withWarsConvention = DockerfileWithWarsConvention.getConvention(dockerfile);
+        DockerfileWithWarsExtension withWarsConvention = DockerfileWithWarsExtension.get(dockerfile);
 
         withWarsConvention.getRemoveExistingWar().set(dockerAlfrescoExtension.getLeanImage().map(b -> !b));
 

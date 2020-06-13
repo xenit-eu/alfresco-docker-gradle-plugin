@@ -7,7 +7,7 @@ import org.gradle.api.Task;
 public class DockerPushImage extends com.bmuschko.gradle.docker.tasks.image.DockerPushImage {
 
     public DockerPushImage() {
-        prependParallelSafeAction(new CheckDockerTagsAction());
+        doFirst(new CheckDockerTagsAction());
     }
 
     private final class CheckDockerTagsAction implements Action<Task> {

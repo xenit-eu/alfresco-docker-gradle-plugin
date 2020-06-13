@@ -1,16 +1,16 @@
-package eu.xenit.gradle.docker.alfresco.tasks;
+package eu.xenit.gradle.docker.alfresco.tasks.extension;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import eu.xenit.gradle.docker.alfresco.tasks.WarLabelOutputTask;
 import java.io.File;
 import java.util.function.Supplier;
-import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
 
-public interface DockerfileWithWarsConvention {
+public interface DockerfileWithWarsExtension {
 
     @Input
     Property<String> getTargetDirectory();
@@ -35,7 +35,7 @@ public interface DockerfileWithWarsConvention {
 
     void addWar(String name, Configuration configuration);
 
-    static DockerfileWithWarsConvention getConvention(Dockerfile task) {
-        return task.getConvention().getByType(DockerfileWithWarsConvention.class);
+    static DockerfileWithWarsExtension get(Dockerfile task) {
+        return task.getExtensions().getByType(DockerfileWithWarsExtension.class);
     }
 }
