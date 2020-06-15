@@ -11,6 +11,7 @@ import eu.xenit.gradle.docker.alfresco.tasks.PrefixLog4JWarTask;
 import eu.xenit.gradle.docker.alfresco.tasks.StripAlfrescoWarTask;
 import eu.xenit.gradle.docker.alfresco.tasks.WarEnrichmentTask;
 import eu.xenit.gradle.docker.alfresco.tasks.WarLabelOutputTask;
+import eu.xenit.gradle.docker.internal.Deprecation;
 import eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,8 +68,9 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
     @SuppressWarnings("deprecation")
     private DockerfileWithCopyTask getDockerFileTask(DockerAlfrescoExtension dockerAlfrescoExtension,
             Project project1) {
-        DockerfileWithCopyTask dockerfile = project1.getTasks().create("createDockerFile",
-                DockerfileWithWarsTask.class);
+        DockerfileWithCopyTask dockerfile = Deprecation
+                .whileDisabled(() -> project1.getTasks().create("createDockerFile",
+                        DockerfileWithWarsTask.class));
         DockerfileWithWarsExtension.get(dockerfile).getBaseImage()
                 .set(dockerAlfrescoExtension.getBaseImage());
         return dockerfile;
