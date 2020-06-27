@@ -47,7 +47,8 @@ public class DockerfileWithWarsExtensionImpl implements DockerfileWithWarsExtens
             " # Elidable command from " + DockerfileWithWarsExtensionImpl.class.getCanonicalName();
 
     public static void applyTo(Dockerfile task) {
-        DockerfileWithWarsExtension impl = task.getProject().getObjects().newInstance(DockerfileWithWarsExtensionImpl.class, task);
+        DockerfileWithWarsExtension impl = task.getProject().getObjects()
+                .newInstance(DockerfileWithWarsExtensionImpl.class, task);
         task.getConvention().getPlugins().put("wars", impl);
 
         // This runs in afterEvaluate, because we want this doFirst action to really run *before*
@@ -226,7 +227,7 @@ public class DockerfileWithWarsExtensionImpl implements DockerfileWithWarsExtens
             if (task instanceof Dockerfile) {
                 execute((Dockerfile) task);
             } else {
-                throw new IllegalArgumentException("Task must be a DockerfileWithWarsTask");
+                throw new IllegalArgumentException("Task must be a Dockerfile");
             }
         }
 
@@ -249,7 +250,7 @@ public class DockerfileWithWarsExtensionImpl implements DockerfileWithWarsExtens
             if (task instanceof Dockerfile) {
                 execute((Dockerfile) task);
             } else {
-                throw new IllegalArgumentException("Task must be a DockerfileWithWarsTask");
+                throw new IllegalArgumentException("Task must be a Dockerfile");
             }
         }
 

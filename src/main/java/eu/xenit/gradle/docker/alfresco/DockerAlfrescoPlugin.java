@@ -11,6 +11,7 @@ import eu.xenit.gradle.docker.alfresco.tasks.PrefixLog4JWarTask;
 import eu.xenit.gradle.docker.alfresco.tasks.StripAlfrescoWarTask;
 import eu.xenit.gradle.docker.alfresco.tasks.WarEnrichmentTask;
 import eu.xenit.gradle.docker.alfresco.tasks.WarLabelOutputTask;
+import eu.xenit.gradle.docker.alfresco.tasks.extension.LabelConsumerExtension;
 import eu.xenit.gradle.docker.internal.Deprecation;
 import eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask;
 import java.util.ArrayList;
@@ -98,7 +99,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
                 withWarsConvention.addWar("alfresco",
                         project1.provider(() -> alfrescoBaseWar.isEmpty() ? null : t.getOutputWar().get()));
                 dockerfile.dependsOn(t);
-                dockerfile.withLabels(t.getLabels());
+                LabelConsumerExtension.get(dockerfile).withLabels(t);
             });
 
             Configuration shareBaseWar = project1.getConfigurations().getByName(BASE_SHARE_WAR);
@@ -113,7 +114,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
                 withWarsConvention.addWar("share",
                         project1.provider(() -> shareBaseWar.isEmpty() ? null : t.getOutputWar().get()));
                 dockerfile.dependsOn(t);
-                dockerfile.withLabels(t.getLabels());
+                LabelConsumerExtension.get(dockerfile).withLabels(t);
             });
         });
     }
