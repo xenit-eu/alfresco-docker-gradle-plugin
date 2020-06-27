@@ -100,8 +100,7 @@ public class DockerfileWithCopyTask extends Dockerfile implements LabelConsumerT
     }
 
     @TaskAction
-    @Override
-    public void create() {
+    public void copyFilesToStagingDirectory() {
         // copyFile base directory
         Provider<Directory> copyFileDirectory = getDestDir().map(d -> d.dir("copyFile"));
         getProject().delete(copyFileDirectory);
@@ -118,9 +117,12 @@ public class DockerfileWithCopyTask extends Dockerfile implements LabelConsumerT
             if (!copyFile.exists() && !copyFile.mkdirs()) {
                 throw new UncheckedIOException("Cannot create folder " + copyFile);
             }
-
         }
+    }
 
+    @TaskAction
+    @Override
+    public void create() {
         if (!getLabels().get().isEmpty()) {
             label(getLabels());
         }
