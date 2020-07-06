@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+ * [#145](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/145) - Npipe support for docker on windows
+
 ## Version 5.0.6 - 2020-05-25
 
 ### Fixed

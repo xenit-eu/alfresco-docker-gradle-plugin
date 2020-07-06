@@ -24,17 +24,23 @@ image can be built with the alfresco installed. It is also possible to include A
 
 ## Setup
 
-First, install Docker on you local machine. It may listen on either a unix socket of a tcp socket. Named pipes on Windows are not supported.
-On Windows, you should enable the _Expose daemon on tcp://localhost:2375 without TLS_ option in the docker settings.
+First, install Docker on you local machine. It may listen on either a unix socket of a tcp socket.
+Named pipes on Windows are supported. It will default to `npipe:////./pipe/docker_engine` if it exists,
+or fall back to `tcp://localhost:2375` when it does not exist.
 On Linux, you have to add your user to the `docker` group and do a logout and login.
 
 After setting up docker, you can configure the location of the docker socket, if it is different from settings above.
 When necessary, you can configure these settings in the global Gradle configuration file, `$HOME/.gradle/gradle.properties`.
 
+<details>
+<summary>Global configuration settings</summary>
+
 ```properties
 # Docker socket (UNIX; default on Linux)
 eu.xenit.docker.url=unix:///var/run/docker.sock
-# Docker socket (TCP; default on Windows)
+# Docker socket (npipe; default on Windows)
+eu.xenit.docker.url=npipe:////./pipe/docker_engine
+# Docker socket (TCP; fallback on Windows)
 eu.xenit.docker.url=tcp://localhost:2375
 # Path to your docker certificates, if you use TLS with the docker daemon.
 # Make sure to respect the naming convention of the files inside (ca.pem, cert.pem, key.pem)
@@ -45,11 +51,15 @@ eu.xenit.docker.certPath=
 eu.xenit.docker.expose.ip=127.0.0.1
 
 # Registry credentials if you are using a private registry or need to push to docker hub.
-# Use https://index.docker.io/v1/ for Docker Hub
+# Use https://index.docker.io/v1/ for Docker Hub.
+# On Linux, this is not required, as the native Docker credentials can be used.
+# On Windows, it is necessary to specify these parameters because native Docker credentials are not supported.
 eu.xenit.docker.registry.url=https://hub.xenit.eu/v2
 eu.xenit.docker.registry.username=
 eu.xenit.docker.registry.password=
 ```
+
+</details>
 
 ## Usage
 
