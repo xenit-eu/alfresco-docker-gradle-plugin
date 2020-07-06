@@ -119,8 +119,8 @@ dependencies {
 #### Build Alfresco Docker image
 
 To build the Alfresco (or Share) Docker image, you have two options:
- * Use a skeleton image which does not contain a WAR. You can use [xeniteu/alfresco-repository-skeleton](https://hub.docker.com/r/xeniteu/alfresco-repository-skeleton) and [xeniteu/alfresco-share-skeleton](https://hub.docker.com/r/xeniteu/alfresco-share-skeleton), which contain all supporting files except for WARs themselves.
- * Use a full image which already contains a WAR. You can use [xeniteu/alfresco-repository-community](https://hub.docker.com/r/xeniteu/alfresco-repository-community) and [xeniteu/alfresco-share-community](https://hub.docker.com/r/xeniteu/alfresco-share-community), which contain the community WARs.
+ * Use a skeleton image which does not contain a WAR. You can use [xenit/alfresco-repository-skeleton](https://hub.docker.com/r/xenit/alfresco-repository-skeleton) and [xenit/alfresco-share-skeleton](https://hub.docker.com/r/xenit/alfresco-share-skeleton), which contain all supporting files except for WARs themselves.
+ * Use a full image which already contains a WAR. You can use [xenit/alfresco-repository-community](https://hub.docker.com/r/xenit/alfresco-repository-community) and [xenit/alfresco-share-community](https://hub.docker.com/r/xenit/alfresco-share-community), which contain the community WARs.
     (In case you want to use Enterprise images, you will need credentials for the Alfresco nexus and you can build them using [docker-alfresco](https://github.com/xenit-eu/docker-alfresco) and [docker-share](https://github.com/xenit-eu/docker-share))
 
 For both cases, the only difference is in the `baseImage` property, which will point to an other Docker image to use as base.
@@ -131,7 +131,7 @@ For both cases, the only difference is in the `baseImage` property, which will p
 ```groovy
 dockerAlfresco {
     // Base image used in the FROM of the docker build. Should be a compatible image.
-    baseImage = "xeniteu/alfresco-repository-community:6.0.7-ga"
+    baseImage = "xenit/alfresco-repository-community:6.0.7-ga"
 
     // Putting leanImage on true will only apply the custom modules to
     // image, and not the base war itself. The base war of the original
@@ -182,12 +182,12 @@ You can use these task types to build your own pipeline to modify WAR files, but
 
 The Gradle tasks created by this plugin are executed in this order. (Ordering might not be entirely accurate, because there is no strict dependency ordering between all tasks.)
 
- * `stripAlfrescoWar` & `stripShareWar`: [`StripAlfrescoWarTask`](src/main/java/eu/xenit/gradle/tasks/StripAlfrescoWarTask.java) Downloads Alfresco/Share war and trims them down to the minimum needed to apply AMPs
- * `applyAlfrescoAmp` & `applyShareAmp`: [`InstallAmpsInWarTask`](src/main/java/eu/xenit/gradle/tasks/InstallAmpsInWarTask.java) Uses [Alfresco MMT](https://docs.alfresco.com/5.2/concepts/dev-extensions-modules-management-tool.html) to install AMPs in Alfresco/Share
- * `applyAlfrescoSM` & `applyShareSM`: [`InjectFilesInWarTask`](src/main/java/eu/xenit/gradle/tasks/InjectFilesInWarTask.java) Installs [Simple Modules](https://docs.alfresco.com/5.2/concepts/dev-extensions-packaging-techniques-jar-files.html) on the Alfresco/Share classpath
- * `applyAlfrescoDE`: [`InjectFilesInWarTask`](src/main/java/eu/xenit/gradle/tasks/InjectFilesInWarTask.java) Installs [Dynamic extensions](https://github.com/xenit-eu/dynamic-extensions-for-alfresco) in Alfresco
- * `alfrescoWar` & `shareWar`: [`MergeWarsTask`](src/main/java/eu/xenit/gradle/tasks/MergeWarsTask.java) Delivers the finished Alfresco/Share war with all extensions installed.
- * `createDockerfile`: [`DockerfileWithWarsTask`](src/main/java/eu/xenit/gradle/tasks/DockerfileWithWarsTask.java) Creates a Dockerfile with instructions to add Alfresco and/or Share wars. Adds labels to identify extensions that have been installed.
+ * `stripAlfrescoWar` & `stripShareWar`: [`StripAlfrescoWarTask`](src/main/java/eu/xenit/gradle/docker/alfresco/tasks/StripAlfrescoWarTask.java) Downloads Alfresco/Share war and trims them down to the minimum needed to apply AMPs
+ * `applyAlfrescoAmp` & `applyShareAmp`: [`InstallAmpsInWarTask`](src/main/java/eu/xenit/gradle/docker/alfresco/tasks/InstallAmpsInWarTask.java) Uses [Alfresco MMT](https://docs.alfresco.com/5.2/concepts/dev-extensions-modules-management-tool.html) to install AMPs in Alfresco/Share
+ * `applyAlfrescoSM` & `applyShareSM`: [`InjectFilesInWarTask`](src/main/java/eu/xenit/gradle/docker/alfresco/tasks/InjectFilesInWarTask.java) Installs [Simple Modules](https://docs.alfresco.com/5.2/concepts/dev-extensions-packaging-techniques-jar-files.html) on the Alfresco/Share classpath
+ * `applyAlfrescoDE`: [`InjectFilesInWarTask`](src/main/java/eu/xenit/gradle/docker/alfresco/tasks/InjectFilesInWarTask.java) Installs [Dynamic extensions](https://github.com/xenit-eu/dynamic-extensions-for-alfresco) in Alfresco
+ * `alfrescoWar` & `shareWar`: [`MergeWarsTask`](src/main/java/eu/xenit/gradle/docker/alfresco/tasks/MergeWarsTask.java) Delivers the finished Alfresco/Share war with all extensions installed.
+ * `createDockerfile`: [`DockerfileWithWarsTask`](src/main/java/eu/xenit/gradle/docker/alfresco/tasks/DockerfileWithWarsTask.java) Creates a Dockerfile with instructions to add Alfresco and/or Share wars. Adds labels to identify extensions that have been installed.
  * `buildDockerImage`: [`DockerBuildImage`](https://bmuschko.github.io/gradle-docker-plugin/api/com/bmuschko/gradle/docker/tasks/image/DockerBuildImage.html) Builds a Docker image with the provided Dockerfile
  * `pushDockerImage`: [`DockerPushImage`](https://bmuschko.github.io/gradle-docker-plugin/api/com/bmuschko/gradle/docker/tasks/image/DockerPushImage.html) Pushes all tags of the Docker image to the remote repository
 
@@ -244,7 +244,7 @@ publishing.publications {
 
 You can modify the automatically generated `Dockerfile`. The plugin will configure this task to add Alfresco and Share with their extensions,
 but you can make additional modifications to it if necessary.
-The `createDockerFile` task is of type [`DockerfileWithWarsTask`](src/main/java/eu/xenit/gradle/tasks/DockerfileWithWarsTask.java),
+The `createDockerFile` task is of type [`DockerfileWithWarsTask`](src/main/java/eu/xenit/gradle/docker/alfresco/tasks/DockerfileWithWarsTask.java),
 which provides extra functionality on top of the methods provided by the upstream [`Dockerfile`](https://bmuschko.github.io/gradle-docker-plugin/api/com/bmuschko/gradle/docker/tasks/image/Dockerfile.html) type.
 
 ```groovy
@@ -273,8 +273,8 @@ createDockerFile {
 
 #### Adding files to the automatically generated Dockerfile
 
-The `createDockerFile` task is of type [`DockerfileWithWarsTask`](src/main/java/eu/xenit/gradle/tasks/DockerfileWithWarsTask.java)
-(extending [`DockerfileWithCopyTask`](src/main/java/eu/xenit/gradle/tasks/DockerfileWithCopyTask.java) and the upstream [`Dockerfile`](https://bmuschko.github.io/gradle-docker-plugin/api/com/bmuschko/gradle/docker/tasks/image/Dockerfile.html) types)
+The `createDockerFile` task is of type [`DockerfileWithWarsTask`](src/main/java/eu/xenit/gradle/docker/alfresco/tasks/DockerfileWithWarsTask.java)
+(extending [`DockerfileWithCopyTask`](src/main/java/eu/xenit/gradle/docker/tasks/DockerfileWithCopyTask.java) and the upstream [`Dockerfile`](https://bmuschko.github.io/gradle-docker-plugin/api/com/bmuschko/gradle/docker/tasks/image/Dockerfile.html) types)
 
 A `smartCopy` method is available to make it easier to copy any file in the project to the Docker image.
 
