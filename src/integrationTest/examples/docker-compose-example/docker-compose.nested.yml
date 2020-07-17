@@ -4,3 +4,5 @@ services:
     image: ${SUBPR1_DOCKER_IMAGE}
   docker-compose-subpr2:
     image: ${TEST_IMAGE}
+    ports:
+      - ${DOCKER_IP}::80

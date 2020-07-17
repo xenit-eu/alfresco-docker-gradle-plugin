@@ -1,6 +1,7 @@
 package eu.xenit.gradle.docker.compose;
 
 import com.avast.gradle.dockercompose.ComposeSettings;
+import eu.xenit.gradle.docker.DockerConfigPlugin;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
@@ -14,6 +15,7 @@ public class DockerComposePlugin implements Plugin<Project> {
     public void apply(Project project) {
         dockerComposeConvention = project.getExtensions()
                 .create("dockerCompose", DockerComposeExtensionOverride.class, project);
+        project.getPluginManager().apply(DockerConfigPlugin.class);
     }
 
     public DockerComposeConvention getDockerComposeConvention() {
