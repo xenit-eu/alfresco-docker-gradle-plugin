@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 5.0.7 - 2020-08-11
+
 ### Fixed
 
  * [#149](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/149) - Docker configuration is not automatically applied with docker-compose plugin
