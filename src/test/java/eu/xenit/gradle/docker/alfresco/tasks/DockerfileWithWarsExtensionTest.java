@@ -12,6 +12,7 @@ import eu.xenit.gradle.docker.alfresco.tasks.extension.internal.DockerfileWithWa
 import eu.xenit.gradle.docker.alfresco.tasks.extension.internal.DockerfileWithWarsExtensionImpl.ElideDuplicateVersionChecksAction;
 import eu.xenit.gradle.docker.alfresco.tasks.extension.internal.DockerfileWithWarsExtensionImpl.RemoveNoOpInstructionsAction;
 import eu.xenit.gradle.docker.alfresco.tasks.extension.DockerfileWithWarsExtension;
+import eu.xenit.gradle.docker.alfresco.tasks.extension.internal.DockerfileWithWarsExtensionImpl.ValidateBaseImageSet;
 import eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask;
 import java.io.File;
 import java.io.IOException;
@@ -68,8 +69,8 @@ public class DockerfileWithWarsExtensionTest {
         });
 
         expectedException.expectMessage(is(DockerfileWithWarsExtensionImpl.MESSAGE_BASE_IMAGE_NOT_SET));
-        // This results in an exception when trying to resolve the FROM instruction
-        instructionsToString(dockerfileWithWarsTask);
+
+        new DockerfileWithWarsExtensionImpl.ValidateBaseImageSet().execute(dockerfileWithWarsTask);
     }
 
     @Test

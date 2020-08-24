@@ -130,15 +130,9 @@ public class DockerfileWithWarsExtensionImpl implements DockerfileWithWarsExtens
         this.removeExistingWar = objectFactory.property(Boolean.class).convention(true);
         this.checkAlfrescoVersion = objectFactory.property(Boolean.class)
                 .convention(this.removeExistingWar.map(remove -> !remove));
-
-        if (GradleVersion.current().compareTo(GradleVersion.version("5.6")) >= 0) {
-            dockerfile.from(baseImage.orElse(project.provider(() -> {
-                throw new IllegalStateException(MESSAGE_BASE_IMAGE_NOT_SET);
-            })).map(From::new));
-        } else {
-            dockerfile.from(baseImage.map(From::new));
-        }
+        dockerfile.from(baseImage.map(From::new));
         baseImage.set((String) null);
+        dockerfile.doFirst(new ValidateBaseImageSet());
     }
 
 
@@ -218,6 +212,25 @@ public class DockerfileWithWarsExtensionImpl implements DockerfileWithWarsExtens
     @Override
     public TypeOf<?> getPublicType() {
         return TypeOf.typeOf(DockerfileWithWarsExtension.class);
+    }
+
+    public static class ValidateBaseImageSet implements Action<Task> {
+
+        @Override
+        public void execute(Task task) {
+            if(task instanceof Dockerfile) {
+                execute((Dockerfile)task);
+            } else {
+                throw new IllegalArgumentException("Task must be a Dockerfile");
+            }
+        }
+
+        public void execute(Dockerfile dockerfile) {
+            DockerfileWithWarsExtension extension = DockerfileWithWarsExtension.get(dockerfile);
+            if(extension.getBaseImage().getOrNull() == null) {
+                throw new IllegalStateException(MESSAGE_BASE_IMAGE_NOT_SET);
+            }
+        }
     }
 
     public static class RemoveNoOpInstructionsAction implements Action<Task> {

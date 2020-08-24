@@ -75,9 +75,7 @@ public class Reproductions extends AbstractIntegrationTest {
     public void testDockerAlfrescoPluginWithoutConfiguration() throws IOException {
         BuildResult buildResult = getGradleRunner(REPRODUCTIONS.resolve("docker-alfresco-plugin-without-config"),
                 ":buildDockerImage").buildAndFail();
-        assertTrue(buildResult.getOutput().contains(DockerfileWithWarsExtensionImpl.MESSAGE_BASE_IMAGE_NOT_SET)
-                || buildResult
-                .getOutput().contains("No value has been specified for property 'baseImage'"));
+        assertTrue(buildResult.getOutput().contains(DockerfileWithWarsExtensionImpl.MESSAGE_BASE_IMAGE_NOT_SET));
     }
 
     @Test
