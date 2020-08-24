@@ -47,7 +47,7 @@ public class DockerfileWithLabelExtensionImpl implements LabelConsumerExtension 
 
     @Override
     public void withLabels(Supplier<Map<String, String>> labels) {
-        withLabels(dockerfile.getProject().provider(() -> labels.get()));
+        withLabels(dockerfile.getProject().provider(labels::get));
     }
 
     @Override

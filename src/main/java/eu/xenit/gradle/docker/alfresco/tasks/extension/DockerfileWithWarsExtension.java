@@ -30,6 +30,9 @@ public interface DockerfileWithWarsExtension {
 
     void addWar(String name, java.io.File file);
 
+    /**
+     * @deprecated since 5.1.0. Will be removed in 6.0.0. Use {@link #addWar(String, Provider)} instead
+     */
     @Deprecated
     void addWar(String name, Supplier<File> file);
 

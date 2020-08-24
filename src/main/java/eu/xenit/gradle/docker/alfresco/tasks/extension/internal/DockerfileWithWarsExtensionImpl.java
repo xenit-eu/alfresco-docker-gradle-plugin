@@ -35,7 +35,6 @@ import org.gradle.api.provider.Provider;
 import org.gradle.api.reflect.HasPublicType;
 import org.gradle.api.reflect.TypeOf;
 import org.gradle.api.tasks.Input;
-import org.gradle.util.GradleVersion;
 
 public class DockerfileWithWarsExtensionImpl implements DockerfileWithWarsExtension, HasPublicType {
 
@@ -145,15 +144,15 @@ public class DockerfileWithWarsExtensionImpl implements DockerfileWithWarsExtens
 
     @Override
     public void addWar(String name, Provider<RegularFile> regularFileProvider) {
-        _addWar(name, regularFileProvider.map(RegularFile::getAsFile));
+        addWar0(name, regularFileProvider.map(RegularFile::getAsFile));
     }
 
     @Override
     public void addWar(String name, java.io.File file) {
-        _addWar(name, project.provider(() -> file));
+        addWar0(name, project.provider(() -> file));
     }
 
-    private void _addWar(String name, Provider<java.io.File> file) {
+    private void addWar0(String name, Provider<java.io.File> file) {
         if (!addedWarNames.contains(name)) {
             dockerfile.runCommand(getRemoveExistingWar()
                     .map(removeWar -> {
@@ -195,18 +194,21 @@ public class DockerfileWithWarsExtensionImpl implements DockerfileWithWarsExtens
         addedWarNames.add(name);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @Deprecated
     public void addWar(String name, Supplier<File> file) {
         Deprecation.warnDeprecatedReplaced("addWar(String name, Supplier<File> file)",
                 "addWar(String name, Provider<RegularFile> fileProvider)");
-        _addWar(name, project.provider(file::get));
+        addWar0(name, project.provider(file::get));
     }
 
     @Override
     public void addWar(String name, Configuration configuration) {
         dockerfile.dependsOn(configuration);
-        _addWar(name, project.provider(configuration::getSingleFile));
+        addWar0(name, project.provider(configuration::getSingleFile));
     }
 
     @Override
@@ -218,8 +220,8 @@ public class DockerfileWithWarsExtensionImpl implements DockerfileWithWarsExtens
 
         @Override
         public void execute(Task task) {
-            if(task instanceof Dockerfile) {
-                execute((Dockerfile)task);
+            if (task instanceof Dockerfile) {
+                execute((Dockerfile) task);
             } else {
                 throw new IllegalArgumentException("Task must be a Dockerfile");
             }
@@ -227,7 +229,7 @@ public class DockerfileWithWarsExtensionImpl implements DockerfileWithWarsExtens
 
         public void execute(Dockerfile dockerfile) {
             DockerfileWithWarsExtension extension = DockerfileWithWarsExtension.get(dockerfile);
-            if(extension.getBaseImage().getOrNull() == null) {
+            if (extension.getBaseImage().getOrNull() == null) {
                 throw new IllegalStateException(MESSAGE_BASE_IMAGE_NOT_SET);
             }
         }
