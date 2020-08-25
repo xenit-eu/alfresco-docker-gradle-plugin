@@ -1,6 +1,7 @@
 package eu.xenit.gradle.docker.tasks;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import eu.xenit.gradle.docker.tasks.extension.DockerfileWithSmartCopyExtension;
 import org.gradle.api.UncheckedIOException;
 import org.gradle.api.file.CopySpec;
 import org.gradle.api.file.Directory;
@@ -8,7 +9,7 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskAction;
 
-public class DockerfileWithCopyTask extends Dockerfile {
+public class DockerfileWithCopyTask extends Dockerfile implements DockerfileWithSmartCopyExtension {
 
     private int copyFileCounter = 0;
 
@@ -19,48 +20,22 @@ public class DockerfileWithCopyTask extends Dockerfile {
         return "copyFile/" + copyFileCounter;
     }
 
-    /**
-     * smartCopy copies a file from anywhere into a docker image.
-     * <p>
-     * It works similar to {@link #copyFile(String, String)}, except smartCopy is able to directly copy a file from anywhere into the docker image.
-     * Copying to the build context is not necessary, because smartCopy handles this automatically.
-     *
-     * @param file               The file to copy, as evaluated by {@link org.gradle.api.Project#file(Object)}
-     * @param destinationInImage Destination file or directory inside the docker image
-     */
+    @Override
     public void smartCopy(String file, String destinationInImage) {
         smartCopy(getProject().file(file), destinationInImage);
     }
 
-    /**
-     * smartCopy copies a file from anywhere into a docker image.
-     *
-     * @param file               The file to copy
-     * @param destinationInImage Destination file or directory inside the docker image
-     * @see #smartCopy(String, String)
-     */
+    @Override
     public void smartCopy(java.io.File file, String destinationInImage) {
         smartCopy(getProject().provider(() -> file), destinationInImage);
     }
 
-    /**
-     * smartCopy copies a file from anywhere into a docker image.
-     *
-     * @param file               The file to copy
-     * @param destinationInImage Destination file or directory inside the docker image
-     * @see #smartCopy(String, String)
-     */
+    @Override
     public void smartCopy(Provider<java.io.File> file, String destinationInImage) {
         smartCopy(file, getProject().provider(() -> destinationInImage));
     }
 
-    /**
-     * smartCopy copies a file from anywhere into a docker image.
-     *
-     * @param file               The file to copy
-     * @param destinationInImage Destination file or directory inside the docker image
-     * @see #smartCopy(String, String)
-     */
+    @Override
     public void smartCopy(Provider<java.io.File> file, Provider<String> destinationInImage) {
         String stagingDirectory = createCopyFileStagingDirectory();
         copyFileCopySpec.into(stagingDirectory, copySpec -> {
@@ -74,31 +49,20 @@ public class DockerfileWithCopyTask extends Dockerfile {
                 if (file.get().isDirectory()) {
                     String path = fileCopyDetails.getPath();
                     String filePath = path.substring(stagingDirectory.length());
-                    fileCopyDetails.setPath(stagingDirectory+"/"+file.get().getName()+filePath);
+                    fileCopyDetails.setPath(stagingDirectory + "/" + file.get().getName() + filePath);
                 }
             });
         });
-        copyFile(destinationInImage.flatMap(d -> file.map(f -> new CopyFile(stagingDirectory + "/"+f.getName(), d))));
+        copyFile(destinationInImage.flatMap(d -> file.map(f -> new CopyFile(stagingDirectory + "/" + f.getName(), d))));
         getInputs().files(file).withPropertyName("copyFile." + copyFileCounter);
     }
-    /**
-     * smartCopy copies files from anywhere into a docker image.
-     *
-     * @param files              A collection of files to copy
-     * @param destinationInImage Destination directory inside the docker image where all files will be copied to
-     * @see #smartCopy(String, String)
-     */
+
+    @Override
     public void smartCopy(FileCollection files, String destinationInImage) {
         smartCopy(files, getProject().provider(() -> destinationInImage));
     }
 
-    /**
-     * smartCopy copies files from anywhere into a docker image.
-     *
-     * @param files              A collection of files to copy
-     * @param destinationInImage Destination directory inside the docker image where all files will be copied to
-     * @see #smartCopy(String, String)
-     */
+    @Override
     public void smartCopy(FileCollection files, Provider<String> destinationInImage) {
         String stagingDirectory = createCopyFileStagingDirectory();
         copyFileCopySpec.into(stagingDirectory, copySpec -> {
@@ -108,14 +72,14 @@ public class DockerfileWithCopyTask extends Dockerfile {
         getInputs().files(files).withPropertyName("copyFile." + copyFileCounter);
     }
 
+
     public DockerfileWithCopyTask() {
         super();
         copyFileCopySpec = getProject().copySpec();
     }
 
     @TaskAction
-    @Override
-    public void create() {
+    public void copyFilesToStagingDirectory() {
         // copyFile base directory
         Provider<Directory> copyFileDirectory = getDestDir().map(d -> d.dir("copyFile"));
         getProject().delete(copyFileDirectory);
@@ -127,15 +91,11 @@ public class DockerfileWithCopyTask extends Dockerfile {
 
         // Create non-existing directories, so the COPY command in the Dockerfile does not throw an error in case empty
         // FileCollections are added with smartCopy
-        for(int i = 1; i <= copyFileCounter; i++) {
+        for (int i = 1; i <= copyFileCounter; i++) {
             java.io.File copyFile = copyFileDirectory.get().dir(Integer.toString(i)).getAsFile();
-            if(!copyFile.exists() && !copyFile.mkdirs()) {
-                throw new UncheckedIOException("Cannot create folder "+copyFile);
+            if (!copyFile.exists() && !copyFile.mkdirs()) {
+                throw new UncheckedIOException("Cannot create folder " + copyFile);
             }
-
         }
-
-        super.create();
     }
-
 }

@@ -3,6 +3,7 @@ package eu.xenit.gradle.docker.internal;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Supplier;
 import org.gradle.StartParameter;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
@@ -21,10 +22,27 @@ public final class Deprecation {
     private static WarningMode warningMode = WarningMode.Summary;
     private static ShowStacktrace printStacktrace = ShowStacktrace.INTERNAL_EXCEPTIONS;
     private static List<Warning> warnings = new LinkedList<>();
+    private static ThreadLocal<Boolean> suppressDeprecations = ThreadLocal.withInitial(() -> false);
 
     static Logger LOGGER = Logging.getLogger(Deprecation.class);
 
     private Deprecation() {
+    }
+
+    public static void whileDisabled(Runnable runnable) {
+        whileDisabled(() -> {
+            runnable.run();
+            return null;
+        });
+    }
+
+    public static <T> T whileDisabled(Supplier<T> supplier) {
+        suppressDeprecations.set(true);
+        try {
+            return supplier.get();
+        } finally {
+            suppressDeprecations.remove();
+        }
     }
 
     public static void setStartParameter(StartParameter startParameter) {
@@ -60,6 +78,10 @@ public final class Deprecation {
     }
 
     private static void createWarning(String message, int stripTraces) {
+        if(suppressDeprecations.get()) {
+            // Do not create a warning when deprecation warnings are suppressed
+            return;
+        }
         try {
             throw new Warning(message);
         } catch (Warning warning) {

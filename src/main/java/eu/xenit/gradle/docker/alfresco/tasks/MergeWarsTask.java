@@ -38,14 +38,16 @@ public class MergeWarsTask extends Zip implements LabelConsumerTask, LabelSuppli
      * WAR files used as input (are not modified)
      * <p>
      * Later files overwrite earlier files
+     *
+     * @param inputWar Provider of a file to be merged
      */
     public void addInputWar(Provider<File> inputWar) {
         childWars.from(getProject().provider(() -> getProject().zipTree(inputWar)));
     }
 
     public void addInputWar(WarOutputTask inputWar) {
-        if(inputWar instanceof WarLabelOutputTask) {
-            withLabels((WarLabelOutputTask)inputWar);
+        if (inputWar instanceof WarLabelOutputTask) {
+            withLabels((WarLabelOutputTask) inputWar);
         }
         addInputWar(inputWar.getOutputWar().map(f -> f.getAsFile()));
         dependsOn(inputWar);

@@ -4,7 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
-import eu.xenit.gradle.docker.alfresco.tasks.DockerfileWithWarsTask;
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import eu.xenit.gradle.docker.alfresco.tasks.extension.DockerfileWithWarsExtension;
 import eu.xenit.gradle.docker.internal.JenkinsUtil;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -60,12 +61,18 @@ public class DockerAlfrescoPluginTest {
         project.evaluate();
         checkTaskExists(project, "pushDockerImage");
 
-        Set<String> images = project.getTasks().withType(DockerPushImage.class).getByName("pushDockerImage").getImages().get();
+        Set<String> images = project.getTasks().withType(DockerPushImage.class).getByName("pushDockerImage").getImages()
+                .get();
 
-        if(!"master".equals(JenkinsUtil.getBranch())){
-            assertEquals(new HashSet(Arrays.asList("docker.io/xenit/docker-gradle-plugin-test:"+JenkinsUtil.getBranch(), "docker.io/xenit/docker-gradle-plugin-test:"+JenkinsUtil.getBranch()+"-hello", "docker.io/xenit/docker-gradle-plugin-test:"+JenkinsUtil.getBranch()+"-world")), images);
+        if (!"master".equals(JenkinsUtil.getBranch())) {
+            assertEquals(new HashSet(
+                            Arrays.asList("docker.io/xenit/docker-gradle-plugin-test:" + JenkinsUtil.getBranch(),
+                                    "docker.io/xenit/docker-gradle-plugin-test:" + JenkinsUtil.getBranch() + "-hello",
+                                    "docker.io/xenit/docker-gradle-plugin-test:" + JenkinsUtil.getBranch() + "-world")),
+                    images);
         } else {
-            assertEquals(new HashSet(Arrays.asList("docker.io/xenit/docker-gradle-plugin-test:hello", "docker.io/xenit/docker-gradle-plugin-test:world")), images);
+            assertEquals(new HashSet(Arrays.asList("docker.io/xenit/docker-gradle-plugin-test:hello",
+                    "docker.io/xenit/docker-gradle-plugin-test:world")), images);
         }
 
     }
@@ -86,9 +93,11 @@ public class DockerAlfrescoPluginTest {
         project.evaluate();
         checkTaskExists(project, "pushDockerImage");
 
-        Set<String> images = project.getTasks().withType(DockerPushImage.class).getByName("pushDockerImage").getImages().get();
+        Set<String> images = project.getTasks().withType(DockerPushImage.class).getByName("pushDockerImage").getImages()
+                .get();
 
-        assertEquals(new HashSet(Arrays.asList("docker.io/xenit/docker-gradle-plugin-test:hello", "docker.io/xenit/docker-gradle-plugin-test:world")), images);
+        assertEquals(new HashSet(Arrays.asList("docker.io/xenit/docker-gradle-plugin-test:hello",
+                "docker.io/xenit/docker-gradle-plugin-test:world")), images);
     }
 
     @Test
@@ -103,9 +112,12 @@ public class DockerAlfrescoPluginTest {
         dockerAlfrescoExtension.getLeanImage().set(true);
         project.evaluate();
 
-        DockerfileWithWarsTask dockerfileWithWarsTask = (DockerfileWithWarsTask) project.getTasks()
+        Dockerfile dockerfileWithWarsTask = (Dockerfile) project.getTasks()
                 .getAt("createDockerFile");
-        assertFalse("webapps/${war} folders should not be removed", dockerfileWithWarsTask.getRemoveExistingWar().get());
+        DockerfileWithWarsExtension dockerfileWithWarsExtension = DockerfileWithWarsExtension
+                .get(dockerfileWithWarsTask);
+        assertFalse("webapps/${war} folders should not be removed",
+                dockerfileWithWarsExtension.getRemoveExistingWar().get());
     }
 
     @Test
@@ -117,15 +129,17 @@ public class DockerAlfrescoPluginTest {
                 project.files(this.getClass().getClassLoader().getResource("test123.amp").getFile()));
         DockerAlfrescoExtension dockerAlfrescoExtension = (DockerAlfrescoExtension) project.getExtensions()
                 .getByName("dockerAlfresco");
-        DockerfileWithWarsTask dockerfileWithWarsTask = (DockerfileWithWarsTask) project.getTasks()
+        Dockerfile dockerfileWithWarsTask = (Dockerfile) project.getTasks()
                 .getByName("createDockerFile");
         dockerAlfrescoExtension.getLeanImage().set(false);
-        dockerfileWithWarsTask.getRemoveExistingWar().set(false);
+        DockerfileWithWarsExtension dockerfileWithWarsExtension = DockerfileWithWarsExtension
+                .get(dockerfileWithWarsTask);
+        dockerfileWithWarsExtension.getRemoveExistingWar().set(false);
 
         project.evaluate();
 
         assertFalse("webapps/${war} folders should not be removed",
-                dockerfileWithWarsTask.getRemoveExistingWar().get());
+                dockerfileWithWarsExtension.getRemoveExistingWar().get());
     }
 
     @Test
@@ -180,22 +194,22 @@ public class DockerAlfrescoPluginTest {
                 project.files(this.getClass().getClassLoader().getResource("test123.amp").getFile()));
         project.evaluate();
 
-        checkTaskExists(project, "apply"+warName+"Amp");
+        checkTaskExists(project, "apply" + warName + "Amp");
     }
 
     private void checkTaskExists(DefaultProject project, String taskName) {
         try {
             project.getTasks().getAt(taskName);
-        } catch (UnknownTaskException e){
-            Assert.fail("Task "+taskName+" not found");
+        } catch (UnknownTaskException e) {
+            Assert.fail("Task " + taskName + " not found");
         }
     }
 
     private void checkTaskNotExists(DefaultProject project, String taskName) {
         try {
             project.getTasks().getAt(taskName);
-            Assert.fail("There should be no "+taskName+" task");
-        } catch (UnknownTaskException e){
+            Assert.fail("There should be no " + taskName + " task");
+        } catch (UnknownTaskException e) {
             assert true;
         }
     }
