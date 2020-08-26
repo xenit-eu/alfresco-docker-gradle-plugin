@@ -1,4 +1,4 @@
-package eu.xenit.gradle.docker;
+package eu.xenit.gradle.docker.config;
 
 import java.net.URI;
 import java.net.URISyntaxException;

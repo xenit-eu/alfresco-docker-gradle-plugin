@@ -1,7 +1,7 @@
 package eu.xenit.gradle.docker.alfresco;
 
 import eu.xenit.gradle.docker.DockerBuildBehavior;
-import eu.xenit.gradle.docker.DockerConfigPlugin;
+import eu.xenit.gradle.docker.config.DockerConfigPlugin;
 import eu.xenit.gradle.docker.alfresco.tasks.extension.DockerfileWithWarsExtension;
 import eu.xenit.gradle.docker.alfresco.tasks.DockerfileWithWarsTask;
 import eu.xenit.gradle.docker.alfresco.tasks.InjectFilesInWarTask;

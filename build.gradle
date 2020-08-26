@@ -55,7 +55,7 @@ gradlePlugin {
         }
         dockerConfig {
             id = "eu.xenit.docker-config"
-            implementationClass = "eu.xenit.gradle.docker.DockerConfigPlugin"
+            implementationClass = "eu.xenit.gradle.docker.config.DockerConfigPlugin"
         }
         docker {
             id = "eu.xenit.docker"

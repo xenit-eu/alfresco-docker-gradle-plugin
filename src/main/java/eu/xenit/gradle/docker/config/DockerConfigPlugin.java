@@ -1,8 +1,7 @@
-package eu.xenit.gradle.docker;
+package eu.xenit.gradle.docker.config;
 
 import com.avast.gradle.dockercompose.ComposeSettings;
 import com.bmuschko.gradle.docker.DockerExtension;
-import com.bmuschko.gradle.docker.DockerRegistryCredentials;
 import com.bmuschko.gradle.docker.DockerRemoteApiPlugin;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
 import eu.xenit.gradle.docker.compose.DockerComposePlugin;

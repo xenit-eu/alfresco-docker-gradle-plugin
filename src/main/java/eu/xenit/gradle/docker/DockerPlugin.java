@@ -1,5 +1,6 @@
 package eu.xenit.gradle.docker;
 
+import eu.xenit.gradle.docker.config.DockerConfigPlugin;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 
