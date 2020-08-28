@@ -3,11 +3,13 @@ package eu.xenit.gradle.docker;
 import eu.xenit.gradle.docker.autotag.DockerAutotagExtension;
 import eu.xenit.gradle.docker.core.DockerExtension;
 import eu.xenit.gradle.docker.internal.Deprecation;
+import java.util.Collections;
 import java.util.HashSet;
 import javax.inject.Inject;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.ProviderFactory;
 
 public class DockerBuildExtension {
 
@@ -27,16 +29,22 @@ public class DockerBuildExtension {
     private final Property<Boolean> remove;
 
     @Inject
-    public DockerBuildExtension(ObjectFactory objectFactory, DockerExtension dockerExtension,
+    public DockerBuildExtension(ObjectFactory objectFactory, ProviderFactory providerFactory, DockerExtension dockerExtension,
             String deprecationPrefix) {
         repository = objectFactory.property(String.class);
         this.deprecationPrefix = deprecationPrefix;
-        dockerExtension.getRepositories().add(repository);
+        dockerExtension.getRepositories().addAll(providerFactory.provider(() -> {
+            if(repository.isPresent()) {
+                return Collections.singleton(repository.get());
+            } else {
+                return Collections.emptySet();
+            }
+        }));
         tags = objectFactory.listProperty(String.class);
         dockerExtension.getTags().addAll(tags.flatMap(
                 t -> getAutomaticTags().map(automaticTags ->
-                        automaticTags?dockerExtension.getExtensions().getByType(DockerAutotagExtension.class)
-                        .legacyTags(new HashSet<>(t)):new HashSet<>(t)
+                        automaticTags ? dockerExtension.getExtensions().getByType(DockerAutotagExtension.class)
+                                .legacyTags(new HashSet<>(t)) : new HashSet<>(t)
                 )
         ));
         pull = objectFactory.property(Boolean.class).convention(true);
