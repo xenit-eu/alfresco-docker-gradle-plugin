@@ -20,7 +20,7 @@ public class DockerPlugin implements Plugin<Project> {
         DockerFileExtension dockerFileExtension = project.getExtensions()
                 .create("dockerFile", DockerFileExtension.class, dockerExtension);
 
-        project.getTasks().withType(DockerBuildImage.class, buildImage -> {
+        project.getTasks().withType(DockerBuildImage.class).configureEach(buildImage -> {
             Deprecation.whileDisabled(() -> {
                 DockerBuildExtension dockerBuildExtension = dockerFileExtension.getDockerBuild();
                 buildImage.getRemove().set(dockerBuildExtension.getRemove());
