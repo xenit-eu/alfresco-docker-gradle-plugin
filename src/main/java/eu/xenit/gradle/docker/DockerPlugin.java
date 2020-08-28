@@ -1,5 +1,6 @@
 package eu.xenit.gradle.docker;
 
+import eu.xenit.gradle.docker.autotag.DockerAutotagPlugin;
 import eu.xenit.gradle.docker.config.DockerConfigPlugin;
 import eu.xenit.gradle.docker.core.DockerExtension;
 import eu.xenit.gradle.docker.internal.Deprecation;

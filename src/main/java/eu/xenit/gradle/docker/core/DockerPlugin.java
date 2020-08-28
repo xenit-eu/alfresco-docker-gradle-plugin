@@ -2,6 +2,7 @@ package eu.xenit.gradle.docker.core;
 
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import eu.xenit.gradle.docker.autotag.DockerAutotagPlugin;
 import eu.xenit.gradle.docker.compose.DockerComposePlugin;
 import eu.xenit.gradle.docker.config.DockerConfigPlugin;
 import eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask;
@@ -15,11 +16,17 @@ import org.gradle.api.tasks.TaskProvider;
 public class DockerPlugin implements Plugin<Project> {
 
     public static final String PLUGIN_ID = "eu.xenit.docker.core";
+    private DockerExtension dockerExtension;
+
+    public DockerExtension getExtension() {
+        return dockerExtension;
+    }
 
     @Override
     public void apply(Project project) {
         project.getPluginManager().apply(DockerConfigPlugin.class);
-        DockerExtension dockerExtension = project.getExtensions().create("dockerBuild", DockerExtension.class);
+        project.getPluginManager().apply(DockerAutotagPlugin.class);
+        dockerExtension = project.getExtensions().create("dockerBuild", DockerExtension.class);
 
         // Configure an empty createDockerFile task that can be configured by the user.
         // If no Dockerfile is present in the project, the Dockerfile created by this task
