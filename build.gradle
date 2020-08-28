@@ -57,6 +57,10 @@ gradlePlugin {
             id = "eu.xenit.docker-config"
             implementationClass = "eu.xenit.gradle.docker.config.DockerConfigPlugin"
         }
+        dockerCore {
+            id = "eu.xenit.docker.core"
+            implementationClass = "eu.xenit.gradle.docker.core.DockerPlugin"
+        }
         docker {
             id = "eu.xenit.docker"
             implementationClass = "eu.xenit.gradle.docker.DockerPlugin"
@@ -84,6 +88,10 @@ pluginBundle {
 
         dockerConfig {
             displayName = "Docker configuration plugin"
+        }
+
+        dockerCore {
+            displayName = "Docker plugin"
         }
 
         docker {

@@ -1,5 +1,7 @@
 package eu.xenit.gradle.docker;
 
+import eu.xenit.gradle.docker.core.DockerExtension;
+import eu.xenit.gradle.docker.internal.Deprecation;
 import javax.inject.Inject;
 import org.gradle.api.Project;
 import org.gradle.api.model.ObjectFactory;
@@ -12,6 +14,7 @@ import org.gradle.api.provider.Property;
 public class DockerBuildExtension {
 
     private final Property<String> repository;
+    private final String deprecationPrefix;
     private final ListProperty<String> tags;
 
     private final Property<Boolean> pull;
@@ -26,9 +29,12 @@ public class DockerBuildExtension {
     private final Property<Boolean> remove;
 
     @Inject
-    public DockerBuildExtension(ObjectFactory objectFactory, Project project) {
+    public DockerBuildExtension(ObjectFactory objectFactory, DockerExtension dockerExtension,
+            String deprecationPrefix) {
         repository = objectFactory.property(String.class);
-        tags = objectFactory.listProperty(String.class);
+        this.deprecationPrefix = deprecationPrefix;
+        dockerExtension.getRepositories().add(repository);
+        tags = dockerExtension.getTags();
         pull = objectFactory.property(Boolean.class).convention(true);
         noCache = objectFactory.property(Boolean.class).convention(false);
         automaticTags = objectFactory.property(Boolean.class).convention(false);
@@ -36,6 +42,7 @@ public class DockerBuildExtension {
     }
 
     public Property<String> getRepository() {
+        Deprecation.warnDeprecatedExtensionPropertyReplaced(deprecationPrefix+"dockerBuild.repository", "dockerBuild.repositories");
         return repository;
     }
 
@@ -44,18 +51,22 @@ public class DockerBuildExtension {
     }
 
     public Property<Boolean> getPull() {
+        Deprecation.warnDeprecatedExtensionProperty(deprecationPrefix+"dockerBuild.pull", "Set the pull property directly on the buildDockerImage task instead.");
         return pull;
     }
 
     public Property<Boolean> getNoCache() {
+        Deprecation.warnDeprecatedExtensionProperty(deprecationPrefix+"dockerBuild.noCache", "Set the noCache property directly on the buildDockerImage task instead.");
         return noCache;
     }
 
     public Property<Boolean> getRemove() {
+        Deprecation.warnDeprecatedExtensionProperty(deprecationPrefix+"dockerBuild.remove", "Set the remove property directly on the buildDockerImage task instead.");
         return remove;
     }
 
     public ListProperty<String> getTags() {
+        Deprecation.warnDeprecatedExtensionPropertyReplaced(deprecationPrefix+"dockerBuild.tags", "dockerBuild.tags");
         return tags;
     }
 }
