@@ -2,13 +2,9 @@ plugins {
     id "eu.xenit.docker"
 }
 
-import eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask
-
-task createDockerFile(type: DockerfileWithCopyTask) {
+createDockerFile {
     from('alpine:edge')
 }
-
-buildDockerImage.dependsOn(createDockerFile)
 
 dockerFile {
     dockerFile = createDockerFile.getDestFile()
