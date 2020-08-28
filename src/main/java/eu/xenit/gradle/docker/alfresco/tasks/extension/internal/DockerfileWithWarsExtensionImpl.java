@@ -49,13 +49,8 @@ public class DockerfileWithWarsExtensionImpl implements DockerfileWithWarsExtens
         DockerfileWithWarsExtension impl = task.getProject().getObjects()
                 .newInstance(DockerfileWithWarsExtensionImpl.class, task);
         task.getConvention().getPlugins().put("wars", impl);
-
-        // This runs in afterEvaluate, because we want this doFirst action to really run *before*
-        // any other doFirst actions, as we need to clean up our own mess with no-op instructions
-        task.getProject().afterEvaluate(p -> {
-            task.doFirst("Remove no-op instructions", new RemoveNoOpInstructionsAction());
-            task.doFirst("Elide duplicate version check instructions", new ElideDuplicateVersionChecksAction());
-        });
+        task.doFirst("Remove no-op instructions", new RemoveNoOpInstructionsAction());
+        task.doFirst("Elide duplicate version check instructions", new ElideDuplicateVersionChecksAction());
     }
 
     private final Dockerfile dockerfile;

@@ -3,6 +3,8 @@ package eu.xenit.gradle.docker.alfresco.tasks;
 import eu.xenit.gradle.docker.alfresco.DockerAlfrescoPlugin;
 import eu.xenit.gradle.docker.alfresco.tasks.extension.internal.DockerfileWithLabelExtensionImpl;
 import eu.xenit.gradle.docker.alfresco.tasks.extension.internal.DockerfileWithWarsExtensionImpl;
+import eu.xenit.gradle.docker.alfresco.tasks.extension.internal.DockerfileWithWarsExtensionImpl.ElideDuplicateVersionChecksAction;
+import eu.xenit.gradle.docker.alfresco.tasks.extension.internal.DockerfileWithWarsExtensionImpl.RemoveNoOpInstructionsAction;
 import eu.xenit.gradle.docker.internal.Deprecation;
 import eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask;
 
@@ -20,6 +22,11 @@ public class DockerfileWithWarsTask extends DockerfileWithCopyTask {
                         " plugin instead.");
         DockerfileWithLabelExtensionImpl.applyTo(this);
         DockerfileWithWarsExtensionImpl.applyTo(this);
+
+        getProject().afterEvaluate(p -> {
+            this.doFirst("Remove no-op instructions", new RemoveNoOpInstructionsAction());
+            this.doFirst("Elide duplicate version check instructions", new ElideDuplicateVersionChecksAction());
+        });
     }
 
 }
