@@ -2,10 +2,13 @@ package eu.xenit.gradle.docker.core;
 
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import eu.xenit.gradle.docker.label.DockerLabelExtension;
+import eu.xenit.gradle.docker.label.DockerLabelPlugin;
 import eu.xenit.gradle.docker.autotag.DockerAutotagPlugin;
 import eu.xenit.gradle.docker.compose.DockerComposePlugin;
 import eu.xenit.gradle.docker.config.DockerConfigPlugin;
 import eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask;
+import eu.xenit.gradle.docker.tasks.internal.ConsolidateFileCopyInstructionsAction;
 import eu.xenit.gradle.docker.tasks.internal.DockerBuildImage;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -24,9 +27,14 @@ public class DockerPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
+        dockerExtension = project.getExtensions().create("dockerBuild", DockerExtension.class);
+
         project.getPluginManager().apply(DockerConfigPlugin.class);
         project.getPluginManager().apply(DockerAutotagPlugin.class);
-        dockerExtension = project.getExtensions().create("dockerBuild", DockerExtension.class);
+        project.getPluginManager().apply(DockerLabelPlugin.class);
+
+        // Configure labeling from git
+        dockerExtension.getExtensions().getByType(DockerLabelExtension.class).fromGit();
 
         // Configure an empty createDockerFile task that can be configured by the user.
         // If no Dockerfile is present in the project, the Dockerfile created by this task
@@ -35,6 +43,7 @@ public class DockerPlugin implements Plugin<Project> {
                 .register("createDockerFile", DockerfileWithCopyTask.class, dockerfile -> {
                     dockerfile.setDescription("Create a Dockerfile");
                     dockerfile.setGroup("Docker");
+                    dockerfile.doFirst("Consolidate COPY instructions", new ConsolidateFileCopyInstructionsAction());
                 });
         dockerExtension.getDockerFile().convention(dockerfileProvider.flatMap(Dockerfile::getDestFile));
 

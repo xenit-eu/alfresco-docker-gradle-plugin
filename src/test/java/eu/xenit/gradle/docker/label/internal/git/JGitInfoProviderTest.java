@@ -1,4 +1,4 @@
-package eu.xenit.gradle.docker.internal.git;
+package eu.xenit.gradle.docker.label.internal.git;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,7 +14,7 @@ import static org.junit.Assume.assumeTrue;
  */
 public class JGitInfoProviderTest {
 
-    private GitInfoProvider gitInfo;
+    private JGitInfoProvider gitInfo;
 
     @Before
     public void setup() throws IOException {
