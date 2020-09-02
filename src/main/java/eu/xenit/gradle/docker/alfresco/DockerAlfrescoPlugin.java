@@ -54,7 +54,6 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         project.getConfigurations().create(ALFRESCO_SM);
         project.getConfigurations().create(SHARE_SM);
 
-        project.getPluginManager().apply(DockerConfigPlugin.class);
         project.getPluginManager().apply(DockerPlugin.class);
 
         DockerExtension dockerExtension = project.getExtensions().getByType(DockerExtension.class);
