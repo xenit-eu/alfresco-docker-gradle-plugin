@@ -3,7 +3,7 @@ package eu.xenit.gradle.docker.compose;
 import com.avast.gradle.dockercompose.ComposeSettings;
 import com.bmuschko.gradle.docker.DockerRemoteApiPlugin;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
-import eu.xenit.gradle.docker.DockerPlugin;
+import eu.xenit.gradle.docker.core.DockerPlugin;
 import eu.xenit.gradle.docker.alfresco.DockerAlfrescoPlugin;
 import java.util.function.Supplier;
 import org.gradle.api.Action;
@@ -113,18 +113,11 @@ class DockerComposeConventionImpl implements DockerComposeConvention {
             });
         });
 
-        // Register shortened environment variables for `buildDockerImage` tasks created with the docker or docker-alfresco plugin
+        // Register shortened environment variables for `buildDockerImage` tasks created with the docker plugin
         pluginClasspathChecker.withPlugin(project, DockerPlugin.class, DockerPlugin.PLUGIN_ID, plugin -> {
             String environmentName = Util.safeEnvironmentVariableName(project.getPath().substring(1)) + "_DOCKER_IMAGE";
             fromBuildImage(environmentName, project.getTasks().named("buildDockerImage", DockerBuildImage.class));
         });
-        pluginClasspathChecker
-                .withPlugin(project, DockerAlfrescoPlugin.class, DockerAlfrescoPlugin.PLUGIN_ID, plugin -> {
-                    String environmentName =
-                            Util.safeEnvironmentVariableName(project.getPath().substring(1)) + "_DOCKER_IMAGE";
-                    fromBuildImage(environmentName,
-                            project.getTasks().named("buildDockerImage", DockerBuildImage.class));
-                });
         // Check plugin classpath for docker remote api plugin
         pluginClasspathChecker.checkPlugin(project, DockerRemoteApiPlugin.class, "com.bmuschko.docker-remote-api");
     }
