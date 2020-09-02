@@ -59,6 +59,7 @@ public class DockerBuildExtension {
     }
 
     public Property<Boolean> getAutomaticTags() {
+        Deprecation.warnDeprecatedExtensionProperty(deprecationPrefix+"dockerBuild.automaticTags", "Use dockerBuild { tags = autotag.legacyTags(...) } instead.");
         return automaticTags;
     }
 

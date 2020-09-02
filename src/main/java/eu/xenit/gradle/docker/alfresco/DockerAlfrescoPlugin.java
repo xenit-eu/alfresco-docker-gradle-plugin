@@ -1,6 +1,7 @@
 package eu.xenit.gradle.docker.alfresco;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import eu.xenit.gradle.docker.DockerBuildExtension;
 import eu.xenit.gradle.docker.alfresco.tasks.extension.internal.DockerfileWithLabelExtensionImpl;
 import eu.xenit.gradle.docker.alfresco.tasks.extension.internal.DockerfileWithWarsExtensionImpl;
 import eu.xenit.gradle.docker.config.DockerConfigPlugin;
@@ -15,6 +16,8 @@ import eu.xenit.gradle.docker.alfresco.tasks.WarLabelOutputTask;
 import eu.xenit.gradle.docker.alfresco.tasks.extension.LabelConsumerExtension;
 import eu.xenit.gradle.docker.core.DockerExtension;
 import eu.xenit.gradle.docker.core.DockerPlugin;
+import eu.xenit.gradle.docker.internal.Deprecation;
+import eu.xenit.gradle.docker.tasks.internal.DockerBuildImage;
 import java.util.ArrayList;
 import java.util.List;
 import org.alfresco.repo.module.tool.WarHelperImpl;
@@ -59,7 +62,18 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
                 .create("alfresco", AlfrescoDockerExtension.class);
         alfrescoDockerExtension.getLeanImage().convention(false);
 
-        project.getExtensions().create("dockerAlfresco", DockerAlfrescoExtension.class, dockerExtension);
+        DockerAlfrescoExtension dockerAlfrescoExtension = project.getExtensions()
+                .create("dockerAlfresco", DockerAlfrescoExtension.class, dockerExtension);
+
+        // process legacy DockerBuildExtension
+        project.getTasks().withType(DockerBuildImage.class).configureEach(buildImage -> {
+            Deprecation.whileDisabled(() -> {
+                DockerBuildExtension dockerBuildExtension = dockerAlfrescoExtension.getDockerBuild();
+                buildImage.getRemove().set(dockerBuildExtension.getRemove());
+                buildImage.getNoCache().set(dockerBuildExtension.getNoCache());
+                buildImage.getPull().set(dockerBuildExtension.getPull());
+            });
+        });
 
         List<WarLabelOutputTask> alfrescoWarEnrichmentTasks = warEnrichmentChain(project, ALFRESCO);
         List<WarLabelOutputTask> shareEnrichmentTasks = warEnrichmentChain(project, SHARE);
