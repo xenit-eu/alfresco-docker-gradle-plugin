@@ -11,6 +11,10 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.ProviderFactory;
 
+/**
+ * @deprecated Use {@link DockerExtension} instead. Will be removed in 6.0.
+ */
+@Deprecated
 public class DockerBuildExtension {
 
     private final Property<String> repository;
