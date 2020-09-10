@@ -6,12 +6,3 @@ plugins {
 createDockerFile {
     from('alpine:edge')
 }
-
-buildDockerImage.dependsOn(createDockerFile)
-
-dockerFile {
-    dockerFile = createDockerFile.getDestFile()
-    dockerBuild {
-        repository = 'docker-compose-example-subpr1'
-    }
-}

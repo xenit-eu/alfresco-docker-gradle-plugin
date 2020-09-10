@@ -15,27 +15,27 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 import eu.xenit.gradle.docker.alfresco.tasks.*
 
 configurations {
-    testbaseAlfrescoWar
-    testalfrescoAmp
+    baseAlfrescoWar
+    alfrescoAmp
 }
 
 dependencies {
-    testbaseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
-    testalfrescoAmp "de.fmaul:javascript-console-repo:0.6@amp"
+    baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
+    alfrescoAmp "de.fmaul:javascript-console-repo:0.6@amp"
 }
 
-task testinstallAlfrescoAmps(type: InstallAmpsInWarTask) {
+task applyAmps(type: InstallAmpsInWarTask) {
     inputWar = configurations.testbaseAlfrescoWar
     sourceFiles = configurations.testalfrescoAmp
 }
 
-task testcreateDockerFile(type: DockerfileWithWarsTask) {
+task createDockerFile(type: DockerfileWithWarsTask) {
     baseImage = "tomcat:7-jre8"
-    addWar("alfresco", testinstallAlfrescoAmps.outputWar)
-    withLabels(testinstallAlfrescoAmps)
+    addWar("alfresco", applyAmps.outputWar)
+    withLabels(applyAmps)
 }
 
-task testbuildDockerImage(type: DockerBuildImage, dependsOn: testcreateDockerFile) {
-    inputDir = testcreateDockerFile.destFile.asFile.get().parentFile
-    dockerFile = testcreateDockerFile.destFile
+task buildDockerImage(type: DockerBuildImage, dependsOn: createDockerFile) {
+    inputDir = createDockerFile.destFile.asFile.get().parentFile
+    dockerFile = createDockerFile.destFile
 }

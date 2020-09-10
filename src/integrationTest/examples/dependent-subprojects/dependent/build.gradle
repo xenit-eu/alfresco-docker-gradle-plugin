@@ -14,10 +14,13 @@ dependencies {
     baseShareWar "org.alfresco:share:6.0.c@war"
 }
 
-dockerAlfresco {
-    dockerBuild {
-        repository = 'dependent'
-        pull = false
+buildDockerImage {
+    pull = false
+}
+
+dockerBuild {
+    alfresco {
+        baseImage = project(":baseImage").named("buildDockerImage").flatMap({ it.getImageId() })
     }
 }
 

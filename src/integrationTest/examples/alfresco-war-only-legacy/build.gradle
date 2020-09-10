@@ -4,18 +4,14 @@ plugins {
 
 repositories {
     mavenCentral()
-    jcenter()
     maven {
         url "https://artifacts.alfresco.com/nexus/content/groups/public/"
     }
 }
-
 dependencies {
     baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
-    alfrescoAmp files("./amps") //Gradle dependencies can be added by file or folder too
 }
-dockerBuild {
-    alfresco {
-        baseImage = "tomcat:7-jre8"
-    }
+
+dockerAlfresco {
+    baseImage = "tomcat:7-jre8"
 }

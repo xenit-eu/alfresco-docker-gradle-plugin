@@ -6,13 +6,6 @@ repositories {
     jcenter()
 }
 
-dockerFile {
-    dockerFile = file('Dockerfile')
-    dockerBuild {
-        repository = 'example-buildargs'
-    }
-}
-
 buildDockerImage {
     buildArgs = ['TESTARG': 'You can do it Toon!']
 }

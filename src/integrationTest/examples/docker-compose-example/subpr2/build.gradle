@@ -6,9 +6,3 @@ createDockerFile {
     from('alpine:edge')
 }
 
-dockerFile {
-    dockerFile = createDockerFile.getDestFile()
-    dockerBuild {
-        repository = 'docker-compose-example-subpr1'
-    }
-}

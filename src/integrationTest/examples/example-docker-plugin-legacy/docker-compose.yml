@@ -1,0 +1,6 @@
+version: "2"
+services:
+  exampledockerplugin:
+    image: ${DOCKER_IMAGE}
+    environment:
+      - ISSUE=${GITHUB}/xenit-eu/alfresco-docker-gradle-plugin/issues/20

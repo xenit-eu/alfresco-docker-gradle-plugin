@@ -24,6 +24,11 @@ public class ExampleRunner extends AbstractIntegrationTest {
     }
 
     @Test
+    public void testAlfrescoWarOnlyLegacy() throws IOException {
+        testProjectFolder(EXAMPLES.resolve("alfresco-war-only-legacy"));
+    }
+
+    @Test
     public void testApplyAmpsExample() throws IOException {
         testProjectFolder(EXAMPLES.resolve("applyamps-example"));
     }
@@ -31,6 +36,11 @@ public class ExampleRunner extends AbstractIntegrationTest {
     @Test
     public void testExampleDockerPlugin() throws IOException {
         testProjectFolder(EXAMPLES.resolve("example-docker-plugin"));
+    }
+
+    @Test
+    public void testExampleDockerPluginLegacy() throws IOException {
+        testProjectFolder(EXAMPLES.resolve("example-docker-plugin-legacy"));
     }
 
     @Test

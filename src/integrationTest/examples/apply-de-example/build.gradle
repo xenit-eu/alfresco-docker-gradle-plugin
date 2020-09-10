@@ -12,18 +12,15 @@ repositories {
 
 dependencies {
     baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
-    alfrescoDE(group: 'eu.xenit', name: 'care4alf', version: '1.1.0'){
-        transitive=false
+    alfrescoDE(group: 'eu.xenit', name: 'care4alf', version: '1.1.0') {
+        transitive = false
     }
 
 }
 
-dockerAlfresco {
-    // Base image used in the FROM of the docker build. Should be a compatible image.
-    baseImage = "tomcat:7-jre8"
-    dockerBuild {
-        // Repository to publish on. On Jenkins, branches other than master will be appended with -branch.
-        // Local build will be appended with -local
-        repository = 'example-de-install'
+dockerBuild {
+    alfresco {
+        // Base image used in the FROM of the docker build. Should be a compatible image.
+        baseImage = "tomcat:7-jre8"
     }
 }
