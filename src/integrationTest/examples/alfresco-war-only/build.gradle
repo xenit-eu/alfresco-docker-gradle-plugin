@@ -1,10 +1,9 @@
 plugins {
-   id 'eu.xenit.docker-alfresco'
+    id 'eu.xenit.docker-alfresco'
 }
 
 repositories {
    mavenCentral()
-   jcenter()
    maven {
       url "https://artifacts.alfresco.com/nexus/content/groups/public/"
    }

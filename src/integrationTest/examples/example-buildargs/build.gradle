@@ -2,10 +2,6 @@ plugins {
     id 'eu.xenit.docker'
 }
 
-repositories {
-    jcenter()
-}
-
 buildDockerImage {
     buildArgs = ['TESTARG': 'You can do it Toon!']
 }
