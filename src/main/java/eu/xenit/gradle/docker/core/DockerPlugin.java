@@ -2,6 +2,7 @@ package eu.xenit.gradle.docker.core;
 
 import com.bmuschko.gradle.docker.tasks.image.DockerPushImage;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import eu.xenit.gradle.docker.DockerLegacyPlugin;
 import eu.xenit.gradle.docker.label.DockerLabelExtension;
 import eu.xenit.gradle.docker.label.DockerLabelPlugin;
 import eu.xenit.gradle.docker.autotag.DockerAutotagPlugin;
@@ -18,7 +19,7 @@ import org.gradle.api.tasks.TaskProvider;
 
 public class DockerPlugin implements Plugin<Project> {
 
-    public static final String PLUGIN_ID = "eu.xenit.docker.core";
+    public static final String PLUGIN_ID = "eu.xenit.docker";
     private DockerExtension dockerExtension;
 
     public DockerExtension getExtension() {
@@ -32,6 +33,8 @@ public class DockerPlugin implements Plugin<Project> {
         project.getPluginManager().apply(DockerConfigPlugin.class);
         project.getPluginManager().apply(DockerAutotagPlugin.class);
         project.getPluginManager().apply(DockerLabelPlugin.class);
+
+        project.getPluginManager().apply(DockerLegacyPlugin.class);
 
         // Configure labeling from git
         dockerExtension.getExtensions().getByType(DockerLabelExtension.class).fromGit();

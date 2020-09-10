@@ -61,18 +61,7 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
                 .create("alfresco", AlfrescoDockerExtension.class);
         alfrescoDockerExtension.getLeanImage().convention(false);
 
-        DockerAlfrescoExtension dockerAlfrescoExtension = project.getExtensions()
-                .create("dockerAlfresco", DockerAlfrescoExtension.class, dockerExtension);
-
-        // process legacy DockerBuildExtension
-        project.getTasks().withType(DockerBuildImage.class).configureEach(buildImage -> {
-            Deprecation.whileDisabled(() -> {
-                DockerBuildExtension dockerBuildExtension = dockerAlfrescoExtension.getDockerBuild();
-                buildImage.getRemove().set(dockerBuildExtension.getRemove());
-                buildImage.getNoCache().set(dockerBuildExtension.getNoCache());
-                buildImage.getPull().set(dockerBuildExtension.getPull());
-            });
-        });
+        project.getPluginManager().apply(DockerAlfrescoLegacyPlugin.class);
 
         List<WarLabelOutputTask> alfrescoWarEnrichmentTasks = warEnrichmentChain(project, ALFRESCO);
         List<WarLabelOutputTask> shareEnrichmentTasks = warEnrichmentChain(project, SHARE);
