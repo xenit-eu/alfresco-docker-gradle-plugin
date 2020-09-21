@@ -196,7 +196,7 @@ The Gradle tasks created by this plugin are executed in this order. (Ordering mi
 
 In order to support `leanImage` to be able to reduce image size and to reduce the size of the Gradle build folder, most tasks do not operate upon the full Alfresco or Share war.
 
-The first task of the chain, `resolveAlfrescoWar`, will take a full WAR as input and will strip the WAR down to a minimal version that only contains the needed files to install AMPs with the Alfresco MMT.
+The first task of the chain, `stripAlfrescoWar`, will take a full WAR as input and will strip the WAR down to a minimal version that only contains the needed files to install AMPs with the Alfresco MMT.
 Next, all the `apply*` tasks can work in parallel to add the files they need to add.
 Finally, the `alfrescoWar` task will take the output WAR files the `apply*` tasks and overlays them on top of `baseAlfrescoWar`, creating a full WAR file again with all extensions installed.
 
@@ -205,10 +205,10 @@ Similar to how `alfrescoWar` overlays WAR files, `createDockerfile` also overlay
 
 
 ```
-baseAlfrescoWar -+----------------------------------------------------------------------------------------> alfrescoWar[MergeWarsTask]
-                 \--> resolveAlfrescoWar[StripAlfrescoWarTask] -+-> applyAlfrescoAmp[InstallAmpsInWarTask] --^ ^ ^
-                                                                +--> applyAlfrescoDE[InjectFilesInWarTask] ----/ |
-                                                                \--> applyAlfrescoSM[InjectFilesInWarTask] ------/
+baseAlfrescoWar -+-------------------------------------------------------------------------------------> alfrescoWar[MergeWarsTask]
+                 \--> stripAlfrescoWar[StripAlfrescoWarTask] -+-> applyAlfrescoAmp[InstallAmpsInWarTask] --^ ^ ^
+                                                              +--> applyAlfrescoDE[InjectFilesInWarTask] ----/ |
+                                                              \--> applyAlfrescoSM[InjectFilesInWarTask] ------/
 ```
 
 </details>
@@ -218,7 +218,7 @@ An example for the usage of this plugin can be found in the [applyamps example](
 gradle buildDockerImage
 ```
 
-When you check the labels of you docker image, you will notice that the base wars and the amps are listed.
+When you check the labels of your docker image, you will notice that the base wars and the amps are listed.
 
 #### Publishing wars with extensions
 
