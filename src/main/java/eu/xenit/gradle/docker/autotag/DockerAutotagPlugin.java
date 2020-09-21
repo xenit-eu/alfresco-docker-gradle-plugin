@@ -7,6 +7,8 @@ import org.gradle.api.Project;
 
 public class DockerAutotagPlugin implements Plugin<Project> {
 
+    public static final String PLUGIN_ID = "eu.xenit.docker.autotag"
+
     @Override
     public void apply(Project project) {
         project.getPlugins().withType(DockerPlugin.class, dockerPlugin -> {

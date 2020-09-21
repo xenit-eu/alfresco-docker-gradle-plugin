@@ -13,14 +13,19 @@ There are 3 main plugins:
 image can be built with the alfresco installed. It is also possible to include Alfresco Dynamic Extensions, and Alfresco
  Simple Modules.
 - [`eu.xenit.docker`](#plugin-eu-xenit-docker): Build a docker image, starting from a Dockerfile.
-- [`eu.xenit.docker-compose.auto`](#plugin-eu-xenit-docker-compose-auto): Inject built docker images from all projects in docker-compose
+- [`eu.xenit.docker-compose.auto`](#plugin-eu-xenit-docker-compose-auto): Inject built docker images from all projects into docker-compose
+
+2 extensions on top of the `eu.xenit.docker` plugin to enhance functionality:
+
+- [`eu.xenit.docker.autotag`](#plugin-eu-xenit-docker-autotag): Add or rewrite tags to Docker images based on git branch, environment, ...
+- [`eu.xenit.docker.label`](#plugin-eu-xenit-docker-label): Add labels to Docker images based on git commit, environment, ...
 
 2 lower-level helper plugins that you can use when you only want the absolute basic configuration, without any conventions applied by the higher-level plugins.
 
 - `eu.xenit.docker-config`: Helper plugin that is used to configure the docker environment from `gradle.properties` settings.
     This plugin is automatically applied when using `eu.xenit.docker` or `eu.xenit.docker-alfresco`
 - [`eu.xenit.docker-compose`](#plugin-eu-xenit-docker-compose): Sets up `dockerCompose` configuration without automatically including all docker images built by other projects
-    Tis plugin is automatically applied when using the `eu.xenit.docker-compose.auto` plugin
+    This plugin is automatically applied when using the `eu.xenit.docker-compose.auto` plugin
 
 ## Setup
 
@@ -331,6 +336,49 @@ The `eu.xenit.docker` plugin registers following Gradle tasks:
 
  * `buildDockerImage`: [`DockerBuildImage`](https://bmuschko.github.io/gradle-docker-plugin/api/com/bmuschko/gradle/docker/tasks/image/DockerBuildImage.html) Builds a Docker image with the provided Dockerfile
  * `pushDockerImage`: Pushes all tags of the Docker image to the remote repository
+ 
+<a name="plugin-eu-xenit-docker-label"></a>
+### Plugin `eu.xenit.docker.label`: Automatically label docker images
+
+This plugin configures the `eu.xenit.docker` plugin, and is automatically applied by it.
+
+This plugin adds an extension to the `dockerBuild` configuration:
+
+```groovy
+dockerBuild {
+    // [...]
+    label {
+        // Configure Docker image labels here
+        fromGit()
+    }
+}
+```
+
+#### Label contributors
+
+ * **git**: Adds labels derived from git: current branch, origin repository, latest commit hash and author.
+   This label contributor is enabled by default and can be disabled by calling `fromGit(false)`
+
+<a name="plugin-eu-xenit-docker-autotag"></a>
+### Plugin `eu.xenit.docker.autotag`: Add and rewrite Docker image tags
+
+This plugin configures the `eu.xenit.docker` plugin, and is automatically applied by it.
+
+This plugin adds functions to the `dockerBuild` configuration that can be used to add and change Docker image tags.
+
+#### `autotag.legacyTags(List<String>)`
+
+```groovy
+dockerBuild {
+    tags = autotag.legacyTags(["some", "useful", "tags"])
+}
+```
+
+On Jenkins, the branch is set with the environment variable `BRANCH_NAME`. When it is set, all tags will be
+prepended with `$BRANCH_NAME-`, otherwise with `local`. An extra tag, `$BRANCH_NAME` or `local`, will be added too.
+When the branch is `master`, the branch name is not prepended and a tag `latest` is added.
+
+If the environment variable `BUILD_NUMBER` is set, an extra tag is added: `build-yyyyMMddHHmm-$BUILD_NUMBER`, also prepended with the branch name.
 
 <a name="plugin-eu-xenit-docker-compose"></a>
 ### Plugin `eu.xenit.docker-compose`: Inject built docker images into docker-compose
@@ -406,17 +454,6 @@ plugins {
     id "eu.xenit.docker-compose.auto" version "5.0.0" // See https://plugins.gradle.org/plugin/eu.xenit.docker-compose.auto for the latest version
 }
 ```
-
-## Tagging behavior
-
-On Jenkins, the branch is set with the environment variable `BRANCH_NAME`. When it is set, all manually tags will be
-prepended with `$BRANCH_NAME-`, otherwise with `local`. Also an extra tag `$BRANCH_NAME`, or `local` will be added.
-When the branch is `master`, the tags are not prepended and a tag `latest` is used.
-
-When an environment variable `BUILD_NUMBER` is set, an extra tag is added: `build-yyyyMMddHHmm-$BUILD_NUMBER` is added.
-When the branch is not master, this is also prepended.
-
-This tagging behavior can be disabled by adding `automaticTags = false` to the dockerBuild configuration.
 
 # Plugin development
 
