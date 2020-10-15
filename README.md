@@ -80,7 +80,7 @@ The `eu.xenit.docker-alfresco` plugin is specialized to build Docker images cont
 First, you need to apply the plugin to your `build.gradle`
 ```groovy
 plugins {
-    id "eu.xenit.docker" version "5.0.0" // See https://plugins.gradle.org/plugin/eu.xenit.docker for the latest version
+    id "eu.xenit.docker" version "5.1.0" // See https://plugins.gradle.org/plugin/eu.xenit.docker for the latest version
 }
 ```
 
@@ -135,7 +135,7 @@ A `smartCopy` method is available to make it easier to copy any file in the proj
 There is no limitation to the location of files that are copied with `smartCopy`, files can originate from outside the project directory.
 
 <details>
-<summary>`smartCopy` invocations</summary>
+<summary><code>smartCopy</code> invocations</summary>
 
 * single file or directory inputs:
     * `smartCopy(String source, String destination)`: Evaluated as `smartCopy(project.file(source), destination)`, `source` is resolved using [`Project#file()`](https://docs.gradle.org/current/javadoc/org/gradle/api/Project.html#file-java.lang.Object-).
@@ -178,7 +178,7 @@ The `pushDockerImage` task is of type [`DockerPushImage`](https://bmuschko.githu
 It is automatically configured to push all the tagged images that are built by `buildDockerImage` to their respective repositories.
 
 
-##### Example
+#### Example
 
 An example for this plugin can be found in the [docker plugin example](src/integrationTest/examples/example-docker-plugin)
 
@@ -197,7 +197,7 @@ First, you need to apply the plugin to your `build.gradle`
 
 ```groovy
 plugins {
-    id "eu.xenit.docker-alfresco" version "5.0.0" // See https://plugins.gradle.org/plugin/eu.xenit.docker-alfresco for the latest version
+    id "eu.xenit.docker-alfresco" version "5.1.0" // See https://plugins.gradle.org/plugin/eu.xenit.docker-alfresco for the latest version
 }
 ```
 
@@ -398,6 +398,8 @@ baseAlfrescoWar -+--------------------------------------------------------------
 
 </details>
 
+#### Example
+
 An example for the usage of this plugin can be found in the [applyamps example](src/integrationTest/examples/applyamps-example).
 ```bash
 ./gradlew buildDockerImage
@@ -482,7 +484,7 @@ It extends the `dockerCompose` configuration block with two functions:
 
 ```groovy
 plugins {
-    id "eu.xenit.docker-compose" version "5.0.0" // See https://plugins.gradle.org/plugin/eu.xenit.docker-compose for the latest version
+    id "eu.xenit.docker-compose" version "5.1.0" // See https://plugins.gradle.org/plugin/eu.xenit.docker-compose for the latest version
 }
 
 dockerCompose {
@@ -502,7 +504,7 @@ task buildXYZDockerImage(type: DockerBuildImage) {
 >
 > ```groovy
 > plugins {
->     id "eu.xenit.docker-compose" version "5.0.0" apply false
+>     id "eu.xenit.docker-compose" version "5.1.0" apply false // See https://plugins.gradle.org/plugin/eu.xenit.docker-compose for the latest version
 > }
 > ```
 > 
@@ -535,7 +537,7 @@ It does not require you to explicitly list which projects you want to depend on.
 
 ```groovy
 plugins {
-    id "eu.xenit.docker-compose.auto" version "5.0.0" // See https://plugins.gradle.org/plugin/eu.xenit.docker-compose.auto for the latest version
+    id "eu.xenit.docker-compose.auto" version "5.1.0" // See https://plugins.gradle.org/plugin/eu.xenit.docker-compose.auto for the latest version
 }
 ```
 
