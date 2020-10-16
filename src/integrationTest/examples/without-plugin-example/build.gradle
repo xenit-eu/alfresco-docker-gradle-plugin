@@ -24,8 +24,8 @@ dependencies {
 }
 
 task applyAmps(type: InstallAmpsInWarTask) {
-    inputWar = configurations.testbaseAlfrescoWar
-    sourceFiles = configurations.testalfrescoAmp
+    inputWar = configurations.baseAlfrescoWar
+    sourceFiles = configurations.alfrescoAmp
 }
 
 task createDockerFile(type: DockerfileWithWarsTask) {

@@ -17,9 +17,11 @@ buildDockerImage {
     pull = false
 }
 
+evaluationDependsOn(":baseImage")
+
 dockerBuild {
     alfresco {
-        baseImage = project(":baseImage").named("buildDockerImage").flatMap({ it.getImageId() })
+        baseImage = project(":baseImage").tasks.named("buildDockerImage").flatMap({ it.getImageId() })
     }
 }
 

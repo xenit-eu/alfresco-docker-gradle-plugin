@@ -75,7 +75,7 @@ public class ExampleRunner extends AbstractIntegrationTest {
 
     @Test
     public void withoutPluginExample() throws IOException {
-        testProjectFolder(EXAMPLES.resolve("without-plugin-example"), ":testbuildDockerImage");
+        testProjectFolder(EXAMPLES.resolve("without-plugin-example"), ":buildDockerImage");
     }
 
     @Test
