@@ -19,7 +19,7 @@ import org.gradle.api.tasks.TaskCollection;
 
 public class DockerLabelExtension {
 
-    private final static Logger LOGGER = Logging.getLogger(DockerLabelExtension.class);
+    private static final Logger LOGGER = Logging.getLogger(DockerLabelExtension.class);
 
     private final ProviderFactory providerFactory;
     private final ProjectLayout projectLayout;

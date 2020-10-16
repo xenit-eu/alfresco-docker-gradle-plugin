@@ -57,7 +57,7 @@ public class DockerConfig {
             try {
                 exposeIp = (new URI(this.url)).getHost();
             } catch (URISyntaxException e) {
-
+                // Do nothing
             }
         }
         // If that did not work, fall back to localhost

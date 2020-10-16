@@ -1,6 +1,5 @@
 package eu.xenit.gradle.docker.autotag.transformer;
 
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -8,10 +7,13 @@ import java.util.stream.Collectors;
 import org.gradle.api.GradleException;
 
 public class DockerSafeTagTransformer implements TagTransformer {
+
     private TagTransformer parent;
 
     private static final int DOCKER_TAG_LENGTH_CONSTRAINT = 128;
-    private static final String DOCKER_TAG_LENGTH_CONSTRAINT_ERRORMSG = "Automatic tags will violate tag length constraint of "+DOCKER_TAG_LENGTH_CONSTRAINT+", due to usage of branch name in tag. Modify branch name or disable automatic tags.";
+    private static final String DOCKER_TAG_LENGTH_CONSTRAINT_ERRORMSG =
+            "Automatic tags will violate tag length constraint of " + DOCKER_TAG_LENGTH_CONSTRAINT
+                    + ", due to usage of branch name in tag. Modify branch name or disable automatic tags.";
 
     public DockerSafeTagTransformer(TagTransformer parent) {
         this.parent = parent;
@@ -38,7 +40,7 @@ public class DockerSafeTagTransformer implements TagTransformer {
     }
 
     private static void validateDockerTagLength(String tag) {
-        if(tag.length() > DOCKER_TAG_LENGTH_CONSTRAINT) {
+        if (tag.length() > DOCKER_TAG_LENGTH_CONSTRAINT) {
             throw new GradleException(DOCKER_TAG_LENGTH_CONSTRAINT_ERRORMSG);
         }
     }

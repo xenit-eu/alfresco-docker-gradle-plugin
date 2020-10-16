@@ -20,6 +20,7 @@ import org.gradle.api.tasks.TaskProvider;
 public class DockerPlugin implements Plugin<Project> {
 
     public static final String PLUGIN_ID = "eu.xenit.docker";
+    private static final String TASK_GROUP = "Docker";
     private DockerExtension dockerExtension;
 
     public DockerExtension getExtension() {
@@ -45,7 +46,7 @@ public class DockerPlugin implements Plugin<Project> {
         TaskProvider<? extends Dockerfile> dockerfileProvider = project.getTasks()
                 .register("createDockerFile", DockerfileWithCopyTask.class, dockerfile -> {
                     dockerfile.setDescription("Create a Dockerfile");
-                    dockerfile.setGroup("Docker");
+                    dockerfile.setGroup(TASK_GROUP);
                     dockerfile.doFirst("Consolidate COPY instructions", new ConsolidateFileCopyInstructionsAction());
                 });
         dockerExtension.getDockerFile().convention(dockerfileProvider.flatMap(Dockerfile::getDestFile));
@@ -59,7 +60,7 @@ public class DockerPlugin implements Plugin<Project> {
         TaskProvider<? extends DockerBuildImage> buildImageProvider = project.getTasks()
                 .register("buildDockerImage", DockerBuildImage.class, buildImage -> {
                     buildImage.setDescription("Build the docker image");
-                    buildImage.setGroup("Docker");
+                    buildImage.setGroup(TASK_GROUP);
                     buildImage.getPull().set(true);
                     buildImage.getRemove().set(true);
 
@@ -74,7 +75,7 @@ public class DockerPlugin implements Plugin<Project> {
 
         project.getTasks().register("pushDockerImage", DockerPushImage.class, dockerPushImage -> {
             dockerPushImage.setDescription("Push all docker image tags");
-            dockerPushImage.setGroup("Docker");
+            dockerPushImage.setGroup(TASK_GROUP);
             dockerPushImage.getImages().set(buildImageProvider.flatMap(DockerBuildImage::getImages));
             dockerPushImage.dependsOn(buildImageProvider);
         });
