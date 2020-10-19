@@ -1,7 +1,7 @@
 package eu.xenit.gradle.docker.compose;
 
 import com.avast.gradle.dockercompose.ComposeSettings;
-import eu.xenit.gradle.docker.DockerConfigPlugin;
+import eu.xenit.gradle.docker.config.DockerConfigPlugin;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 

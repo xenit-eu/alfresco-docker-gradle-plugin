@@ -1,10 +1,9 @@
 plugins {
-   id 'eu.xenit.docker-alfresco'
+    id 'eu.xenit.docker-alfresco'
 }
 
 repositories {
    mavenCentral()
-   jcenter()
    maven {
       url "https://artifacts.alfresco.com/nexus/content/groups/public/"
    }
@@ -12,9 +11,10 @@ repositories {
 dependencies {
    baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
 }
-dockerAlfresco {
-   baseImage = "tomcat:7-jre8"
-   dockerBuild {
-       repository = 'hellotest'
+
+dockerBuild {
+   alfresco {
+      // Base image used in the FROM of the docker build. Should be a compatible image.
+      baseImage = "tomcat:7-jre8"
    }
 }

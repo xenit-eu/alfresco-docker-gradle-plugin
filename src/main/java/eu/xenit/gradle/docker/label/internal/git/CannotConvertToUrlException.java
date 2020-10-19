@@ -1,4 +1,4 @@
-package eu.xenit.gradle.docker.internal.git;
+package eu.xenit.gradle.docker.label.internal.git;
 
 /**
  * Created by thijs on 1/25/17.

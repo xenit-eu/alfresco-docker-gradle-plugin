@@ -73,6 +73,14 @@ public final class Deprecation {
                 1);
     }
 
+    public static void warnDeprecatedExtensionProperty(String oldProperty, String replacement) {
+        createWarning("The "+oldProperty+" extension property is deprecated and will be removed in the next version. "+replacement, 1);
+    }
+
+    public static void warnDeprecatedExtensionPropertyReplaced(String oldProperty, String replacementProperty) {
+        createWarning("The "+oldProperty+" extension property is deprecated and will be removed in the next version. Use the "+replacementProperty+" extension property instead.", 1);
+    }
+
     public static void warnDeprecation(String message) {
         createWarning(message, 1);
     }

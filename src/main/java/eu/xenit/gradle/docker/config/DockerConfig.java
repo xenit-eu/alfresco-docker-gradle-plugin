@@ -1,4 +1,4 @@
-package eu.xenit.gradle.docker;
+package eu.xenit.gradle.docker.config;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -57,7 +57,7 @@ public class DockerConfig {
             try {
                 exposeIp = (new URI(this.url)).getHost();
             } catch (URISyntaxException e) {
-
+                // Do nothing
             }
         }
         // If that did not work, fall back to localhost

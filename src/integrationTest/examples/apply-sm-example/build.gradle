@@ -3,7 +3,6 @@ plugins {
 }
 repositories {
     mavenCentral()
-    jcenter()
     maven {
         url "https://artifacts.alfresco.com/nexus/content/groups/public/"
     }
@@ -11,22 +10,19 @@ repositories {
 
 dependencies {
     baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
-    alfrescoSM(group: 'eu.xenit', name: 'care4alf', version: '1.1.0'){
-        transitive=false
+    alfrescoSM(group: 'eu.xenit', name: 'care4alf', version: '1.1.0') {
+        transitive = false
     }
 
     baseShareWar "org.alfresco:share:6.0.c@war"
-    shareSM(group: 'eu.xenit', name: 'care4alf', version: '1.1.0'){
-        transitive=false
+    shareSM(group: 'eu.xenit', name: 'care4alf', version: '1.1.0') {
+        transitive = false
     }
 }
 
-dockerAlfresco {
-    // Base image used in the FROM of the docker build. Should be a compatible image.
-    baseImage = "tomcat:7-jre8"
-    dockerBuild {
-        // Repository to publish on. On Jenkins, branches other than master will be appended with -branch.
-        // Local build will be appended with -local
-        repository = 'example-sm-install'
+dockerBuild {
+    alfresco {
+        // Base image used in the FROM of the docker build. Should be a compatible image.
+        baseImage = "tomcat:7-jre8"
     }
 }

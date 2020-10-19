@@ -1,4 +1,4 @@
-package eu.xenit.gradle.docker.internal.git;
+package eu.xenit.gradle.docker.label.internal.git;
 
 import eu.xenit.gradle.docker.internal.JenkinsUtil;
 import java.io.File;
@@ -15,15 +15,15 @@ import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.transport.URIish;
-import org.gradle.api.Project;
+import org.gradle.api.file.ProjectLayout;
 
 /**
  * Created by thijs on 1/23/17.
  */
-public class JGitInfoProvider implements GitInfoProvider {
+public class JGitInfoProvider {
 
-    public static JGitInfoProvider GetProviderForProject(Project project) {
-        Path projectFolder = project.getProjectDir().toPath().toAbsolutePath();
+    public static JGitInfoProvider createProviderForProject(ProjectLayout project) {
+        Path projectFolder = project.getProjectDirectory().getAsFile().toPath().toAbsolutePath();
         Path gitFolder = projectFolder.resolve(".git");
         while (Files.notExists(gitFolder)) {
             projectFolder = projectFolder.getParent();
@@ -48,7 +48,6 @@ public class JGitInfoProvider implements GitInfoProvider {
         this.git = new Git(gitRepo);
     }
 
-    @Override
     public String getBranch() {
         //workaround because Jenkins uses git in detached head state
         if (!"local".equals(JenkinsUtil.getBranch())) {
@@ -61,7 +60,6 @@ public class JGitInfoProvider implements GitInfoProvider {
         }
     }
 
-    @Override
     public String getCommitChecksum() {
         try {
             return getLastRevCommit().getName();
@@ -84,7 +82,6 @@ public class JGitInfoProvider implements GitInfoProvider {
         return commit[0];
     }
 
-    @Override
     public String getOrigin() {
         final URIish origin = getUrIish();
         if (origin == null) {
@@ -107,7 +104,6 @@ public class JGitInfoProvider implements GitInfoProvider {
         return origin[0];
     }
 
-    @Override
     public URL getCommitURL() throws CannotConvertToUrlException {
         final URIish origin = getUrIish();
         if (origin == null) {
@@ -130,7 +126,6 @@ public class JGitInfoProvider implements GitInfoProvider {
         }
     }
 
-    @Override
     public String getCommitAuthor() {
         try {
             PersonIdent person = getLastRevCommit().getAuthorIdent();
@@ -140,7 +135,6 @@ public class JGitInfoProvider implements GitInfoProvider {
         }
     }
 
-    @Override
     public String getCommitMessage() {
         try {
             return getLastRevCommit().getFullMessage().trim();

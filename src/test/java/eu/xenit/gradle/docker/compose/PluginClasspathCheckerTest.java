@@ -6,7 +6,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import eu.xenit.gradle.docker.DockerPlugin;
+import eu.xenit.gradle.docker.core.DockerPlugin;
 import eu.xenit.gradle.docker.alfresco.tasks.MergeWarsTask;
 import eu.xenit.gradle.docker.tasks.internal.DockerBuildImage;
 import java.io.ByteArrayOutputStream;

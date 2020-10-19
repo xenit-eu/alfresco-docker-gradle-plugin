@@ -3,9 +3,12 @@ plugins {
     id 'eu.xenit.docker-compose'
 }
 
-dockerBuild {
-    repositories = ["example-docker-plugin"]
-    tags = ['1', '1.0', 'test', "1${"Gstring"}"]
+dockerFile {
+    dockerFile = file('Dockerfile')
+    dockerBuild {
+        repository = 'example-docker-plugin'
+        tags = ['1', '1.0', 'test', "1${"Gstring"}"]
+    }
 }
 
 task beforeBuild {

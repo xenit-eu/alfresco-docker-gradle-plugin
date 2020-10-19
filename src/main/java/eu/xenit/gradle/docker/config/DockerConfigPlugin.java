@@ -1,8 +1,7 @@
-package eu.xenit.gradle.docker;
+package eu.xenit.gradle.docker.config;
 
 import com.avast.gradle.dockercompose.ComposeSettings;
 import com.bmuschko.gradle.docker.DockerExtension;
-import com.bmuschko.gradle.docker.DockerRegistryCredentials;
 import com.bmuschko.gradle.docker.DockerRemoteApiPlugin;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
 import eu.xenit.gradle.docker.compose.DockerComposePlugin;
@@ -48,7 +47,7 @@ public class DockerConfigPlugin implements Plugin<Project> {
         // Rest of the configuration
         DockerConfig dockerConfig = new DockerConfig(project);
         project.getPluginManager().apply(DockerRemoteApiPlugin.class);
-        DockerExtension dockerExtension = (DockerExtension) project.getExtensions().getByName("docker");
+        DockerExtension dockerExtension = project.getExtensions().getByType(DockerExtension.class);
         if (dockerConfig.getUrl() != null) {
             dockerExtension.getUrl().set(dockerConfig.getUrl());
         }
@@ -58,10 +57,11 @@ public class DockerConfigPlugin implements Plugin<Project> {
         }
 
         if (dockerConfig.getRegistryUrl() != null) {
-            DockerRegistryCredentials registryCredentials = dockerExtension.getRegistryCredentials();
-            registryCredentials.getUrl().set(dockerConfig.getRegistryUrl());
-            registryCredentials.getUsername().set(dockerConfig.getRegistryUsername());
-            registryCredentials.getPassword().set(dockerConfig.getRegistryPassword());
+            dockerExtension.registryCredentials(registryCredentials -> {
+                registryCredentials.getUrl().set(dockerConfig.getRegistryUrl());
+                registryCredentials.getUsername().set(dockerConfig.getRegistryUsername());
+                registryCredentials.getPassword().set(dockerConfig.getRegistryPassword());
+            });
         }
 
         project.getPlugins().withType(DockerComposePlugin.class, dockerComposePlugin -> {
