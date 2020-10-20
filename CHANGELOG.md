@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+## Version 5.1.0 - 2020-10-20
+
+### Added
+
+ * Add ability to configure multiple repositories for one image build (See [UPGRADING-5.1](./UPGRADING-5.1.md))
+
+### Changed
+
+ * [#161](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/161) - Build `eu.xenit.docker-alfresco` plugin on top of `eu.xenit.docker` plugin
+    - Consolidate docker configurations into one configuration block: `dockerBuild` (See [UPGRADING-5.1](./UPGRADING-5.1.md))
+    - [#156](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/156) - Add `createDockerFile` task in `eu.xenit.docker` plugin
+    - [#157](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/157) - Configure `eu.xenit.docker` with settings from `eu.xenit.docker-alfresco` plugin
+    - [#155](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/155) - Make a convention extension out of `addWar()`
+    - [#158](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/158) - Move DockerBuildBehavior into `eu.xenit.docker` plugin
+ * Move configuration of `pull`, `noCache` & `remove` properties to `buildDockerImage` task (See [UPGRADING-5.1](./UPGRADING-5.1.md))
+ * Move `automaticTags` to separate extension to generate tags (See [UPGRADING-5.1](./UPGRADING-5.1.md))
+
 ## Version 5.0.7 - 2020-08-11
 
 ### Fixed
