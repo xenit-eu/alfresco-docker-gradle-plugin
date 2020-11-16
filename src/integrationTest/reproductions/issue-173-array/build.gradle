@@ -1,0 +1,13 @@
+plugins {
+    id 'eu.xenit.docker'
+}
+
+createDockerFile {
+    from("alpine:edge")
+}
+
+dockerBuild {
+    repositories = ['issue-173']
+    tags = autotag.legacyTags(["tag1", "tag2"])
+}
+

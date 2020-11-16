@@ -152,4 +152,14 @@ public class Reproductions extends AbstractIntegrationTest {
     public void testIssue133Label() throws IOException {
         testProjectFolder(REPRODUCTIONS.resolve("issue-133-label"), ":buildDockerImage", true);
     }
+
+    @Test
+    public void testIssue173Empty() throws IOException {
+        testProjectFolder(REPRODUCTIONS.resolve("issue-173-empty"), ":buildDockerImage");
+    }
+
+    @Test
+    public void testIssue173Array() throws IOException {
+        testProjectFolder(REPRODUCTIONS.resolve("issue-173-array"), ":buildDockerImage");
+    }
 }
