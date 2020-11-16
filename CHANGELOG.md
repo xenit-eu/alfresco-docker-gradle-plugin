@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+ * [#173](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/173) - `autotag.legacyTags()` NPE when no arguments provided
+
 ## Version 5.1.0 - 2020-10-20
 
 ### Added
