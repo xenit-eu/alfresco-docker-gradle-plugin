@@ -162,4 +162,9 @@ public class Reproductions extends AbstractIntegrationTest {
     public void testIssue173Array() throws IOException {
         testProjectFolder(REPRODUCTIONS.resolve("issue-173-array"), ":buildDockerImage");
     }
+
+    @Test
+    public void testRemoveEmptyCommands() throws IOException {
+        testProjectFolder(REPRODUCTIONS.resolve("remove-empty-commands"), ":createDockerFile");
+    }
 }

@@ -127,4 +127,16 @@ public class ConsolidateFileCopyInstructionsActionTest {
 
         assertEquals(Arrays.asList("COPY file1 target/", "RUN true", "COPY file2 target/"), instructions);
     }
+
+    @Test
+    public void consolidateFilesWithDifferentTargets() {
+        List<String> instructions = createConsolidatedInstructionsString(dockerfile -> {
+            dockerfile.copyFile("dir1/", "target/");
+            dockerfile.copyFile("dir2/", "target/");
+            dockerfile.copyFile("dir3/", "target2/");
+            dockerfile.copyFile("dir4/", "target2/");
+        });
+
+        assertEquals(Arrays.asList("COPY dir1/ dir2/ target/", "COPY dir3/ dir4/ target2/"), instructions);
+    }
 }
