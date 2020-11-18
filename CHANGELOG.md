@@ -2,10 +2,15 @@
 
 ## Unreleased
 
+### Added
+
+ * [#176](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/176) - Workaround for Docker bug with 7 consecutive COPY instructions
+
 ### Fixed
 
  * [#173](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/173) - `autotag.legacyTags()` NPE when no arguments provided
  * [#175](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/175) - Remove empty commands before doing COPY consolidation
+
 
 ## Version 5.1.0 - 2020-10-20
 

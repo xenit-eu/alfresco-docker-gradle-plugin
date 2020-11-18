@@ -167,4 +167,9 @@ public class Reproductions extends AbstractIntegrationTest {
     public void testRemoveEmptyCommands() throws IOException {
         testProjectFolder(REPRODUCTIONS.resolve("remove-empty-commands"), ":createDockerFile");
     }
+
+    @Test
+    public void testIssue176Mitigation() throws IOException {
+        testProjectFolder(REPRODUCTIONS.resolve("issue-176-mitigation"), ":createDockerFile");
+    }
 }

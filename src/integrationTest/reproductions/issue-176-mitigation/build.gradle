@@ -1,0 +1,27 @@
+plugins {
+    id 'eu.xenit.docker-alfresco'
+}
+import java.util.stream.Collectors
+
+createDockerFile {
+    removeExistingWar = false
+    doLast {
+        def textInstructions = instructions.get().stream()
+                .map({ i -> i.text })
+                .collect(Collectors.toList())
+
+        assert textInstructions.equals([
+                'FROM tomcat:7-jre8',
+                'COPY copyFile/1/ copyFile/2/ copyFile/3/ copyFile/4/ copyFile/5/ copyFile/6/ /usr/local/tomcat/webapps/alfresco/',
+                'RUN true',
+                'COPY copyFile/7/ copyFile/8/ copyFile/9/ copyFile/10/ copyFile/11/ /usr/local/tomcat/webapps/share/'
+        ])
+    }
+}
+
+dockerBuild {
+    alfresco {
+        baseImage = "tomcat:7-jre8"
+        leanImage = true
+    }
+}
