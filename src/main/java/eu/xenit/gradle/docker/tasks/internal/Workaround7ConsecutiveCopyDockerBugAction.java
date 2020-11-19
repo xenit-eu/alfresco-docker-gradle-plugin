@@ -4,6 +4,7 @@ import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile.CopyFile;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile.CopyFileInstruction;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile.Instruction;
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile.RunCommandInstruction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -19,6 +20,7 @@ public class Workaround7ConsecutiveCopyDockerBugAction implements Action<Task> {
 
     private static final Logger LOGGER = Logging.getLogger(Workaround7ConsecutiveCopyDockerBugAction.class);
     public static final String FEATURE_FLAG = "eu.xenit.docker.flags.workaround-dockerd-consecutive-copy-bug";
+    private static final int MAX_CONSECUTIVE_COPIES = 6;
 
     @Override
     public void execute(Task task) {
@@ -26,25 +28,47 @@ public class Workaround7ConsecutiveCopyDockerBugAction implements Action<Task> {
             execute((Dockerfile) task);
         } else {
             throw new IllegalArgumentException(
-                    "Workaround2ConsecutiveCopyDockerBugAction can only be applied to Dockerfile tasks");
+                    "Workaround7ConsecutiveCopyDockerBugAction can only be applied to Dockerfile tasks");
         }
     }
 
     public void execute(Dockerfile dockerfile) {
         List<Instruction> instructions = dockerfile.getInstructions().get();
-        List<Instruction> newInstructions = new ArrayList<>(instructions.size());
+        List<Instruction> intermediateInstructions = new ArrayList<>(instructions.size());
 
-        int consecutiveCopyInstructions = 0;
-
+        // First split up COPY commands with too many instructions to many COPY commands
         for (Instruction instruction : instructions) {
             if (instruction instanceof CopyFileInstruction) {
                 String source = ((CopyFileInstruction) instruction).getFile().getSrc();
-                int numberOfSources = countSpaces(source);
+                int numberOfSources = countSpaces(source) + 1;
+
+                if (numberOfSources > MAX_CONSECUTIVE_COPIES) {
+                    LOGGER.debug("Splitting up COPY instruction with more than {} sources", MAX_CONSECUTIVE_COPIES);
+                    List<Instruction> additionalInstructions = splitCopyInstruction((CopyFileInstruction) instruction);
+                    LOGGER.debug("Replacing instruction '{}' with {}", instruction.getText(),
+                            additionalInstructions.stream().map(Instruction::getText).toArray());
+                    intermediateInstructions.addAll(additionalInstructions);
+                    continue;
+                }
+            }
+            intermediateInstructions.add(instruction);
+        }
+
+        // Then insert additional RUN instructions between COPY commands that would be too many in sequence
+        List<Instruction> newInstructions = new ArrayList<>(instructions.size());
+        int consecutiveCopyInstructions = 0;
+
+        for (Instruction instruction : intermediateInstructions) {
+            if (instruction instanceof CopyFileInstruction) {
+                String source = ((CopyFileInstruction) instruction).getFile().getSrc();
+                int numberOfSources = countSpaces(source) + 1;
                 LOGGER.debug("Evaluating COPY instruction: '{}' found {} sources", instruction.getText(),
                         numberOfSources);
                 consecutiveCopyInstructions += numberOfSources;
+            } else {
+                consecutiveCopyInstructions = 0;
             }
-            if (consecutiveCopyInstructions >= 7) {
+            if (consecutiveCopyInstructions > MAX_CONSECUTIVE_COPIES) {
                 LOGGER.debug("Inserting dummy instruction into instruction stream");
                 consecutiveCopyInstructions = 0;
                 newInstructions.add(new Dockerfile.RunCommandInstruction("true"));
@@ -56,8 +80,76 @@ public class Workaround7ConsecutiveCopyDockerBugAction implements Action<Task> {
         dockerfile.getInstructions().set(newInstructions);
     }
 
+
     private static int countSpaces(String str) {
         return str.length() - str.replace(" ", "").length();
     }
 
+    private static List<Instruction> splitCopyInstruction(CopyFileInstruction instruction) {
+        String sources = instruction.getFile().getSrc();
+        List<String> separateSources = splitCopySources(sources);
+        List<String> groupedSources = groupCopySources(separateSources);
+
+        List<Instruction> newInstructions = new ArrayList<>();
+        for (String source : groupedSources) {
+            CopyFile copyFile = new CopyFile(source, instruction.getFile().getDest());
+            copyFile.withStage(instruction.getFile().getStage()).withChown(instruction.getFile().getChown());
+            newInstructions.add(new CopyFileInstruction(copyFile));
+        }
+        return newInstructions;
+    }
+
+    private static List<String> groupCopySources(List<String> separateSources) {
+        List<String> groupedSources = new ArrayList<>();
+        @Nullable
+        String currentSourcesGroup = null;
+
+        int numberOfSources = 0;
+        for (String source : separateSources) {
+            if (numberOfSources < MAX_CONSECUTIVE_COPIES) {
+                if (currentSourcesGroup != null) {
+                    currentSourcesGroup += " ";
+                } else {
+                    currentSourcesGroup = "";
+                }
+                currentSourcesGroup += source;
+                numberOfSources++;
+            } else {
+                groupedSources.add(currentSourcesGroup);
+                currentSourcesGroup = source;
+                numberOfSources = 0;
+            }
+        }
+        if (currentSourcesGroup != null) {
+            groupedSources.add(currentSourcesGroup);
+        }
+        return groupedSources;
+    }
+
+    private static List<String> splitCopySources(String sources) {
+        List<String> splitSources = new ArrayList<>();
+
+        @Nullable
+        String currentSource = null;
+        for (int i = 0; i < sources.length(); i++) {
+            char currentChar = sources.charAt(i);
+            if (currentChar == ' ') {
+                if (currentSource != null) {
+                    splitSources.add(currentSource);
+                }
+                currentSource = null;
+            } else {
+                if (currentSource == null) {
+                    currentSource = "";
+                }
+                currentSource += currentChar;
+            }
+        }
+
+        if (currentSource != null) {
+            splitSources.add(currentSource);
+        }
+
+        return splitSources;
+    }
 }
