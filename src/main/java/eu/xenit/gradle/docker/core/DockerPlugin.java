@@ -11,7 +11,7 @@ import eu.xenit.gradle.docker.config.DockerConfigPlugin;
 import eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask;
 import eu.xenit.gradle.docker.tasks.internal.ConsolidateFileCopyInstructionsAction;
 import eu.xenit.gradle.docker.tasks.internal.DockerBuildImage;
-import eu.xenit.gradle.docker.tasks.internal.Workaround7ConsecutiveCopyDockerBugAction;
+import eu.xenit.gradle.docker.tasks.internal.WorkaroundDockerdConsecutiveCopyBugAction;
 import java.util.Optional;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -56,8 +56,8 @@ public class DockerPlugin implements Plugin<Project> {
                 .register("createDockerFile", DockerfileWithCopyTask.class, dockerfile -> {
                     dockerfile.setDescription("Create a Dockerfile");
                     dockerfile.setGroup(TASK_GROUP);
-                    if (readPropertyFlag(project, Workaround7ConsecutiveCopyDockerBugAction.FEATURE_FLAG)) {
-                        dockerfile.doFirst("Mitigate Docker COPY bug", new Workaround7ConsecutiveCopyDockerBugAction());
+                    if (readPropertyFlag(project, WorkaroundDockerdConsecutiveCopyBugAction.FEATURE_FLAG)) {
+                        dockerfile.doFirst("Mitigate Docker COPY bug", new WorkaroundDockerdConsecutiveCopyBugAction());
                     }
                     dockerfile.doFirst("Consolidate COPY instructions", new ConsolidateFileCopyInstructionsAction());
                 });

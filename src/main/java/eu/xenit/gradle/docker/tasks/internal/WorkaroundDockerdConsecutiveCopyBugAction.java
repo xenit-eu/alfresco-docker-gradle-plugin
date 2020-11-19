@@ -4,10 +4,8 @@ import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile.CopyFile;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile.CopyFileInstruction;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile.Instruction;
-import com.bmuschko.gradle.docker.tasks.image.Dockerfile.RunCommandInstruction;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import javax.annotation.Nullable;
 import org.gradle.api.Action;
 import org.gradle.api.NonNullApi;
@@ -16,9 +14,9 @@ import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 
 @NonNullApi
-public class Workaround7ConsecutiveCopyDockerBugAction implements Action<Task> {
+public class WorkaroundDockerdConsecutiveCopyBugAction implements Action<Task> {
 
-    private static final Logger LOGGER = Logging.getLogger(Workaround7ConsecutiveCopyDockerBugAction.class);
+    private static final Logger LOGGER = Logging.getLogger(WorkaroundDockerdConsecutiveCopyBugAction.class);
     public static final String FEATURE_FLAG = "eu.xenit.docker.flags.workaround-dockerd-consecutive-copy-bug";
     private static final int MAX_CONSECUTIVE_COPIES = 6;
 
@@ -28,7 +26,7 @@ public class Workaround7ConsecutiveCopyDockerBugAction implements Action<Task> {
             execute((Dockerfile) task);
         } else {
             throw new IllegalArgumentException(
-                    "Workaround7ConsecutiveCopyDockerBugAction can only be applied to Dockerfile tasks");
+                    "WorkaroundDockerdConsecutiveCopyBugAction can only be applied to Dockerfile tasks");
         }
     }
 

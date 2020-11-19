@@ -8,10 +8,10 @@ import java.util.List;
 import org.gradle.api.Action;
 import org.junit.Test;
 
-public class Workaround7ConsecutiveCopyDockerBugActionTest extends AbstractDockerFileActionsTest {
+public class WorkaroundDockerdConsecutiveCopyBugActionTest extends AbstractDockerFileActionsTest {
 
     protected static List<String> createWorkaroundInstructionsString(Action<Dockerfile> configure) {
-        return executeActionOnInstructionsToString(Workaround7ConsecutiveCopyDockerBugAction.class, configure);
+        return executeActionOnInstructionsToString(WorkaroundDockerdConsecutiveCopyBugAction.class, configure);
     }
 
     @Test
