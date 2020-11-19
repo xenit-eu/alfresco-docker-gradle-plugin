@@ -100,26 +100,26 @@ public class WorkaroundDockerdConsecutiveCopyBugAction implements Action<Task> {
     private static List<String> groupCopySources(List<String> separateSources) {
         List<String> groupedSources = new ArrayList<>();
         @Nullable
-        String currentSourcesGroup = null;
+        StringBuilder currentSourcesGroup = null;
 
         int numberOfSources = 0;
         for (String source : separateSources) {
             if (numberOfSources < MAX_CONSECUTIVE_COPIES) {
                 if (currentSourcesGroup != null) {
-                    currentSourcesGroup += " ";
+                    currentSourcesGroup.append(" ");
                 } else {
-                    currentSourcesGroup = "";
+                    currentSourcesGroup = new StringBuilder();
                 }
-                currentSourcesGroup += source;
+                currentSourcesGroup.append(source);
                 numberOfSources++;
             } else {
-                groupedSources.add(currentSourcesGroup);
-                currentSourcesGroup = source;
+                groupedSources.add(currentSourcesGroup.toString());
+                currentSourcesGroup = new StringBuilder(source);
                 numberOfSources = 0;
             }
         }
         if (currentSourcesGroup != null) {
-            groupedSources.add(currentSourcesGroup);
+            groupedSources.add(currentSourcesGroup.toString());
         }
         return groupedSources;
     }
@@ -128,24 +128,24 @@ public class WorkaroundDockerdConsecutiveCopyBugAction implements Action<Task> {
         List<String> splitSources = new ArrayList<>();
 
         @Nullable
-        String currentSource = null;
+        StringBuilder currentSource = null;
         for (int i = 0; i < sources.length(); i++) {
             char currentChar = sources.charAt(i);
             if (currentChar == ' ') {
                 if (currentSource != null) {
-                    splitSources.add(currentSource);
+                    splitSources.add(currentSource.toString());
                 }
                 currentSource = null;
             } else {
                 if (currentSource == null) {
-                    currentSource = "";
+                    currentSource = new StringBuilder();
                 }
-                currentSource += currentChar;
+                currentSource.append(currentChar);
             }
         }
 
         if (currentSource != null) {
-            splitSources.add(currentSource);
+            splitSources.add(currentSource.toString());
         }
 
         return splitSources;
