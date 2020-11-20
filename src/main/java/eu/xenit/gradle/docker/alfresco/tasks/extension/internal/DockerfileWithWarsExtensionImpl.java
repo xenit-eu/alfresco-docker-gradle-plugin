@@ -244,6 +244,7 @@ public class DockerfileWithWarsExtensionImpl implements DockerfileWithWarsExtens
         public void execute(Dockerfile dockerfile) {
             List<Instruction> instructions = dockerfile.getInstructions().get()
                     .stream()
+                    .filter(instruction -> instruction.getText() != null)
                     .filter(instruction -> !(instruction instanceof RunCommandInstruction && Objects
                             .equals(instruction.getText(), instruction.getKeyword() + " " + COMMAND_NO_OP)))
                     .collect(Collectors.toList());

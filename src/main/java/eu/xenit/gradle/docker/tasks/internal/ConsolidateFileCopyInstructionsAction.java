@@ -34,20 +34,24 @@ public class ConsolidateFileCopyInstructionsAction implements Action<Task> {
 
         @Nullable
         CopyFileInstruction currentCopyInstruction = null;
+        int instructionIndex = 0;
+        while (instructionIndex < instructions.size()) {
+            Instruction instruction = instructions.get(instructionIndex);
 
-        for (Instruction instruction : instructions) {
             if (instruction instanceof CopyFileInstruction) {
                 LOGGER.debug("Processing copy instruction: '{}'", instruction.getText());
                 CopyFileInstruction copyFileInstruction = (CopyFileInstruction) instruction;
                 if (currentCopyInstruction == null) {
                     LOGGER.debug("Set as current target copy instruction");
                     currentCopyInstruction = copyFileInstruction;
+                    instructionIndex++;
                     continue;
                 } else if (isSameTarget(copyFileInstruction, currentCopyInstruction)) {
                     LOGGER.debug("Consolidating copy instructions: '{}' + '{}'", currentCopyInstruction.getText(),
                             copyFileInstruction.getText());
                     currentCopyInstruction = consolidateCopy(currentCopyInstruction, copyFileInstruction);
                     LOGGER.debug("Consolidated to '{}'", currentCopyInstruction.getText());
+                    instructionIndex++;
                     continue;
                 }
             }
@@ -56,9 +60,12 @@ public class ConsolidateFileCopyInstructionsAction implements Action<Task> {
                         currentCopyInstruction.getText());
                 newInstructions.add(currentCopyInstruction);
                 currentCopyInstruction = null;
+                // Not bumping instructionIndex, so the new instruction is reprocessed
+                continue;
             }
             LOGGER.debug("Adding instruction to instruction stream: '{}'", instruction.getText());
             newInstructions.add(instruction);
+            instructionIndex++;
         }
 
         if (currentCopyInstruction != null) {
