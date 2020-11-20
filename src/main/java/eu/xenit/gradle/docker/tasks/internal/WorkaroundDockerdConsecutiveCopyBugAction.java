@@ -6,6 +6,7 @@ import com.bmuschko.gradle.docker.tasks.image.Dockerfile.CopyFileInstruction;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile.Instruction;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import org.gradle.api.Action;
 import org.gradle.api.NonNullApi;
@@ -18,7 +19,8 @@ public class WorkaroundDockerdConsecutiveCopyBugAction implements Action<Task> {
 
     private static final Logger LOGGER = Logging.getLogger(WorkaroundDockerdConsecutiveCopyBugAction.class);
     public static final String FEATURE_FLAG = "eu.xenit.docker.flags.workaround-dockerd-consecutive-copy-bug";
-    private static final int MAX_CONSECUTIVE_COPIES = 6;
+    private static final String CONSECUTIVE_COPIES_PROP = "eu.xenit.docker.flags.workaround-dockerd-consecutive-copy-bug.maxConsecutiveCopies";
+    private static final int DEFAULT_MAX_CONSECUTIVE_COPIES = 6;
 
     @Override
     public void execute(Task task) {
@@ -30,7 +32,25 @@ public class WorkaroundDockerdConsecutiveCopyBugAction implements Action<Task> {
         }
     }
 
+    public static int getMaxConsecutiveCopies(Task task) {
+        try {
+            int consecutiveCopies = Optional.ofNullable(task.getProject().findProperty(CONSECUTIVE_COPIES_PROP))
+                    .map(Object::toString)
+                    .map(Integer::parseInt)
+                    .orElse(DEFAULT_MAX_CONSECUTIVE_COPIES);
+            if (consecutiveCopies <= 0) {
+                throw new IllegalArgumentException("Invalid value for property " + CONSECUTIVE_COPIES_PROP
+                        + ": Must be a strictly positive integer.");
+            }
+            return consecutiveCopies;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(
+                    "Invalid value for property " + CONSECUTIVE_COPIES_PROP + ": " + e.getMessage(), e);
+        }
+    }
+
     public void execute(Dockerfile dockerfile) {
+        final int maxConsecutiveCopies = getMaxConsecutiveCopies(dockerfile);
         List<Instruction> instructions = dockerfile.getInstructions().get();
         List<Instruction> intermediateInstructions = new ArrayList<>(instructions.size());
 
@@ -40,9 +60,10 @@ public class WorkaroundDockerdConsecutiveCopyBugAction implements Action<Task> {
                 String source = ((CopyFileInstruction) instruction).getFile().getSrc();
                 int numberOfSources = countSpaces(source) + 1;
 
-                if (numberOfSources > MAX_CONSECUTIVE_COPIES) {
-                    LOGGER.debug("Splitting up COPY instruction with more than {} sources", MAX_CONSECUTIVE_COPIES);
-                    List<Instruction> additionalInstructions = splitCopyInstruction((CopyFileInstruction) instruction);
+                if (numberOfSources > maxConsecutiveCopies) {
+                    LOGGER.debug("Splitting up COPY instruction with more than {} sources", maxConsecutiveCopies);
+                    List<Instruction> additionalInstructions = splitCopyInstruction((CopyFileInstruction) instruction,
+                            maxConsecutiveCopies);
                     LOGGER.debug("Replacing instruction '{}' with {}", instruction.getText(),
                             additionalInstructions.stream().map(Instruction::getText).toArray());
                     intermediateInstructions.addAll(additionalInstructions);
@@ -66,7 +87,7 @@ public class WorkaroundDockerdConsecutiveCopyBugAction implements Action<Task> {
             } else {
                 consecutiveCopyInstructions = 0;
             }
-            if (consecutiveCopyInstructions > MAX_CONSECUTIVE_COPIES) {
+            if (consecutiveCopyInstructions > maxConsecutiveCopies) {
                 LOGGER.debug("Inserting dummy instruction into instruction stream");
                 consecutiveCopyInstructions = 0;
                 newInstructions.add(new Dockerfile.RunCommandInstruction("true"));
@@ -83,10 +104,10 @@ public class WorkaroundDockerdConsecutiveCopyBugAction implements Action<Task> {
         return str.length() - str.replace(" ", "").length();
     }
 
-    private static List<Instruction> splitCopyInstruction(CopyFileInstruction instruction) {
+    private static List<Instruction> splitCopyInstruction(CopyFileInstruction instruction, int maxConsecutiveCopies) {
         String sources = instruction.getFile().getSrc();
         List<String> separateSources = splitCopySources(sources);
-        List<String> groupedSources = groupCopySources(separateSources);
+        List<String> groupedSources = groupCopySources(separateSources, maxConsecutiveCopies);
 
         List<Instruction> newInstructions = new ArrayList<>();
         for (String source : groupedSources) {
@@ -97,14 +118,14 @@ public class WorkaroundDockerdConsecutiveCopyBugAction implements Action<Task> {
         return newInstructions;
     }
 
-    private static List<String> groupCopySources(List<String> separateSources) {
+    private static List<String> groupCopySources(List<String> separateSources, int maxConsecutiveCopies) {
         List<String> groupedSources = new ArrayList<>();
         @Nullable
         StringBuilder currentSourcesGroup = null;
 
         int numberOfSources = 0;
         for (String source : separateSources) {
-            if (numberOfSources < MAX_CONSECUTIVE_COPIES) {
+            if (numberOfSources < maxConsecutiveCopies) {
                 if (currentSourcesGroup != null) {
                     currentSourcesGroup.append(" ");
                 } else {
