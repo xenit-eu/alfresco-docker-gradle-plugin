@@ -11,6 +11,8 @@ import eu.xenit.gradle.docker.config.DockerConfigPlugin;
 import eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask;
 import eu.xenit.gradle.docker.tasks.internal.ConsolidateFileCopyInstructionsAction;
 import eu.xenit.gradle.docker.tasks.internal.DockerBuildImage;
+import eu.xenit.gradle.docker.tasks.internal.WorkaroundDockerdConsecutiveCopyBugAction;
+import java.util.Optional;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.file.DirectoryProperty;
@@ -25,6 +27,13 @@ public class DockerPlugin implements Plugin<Project> {
 
     public DockerExtension getExtension() {
         return dockerExtension;
+    }
+
+    private static boolean readPropertyFlag(Project project, String property) {
+        return Optional.ofNullable(project.findProperty(property))
+                .map(Object::toString)
+                .map(Boolean::parseBoolean)
+                .orElse(false);
     }
 
     @Override
@@ -47,6 +56,9 @@ public class DockerPlugin implements Plugin<Project> {
                 .register("createDockerFile", DockerfileWithCopyTask.class, dockerfile -> {
                     dockerfile.setDescription("Create a Dockerfile");
                     dockerfile.setGroup(TASK_GROUP);
+                    if (readPropertyFlag(project, WorkaroundDockerdConsecutiveCopyBugAction.FEATURE_FLAG)) {
+                        dockerfile.doFirst("Mitigate Docker COPY bug", new WorkaroundDockerdConsecutiveCopyBugAction());
+                    }
                     dockerfile.doFirst("Consolidate COPY instructions", new ConsolidateFileCopyInstructionsAction());
                 });
         dockerExtension.getDockerFile().convention(dockerfileProvider.flatMap(Dockerfile::getDestFile));

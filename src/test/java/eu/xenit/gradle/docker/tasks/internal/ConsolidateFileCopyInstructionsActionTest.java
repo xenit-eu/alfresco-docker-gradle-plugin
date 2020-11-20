@@ -4,35 +4,16 @@ import static org.junit.Assert.*;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile.CopyFile;
-import com.bmuschko.gradle.docker.tasks.image.Dockerfile.Instruction;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.gradle.api.Action;
-import org.gradle.api.internal.project.DefaultProject;
-import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.Test;
 
-public class ConsolidateFileCopyInstructionsActionTest {
+public class ConsolidateFileCopyInstructionsActionTest extends AbstractDockerFileActionsTest {
 
-    private static List<Instruction> createConsolidatedInstructions(Action<Dockerfile> configure) {
-        DefaultProject project = (DefaultProject) ProjectBuilder.builder().build();
-        Dockerfile dockerfileTask = project.getTasks().register("createDockerFile", Dockerfile.class, configure).get();
-
-        new ConsolidateFileCopyInstructionsAction().execute(dockerfileTask);
-
-        return dockerfileTask.getInstructions().get();
-    }
-
-    private static List<String> instructionsToString(List<Instruction> instructionList) {
-        return instructionList.stream()
-                .map(Instruction::getText)
-                .collect(Collectors.toList());
-    }
-
-    private static List<String> createConsolidatedInstructionsString(Action<Dockerfile> configure) {
-        return instructionsToString(createConsolidatedInstructions(configure));
+    protected static List<String> createConsolidatedInstructionsString(Action<Dockerfile> configure) {
+        return executeActionOnInstructionsToString(ConsolidateFileCopyInstructionsAction.class, configure);
     }
 
     @Test
