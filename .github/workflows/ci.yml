@@ -8,9 +8,8 @@ jobs:
   build:
     name: "build"
     runs-on: ubuntu-latest
-    strategy:
-        matrix:
-            gradle-versions: [6.7]
+    env:
+        TEST_GRADLE_VERSION: 6.7
     steps:
       - uses: actions/checkout@v2
         with:
@@ -21,12 +20,12 @@ jobs:
       - name: Pull docker images
         run: 'bash -c "docker pull alfresco/alfresco-content-repository-community:6.0.7-ga& docker pull tomcat:7-jre8& docker pull hello-world& docker pull alpine:edge&"'
       - name: Check
-        run: ./gradlew check -PintegrationTestGradleVersions=${{ matrix.gradle-versions }}
+        run: ./gradlew check -PintegrationTestGradleVersions=$TEST_GRADLE_VERSION
       - name: Upload analysis to sonarcloud
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ github.token }}
-        run: ./gradlew sonarqube -Dsonar.projectKey=xenit-eu_alfresco-docker-gradle-plugin -Dsonar.organization=xenit-eu -Dsonar.host.url=https://sonarcloud.io -PintegrationTestGradleVersions=${{ matrix.gradle-versions }}
+        run: ./gradlew sonarqube -Dsonar.projectKey=xenit-eu_alfresco-docker-gradle-plugin -Dsonar.organization=xenit-eu -Dsonar.host.url=https://sonarcloud.io -PintegrationTestGradleVersions=$TEST_GRADLE_VERSION
       - name: Publish
         if: ${{ startsWith(github.ref, 'refs/tags/') }}
         env:
