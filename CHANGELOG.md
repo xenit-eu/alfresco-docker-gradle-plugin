@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 5.1.1 - 2020-11-24
+
 ### Added
 
  * [#176](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/176) - Workaround for Docker bug with 7 consecutive COPY instructions
