@@ -14,4 +14,7 @@ public interface DockerComposeConvention {
 
     void fromProject(Project project);
     void fromProject(String projectName);
+
+    void fromProject(String environmentVariable, Project project);
+    void fromProject(String environmentVariable, String projectName);
 }

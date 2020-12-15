@@ -1,12 +1,11 @@
 plugins {
     id "eu.xenit.docker-compose"
 }
-evaluationDependsOn(":subpr2")
 
 dockerCompose {
     fromProject(':subpr1')
     nested {
-        fromBuildImage("TEST_IMAGE", project.project(':subpr2').tasks.named("buildDockerImage"))
+        fromProject('TEST_IMAGE', ':subpr2')
         useComposeFiles += ["docker-compose.nested.yml"]
     }
 }

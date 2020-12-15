@@ -70,7 +70,8 @@ class DockerComposeExtensionOverride extends ComposeExtension implements DockerC
     }
 
     @Override
-    public void fromBuildImage(String environmentVariable, TaskProvider<? extends DockerBuildImage> buildImageTaskProvider) {
+    public void fromBuildImage(String environmentVariable,
+            TaskProvider<? extends DockerBuildImage> buildImageTaskProvider) {
         dockerComposeConvention.fromBuildImage(environmentVariable, buildImageTaskProvider);
     }
 
@@ -98,6 +99,16 @@ class DockerComposeExtensionOverride extends ComposeExtension implements DockerC
     @Override
     public void fromProject(String projectName) {
         dockerComposeConvention.fromProject(projectName);
+    }
+
+    @Override
+    public void fromProject(String environmentVariable, Project project) {
+        dockerComposeConvention.fromProject(environmentVariable, project);
+    }
+
+    @Override
+    public void fromProject(String environmentVariable, String projectName) {
+        dockerComposeConvention.fromProject(environmentVariable, projectName);
     }
 
 }

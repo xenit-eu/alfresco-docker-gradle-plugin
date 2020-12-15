@@ -4,6 +4,7 @@ import com.avast.gradle.dockercompose.ComposeSettings;
 import com.bmuschko.gradle.docker.DockerRemoteApiPlugin;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
 import eu.xenit.gradle.docker.core.DockerPlugin;
+import java.util.Objects;
 import java.util.function.Supplier;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
@@ -99,6 +100,26 @@ class DockerComposeConventionImpl implements DockerComposeConvention {
 
     @Override
     public void fromProject(Project project) {
+        fromProject0(null, project);
+    }
+
+    @Override
+    public void fromProject(String projectName) {
+        fromProject(composeSettings.getProject().project(projectName));
+    }
+
+    @Override
+    public void fromProject(String environmentVariable, String projectName) {
+        fromProject(environmentVariable, composeSettings.getProject().project(projectName));
+    }
+
+    @Override
+    public void fromProject(String environmentVariable, Project project) {
+        Objects.requireNonNull(environmentVariable);
+        fromProject0(environmentVariable, project);
+    }
+
+    private void fromProject0(String environmentVariable, Project project) {
         TaskCollection<DockerBuildImage> dockerBuildImages = project.getTasks().withType(DockerBuildImage.class);
         configureComposeDependencies(dockerBuildImages);
         configureComposeTasks(composeTask -> {
@@ -108,7 +129,14 @@ class DockerComposeConventionImpl implements DockerComposeConvention {
                 composeTask.doFirst(CONFIGURE_COMPOSE_ACTION_NAME, new Action<Task>() { // No lambda -> see #96
                     @Override
                     public void execute(Task t) {
-                        createSetComposeEnvironmentFromPathAction().execute(dockerBuildImage);
+                        if (environmentVariable != null) {
+                            String addition = "_" + dockerBuildImage.getName();
+                            String safeEnvironmentVariable =
+                                    environmentVariable + Util.safeEnvironmentVariableName(addition);
+                            createSetComposeEnvironmentAction(safeEnvironmentVariable).execute(dockerBuildImage);
+                        } else {
+                            createSetComposeEnvironmentFromPathAction().execute(dockerBuildImage);
+                        }
                     }
                 });
             });
@@ -116,15 +144,17 @@ class DockerComposeConventionImpl implements DockerComposeConvention {
 
         // Register shortened environment variables for `buildDockerImage` tasks created with the docker plugin
         pluginClasspathChecker.withPlugin(project, DockerPlugin.class, DockerPlugin.PLUGIN_ID, plugin -> {
-            String environmentName = Util.safeEnvironmentVariableName(project.getPath().substring(1)) + "_DOCKER_IMAGE";
-            fromBuildImage(environmentName, project.getTasks().named("buildDockerImage", DockerBuildImage.class));
+            if (environmentVariable != null) {
+                fromBuildImage(environmentVariable,
+                        project.getTasks().named("buildDockerImage", DockerBuildImage.class));
+            } else {
+                String environmentName =
+                        Util.safeEnvironmentVariableName(project.getPath().substring(1)) + "_DOCKER_IMAGE";
+                fromBuildImage(environmentName,
+                        project.getTasks().named("buildDockerImage", DockerBuildImage.class));
+            }
         });
         // Check plugin classpath for docker remote api plugin
         pluginClasspathChecker.checkPlugin(project, DockerRemoteApiPlugin.class, "com.bmuschko.docker-remote-api");
-    }
-
-    @Override
-    public void fromProject(String projectName) {
-        fromProject(composeSettings.getProject().project(projectName));
     }
 }

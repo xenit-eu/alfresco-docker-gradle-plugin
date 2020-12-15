@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+ *  [#170](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/170) - dockerCompose.fromProject() with user-configured environment variable
+
 ## Version 5.1.1 - 2020-11-24
 
 ### Added
