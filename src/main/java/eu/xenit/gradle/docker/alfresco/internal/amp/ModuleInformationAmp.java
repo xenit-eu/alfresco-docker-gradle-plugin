@@ -49,13 +49,17 @@ class ModuleInformationAmp extends ModuleInformationFromModuleDetails {
     @Override
     public ModuleDetails getModuleDetails() {
         if (moduleDetails == null) {
-            moduleDetails = withModuleProperties(is -> {
-                try {
-                    return ModuleDetailsHelper.createModuleDetailsFromPropertiesStream(is);
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            });
+            try {
+                moduleDetails = withModuleProperties(is -> {
+                    try {
+                        return ModuleDetailsHelper.createModuleDetailsFromPropertiesStream(is);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                });
+            } catch (Exception e) {
+                throw new InvalidModuleException(file.toPath(), e);
+            }
         }
         return moduleDetails;
     }

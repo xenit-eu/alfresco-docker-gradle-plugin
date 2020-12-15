@@ -112,7 +112,6 @@ reckon {
 
 repositories {
     mavenCentral()
-    jcenter()
     gradlePluginPortal()
     maven {
         url "https://artifacts.alfresco.com/nexus/content/groups/public/"
