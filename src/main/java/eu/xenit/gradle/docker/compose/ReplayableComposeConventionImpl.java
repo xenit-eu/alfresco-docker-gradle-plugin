@@ -59,6 +59,18 @@ class ReplayableComposeConventionImpl implements DockerComposeConvention {
         changes.add(c -> c.fromProject(projectName));
     }
 
+    @Override
+    public void fromProject(String environmentVariable, Project project) {
+        convention.fromProject(environmentVariable, project);
+        changes.add(c -> c.fromProject(environmentVariable, project));
+    }
+
+    @Override
+    public void fromProject(String environmentVariable, String projectName) {
+        convention.fromProject(environmentVariable, projectName);
+        changes.add(c -> c.fromProject(environmentVariable, projectName));
+    }
+
     public void replayChangesInto(DockerComposeConvention convention) {
         changes.forEach(replayableChange -> replayableChange.replayInto(convention));
     }

@@ -474,13 +474,23 @@ to use docker images built with the [`DockerBuildImage`](https://bmuschko.github
 
 It extends the `dockerCompose` configuration block with two functions:
 
- * `fromBuildImage([environmentVariable,] task)`: Add a dependency on the specified `DockerBuildImage` task, and expose the image id as an environment variable.
-    * `fromBuildImage(String environmentVariable, DockerBuildImage task)`, `fromBuildImage(String environmentVariable, TaskProvider<DockerBuildImage> taskProvider)`: Exposes the id of the docker image built by the task as the specified environment variable.
-    * `fromBuildImage(DockerBuildImage task)`, `fromBuildImage(TaskProvider<DockerBuildImage> taskProvider)`: Exposes the id of the docker image built by the task as an environment variable based on the project and task name.
- * `fromProject(project)`: Use `fromBuildImage()` for each `DockerBuildImage` task in the project.
-    When the `eu.xenit.docker` or the `eu.xenit.docker-alfresco` plugins are applied, the `buildDockerImage` task is exposed as an environment variable based on project name only.
-    * `fromProject(String)`
-    * `fromProject(Project)`
+* `fromBuildImage([environmentVariable,] task)`: Add a dependency on the specified `DockerBuildImage` task, and expose
+  the image id as an environment variable.
+    * `fromBuildImage(String environmentVariable, DockerBuildImage task)`
+      , `fromBuildImage(String environmentVariable, TaskProvider<DockerBuildImage> taskProvider)`: Exposes the id of the
+      docker image built by the task as the specified environment variable.
+    * `fromBuildImage(DockerBuildImage task)`, `fromBuildImage(TaskProvider<DockerBuildImage> taskProvider)`: Exposes
+      the id of the docker image built by the task as an environment variable based on the project and task name.
+* `fromProject([environmentVariable,] project)`: Use `fromBuildImage()` for each `DockerBuildImage` task in the project.
+    * `fromProject(String environmentVariable, Project project)`
+      , `fromProject(String environmentVariable, String project)`: Every docker image built by `DockerBuildImage` in the
+      project is exposed in an environment variable that starts with the value of `environmentVariable`, `_` and the
+      underscored and capitalized task name. When the `eu.xenit.docker` or the `eu.xenit.docker-alfresco` plugins are
+      applied, the `buildDockerImage` task itself is exposed as an environment variable with the value
+      of `environmentVariable`.
+    * `fromProject(Project project)`, `fromProject(String project)`: The environment variable as which docker images are
+      exposed is based on the project name and task name, as described
+      in [Environment variable naming](#environment-variable-naming).
 
 ```groovy
 plugins {
