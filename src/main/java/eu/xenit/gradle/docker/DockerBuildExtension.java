@@ -45,15 +45,15 @@ public class DockerBuildExtension {
             }
         }));
         tags = objectFactory.listProperty(String.class);
+        automaticTags = objectFactory.property(Boolean.class).convention(false);
         dockerExtension.getTags().addAll(tags.flatMap(
-                t -> getAutomaticTags().map(automaticTags ->
-                        automaticTags ? dockerExtension.getExtensions().getByType(DockerAutotagExtension.class)
+                t -> automaticTags.map(at ->
+                        at ? dockerExtension.getExtensions().getByType(DockerAutotagExtension.class)
                                 .legacyTags(new HashSet<>(t)) : new HashSet<>(t)
                 )
         ));
         pull = objectFactory.property(Boolean.class).convention(true);
         noCache = objectFactory.property(Boolean.class).convention(false);
-        automaticTags = objectFactory.property(Boolean.class).convention(false);
         remove = objectFactory.property(Boolean.class).convention(true);
     }
 
