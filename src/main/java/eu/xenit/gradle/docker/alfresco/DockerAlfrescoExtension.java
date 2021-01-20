@@ -29,7 +29,7 @@ public class DockerAlfrescoExtension {
         AlfrescoDockerExtension alfrescoDockerExtension = dockerExtension.getExtensions().findByType(AlfrescoDockerExtension.class);
         baseImage = alfrescoDockerExtension.getBaseImage();
         leanImage = alfrescoDockerExtension.getLeanImage();
-        dockerBuild = objectFactory.newInstance(DockerBuildExtension.class, dockerExtension, "dockerAlfresco");
+        dockerBuild = objectFactory.newInstance(DockerBuildExtension.class, dockerExtension, "dockerAlfresco.");
     }
 
     public Property<String> getBaseImage() {
