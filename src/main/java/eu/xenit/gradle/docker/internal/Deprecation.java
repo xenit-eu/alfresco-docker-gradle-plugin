@@ -93,12 +93,12 @@ public final class Deprecation {
         try {
             throw new Warning(message);
         } catch (Warning warning) {
-            if (warningMode.name().equals("Fail")) {
-                throw warning;
-            }
             StackTraceElement[] stackTraceElements = warning.getStackTrace();
             warning.setStackTrace(
                     Arrays.copyOfRange(stackTraceElements, stripTraces + 1, stackTraceElements.length - stripTraces));
+            if (warningMode.name().equals("Fail")) {
+                throw warning;
+            }
             if (warningMode == WarningMode.All) {
                 printWarning(warning);
             }
