@@ -4,7 +4,13 @@
 
 ### Added
 
- *  [#170](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/170) - dockerCompose.fromProject() with user-configured environment variable
+* [#170](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/170) - dockerCompose.fromProject() with
+  user-configured environment variable
+
+### Fixed
+
+* [#187](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/187) - Fix deprecation warnings shown
+  incorrectly
 
 ## Version 5.1.1 - 2020-11-24
 

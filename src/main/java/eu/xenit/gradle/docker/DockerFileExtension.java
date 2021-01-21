@@ -19,7 +19,7 @@ public class DockerFileExtension {
     @Inject
     public DockerFileExtension(ObjectFactory objectFactory, DockerExtension dockerExtension) {
         dockerFile = dockerExtension.getDockerFile();
-        dockerBuild = objectFactory.newInstance(DockerBuildExtension.class, dockerExtension, "dockerFile");
+        dockerBuild = objectFactory.newInstance(DockerBuildExtension.class, dockerExtension, "dockerFile.");
     }
 
     public RegularFileProperty getDockerFile() {

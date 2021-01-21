@@ -3,6 +3,7 @@ package eu.xenit.gradle.docker.internal;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import org.gradle.StartParameter;
 import org.gradle.api.logging.Logger;
@@ -22,7 +23,8 @@ public final class Deprecation {
     private static WarningMode warningMode = WarningMode.Summary;
     private static ShowStacktrace printStacktrace = ShowStacktrace.INTERNAL_EXCEPTIONS;
     private static List<Warning> warnings = new LinkedList<>();
-    private static ThreadLocal<Boolean> suppressDeprecations = ThreadLocal.withInitial(() -> false);
+    private static ThreadLocal<AtomicInteger> suppressDeprecations = ThreadLocal
+            .withInitial(() -> new AtomicInteger(0));
 
     static Logger LOGGER = Logging.getLogger(Deprecation.class);
 
@@ -37,11 +39,13 @@ public final class Deprecation {
     }
 
     public static <T> T whileDisabled(Supplier<T> supplier) {
-        suppressDeprecations.set(true);
+        suppressDeprecations.get().incrementAndGet();
         try {
             return supplier.get();
         } finally {
-            suppressDeprecations.remove();
+            if (suppressDeprecations.get().decrementAndGet() == 0) {
+                suppressDeprecations.remove();
+            }
         }
     }
 
@@ -86,19 +90,19 @@ public final class Deprecation {
     }
 
     private static void createWarning(String message, int stripTraces) {
-        if(suppressDeprecations.get()) {
+        if (suppressDeprecations.get().get() != 0) {
             // Do not create a warning when deprecation warnings are suppressed
             return;
         }
         try {
             throw new Warning(message);
         } catch (Warning warning) {
-            if (warningMode.name().equals("Fail")) {
-                throw warning;
-            }
             StackTraceElement[] stackTraceElements = warning.getStackTrace();
             warning.setStackTrace(
                     Arrays.copyOfRange(stackTraceElements, stripTraces + 1, stackTraceElements.length - stripTraces));
+            if (warningMode.name().equals("Fail")) {
+                throw warning;
+            }
             if (warningMode == WarningMode.All) {
                 printWarning(warning);
             }
