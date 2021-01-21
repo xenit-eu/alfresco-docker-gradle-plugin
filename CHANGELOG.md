@@ -2,10 +2,15 @@
 
 ## Unreleased
 
+## Version 5.2.0 - 2021-01-22
+
 ### Added
 
 * [#170](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/170) - dockerCompose.fromProject() with
   user-configured environment variable
+* [#181](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/181) - When a failure occurs during applyAmp, show the filename that failed to apply
+* [#185](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/185) - Update com.bmuschko:gradle-docker-plugin to 6.7.0
+    * This enables native docker credential store support on Windows
 
 ### Fixed
 
