@@ -4,7 +4,7 @@ A set of Gradle plugins to build Docker images and run Docker containers.
 
 ## Documentation
 
-If this is the first time that you are doing to use the Docker Gradle Plugins, [follow the setup guide to get started](./01-setup.md).
+If this is the first time that you are going to use the Docker Gradle Plugins, [follow the setup guide to get started](./01-setup.md).
 
 ### Building a Docker image
 
