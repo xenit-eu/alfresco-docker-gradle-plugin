@@ -4,7 +4,6 @@ plugins {
 
 repositories {
     mavenCentral()
-    jcenter()
     maven {
         url "https://artifacts.alfresco.com/nexus/content/groups/public/"
     }
