@@ -11,6 +11,7 @@ import java.io.UncheckedIOException;
 import java.util.Properties;
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
 
 public class PrefixLog4JWarTask extends AbstractWarEnrichmentTask {
@@ -22,10 +23,12 @@ public class PrefixLog4JWarTask extends AbstractWarEnrichmentTask {
 
     private final Property<String> prefix = getProject().getObjects().property(String.class);
 
+    @Input
     public Property<String> getPrefix() {
         return prefix;
     }
 
+    @Input
     public Property<String> getLog4JProperties() {
         return log4JProperties;
     }
