@@ -18,7 +18,7 @@ jobs:
         with:
           java-version: 11
       - name: Pull docker images
-        run: 'bash -c "docker pull alfresco/alfresco-content-repository-community:6.0.7-ga& docker pull tomcat:7-jre8& docker pull hello-world& docker pull alpine:edge&"'
+        run: 'parallel docker pull -- alfresco/alfresco-content-repository-community:6.0.7-ga tomcat:7-jre8 hello-world alpine:edge'
       - name: Check
         run: ./gradlew check -PintegrationTestGradleVersions=$TEST_GRADLE_VERSION
       - name: Upload reports
@@ -53,6 +53,8 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: 11
+      - name: Pull docker images
+        run: 'parallel docker pull -- alfresco/alfresco-content-repository-community:6.0.7-ga tomcat:7-jre8 hello-world alpine:edge'
       - name: Check
         run: ./gradlew check -PintegrationTestGradleVersions=${{ matrix.gradle-versions }}
       - name: Upload reports
