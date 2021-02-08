@@ -1,10 +1,13 @@
-apply plugin: "java"
+plugins {
+    id "java"
+}
+
 configurations {
     amps
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
     maven {
         url "https://artifacts.alfresco.com/nexus/content/groups/public/"
     }
