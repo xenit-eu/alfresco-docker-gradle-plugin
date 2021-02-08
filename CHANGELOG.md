@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+* [#191](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/191) - dockerCompose fromBuildImage/fromProject silently fail when wrong argument type is provided
+
 ## Version 5.2.0 - 2021-01-22
 
 ### Added

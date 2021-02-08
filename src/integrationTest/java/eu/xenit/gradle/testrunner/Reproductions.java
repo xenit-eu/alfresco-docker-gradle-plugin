@@ -172,4 +172,9 @@ public class Reproductions extends AbstractIntegrationTest {
     public void testIssue176Mitigation() throws IOException {
         testProjectFolder(REPRODUCTIONS.resolve("issue-176-mitigation"), ":createDockerFile");
     }
+
+    @Test
+    public void testIssue191() throws IOException {
+        getGradleRunner(REPRODUCTIONS.resolve("issue-191"), ":check").buildAndFail();
+    }
 }

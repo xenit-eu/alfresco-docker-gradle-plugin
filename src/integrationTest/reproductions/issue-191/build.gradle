@@ -1,0 +1,14 @@
+plugins {
+    id "base"
+    id "eu.xenit.docker"
+    id "eu.xenit.docker-compose"
+}
+
+dockerCompose {
+    fromBuildImage(project)
+    isRequiredBy(check)
+}
+
+createDockerFile {
+    from("alpine:edge")
+}
