@@ -14,16 +14,16 @@ repositories {
 }
 
 dependencies {
-    compile("de.fmaul:javascript-console-repo:0.6@amp") {
+    implementation("de.fmaul:javascript-console-repo:0.6@amp") {
         transitive = false
     }
 }
 
 task amp(type: Zip) {
-    from({ zipTree(configurations.compile.singleFile) }) {
+    from({ zipTree(configurations.runtimeClasspath.singleFile) }) {
         into "/"
     }
-    extension = "amp"
+    archiveExtension = "amp"
 }
 
 artifacts {
