@@ -1,11 +1,14 @@
 package eu.xenit.gradle.docker.alfresco.tasks;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Map;
 import org.gradle.api.file.CopySpec;
+import org.gradle.api.file.RegularFile;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.Zip;
 
 public class MergeWarsTask extends Zip implements LabelConsumerTask, LabelSupplierTask {
@@ -42,6 +45,7 @@ public class MergeWarsTask extends Zip implements LabelConsumerTask, LabelSuppli
      * @param inputWar Provider of a file to be merged
      */
     public void addInputWar(Provider<File> inputWar) {
+        getInputs().file(inputWar).optional().skipWhenEmpty();
         childWars.from(getProject().provider(() -> getProject().zipTree(inputWar)));
     }
 
@@ -51,5 +55,16 @@ public class MergeWarsTask extends Zip implements LabelConsumerTask, LabelSuppli
         }
         addInputWar(inputWar.getOutputWar().map(f -> f.getAsFile()));
         dependsOn(inputWar);
+    }
+
+    public void addInputWar(TaskProvider<? extends WarOutputTask> inputWarProvider) {
+        dependsOn(inputWarProvider);
+        addInputWar(inputWarProvider.flatMap(WarOutputTask::getOutputWar).map(RegularFile::getAsFile));
+        withLabels(inputWarProvider.flatMap(t -> {
+            if (t instanceof WarLabelOutputTask) {
+                return ((WarLabelOutputTask) t).getLabels();
+            }
+            return getProject().provider(Collections::emptyMap);
+        }));
     }
 }

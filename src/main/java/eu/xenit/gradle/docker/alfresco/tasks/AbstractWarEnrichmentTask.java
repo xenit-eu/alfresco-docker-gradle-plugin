@@ -8,6 +8,7 @@ import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputFile;
+import org.gradle.api.tasks.SkipWhenEmpty;
 
 public abstract class AbstractWarEnrichmentTask extends DefaultTask implements WarEnrichmentTask {
 
@@ -20,9 +21,11 @@ public abstract class AbstractWarEnrichmentTask extends DefaultTask implements W
             .convention(getProject().provider(() -> inputWar.isPresent() ? getProject().getLayout().getBuildDirectory()
                     .file("xenit-gradle-plugins/" + getName() + "/" + getName() + ".war").get() : null));
 
-    private MapProperty<String, String> labels = getProject().getObjects().mapProperty(String.class, String.class).empty();
+    private MapProperty<String, String> labels = getProject().getObjects().mapProperty(String.class, String.class)
+            .empty();
 
     @InputFile
+    @SkipWhenEmpty
     @Override
     public RegularFileProperty getInputWar() {
         return inputWar;

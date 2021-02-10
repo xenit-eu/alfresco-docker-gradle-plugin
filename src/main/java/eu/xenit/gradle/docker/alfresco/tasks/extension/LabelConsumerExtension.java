@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 import org.gradle.api.Task;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.TaskProvider;
 
 public interface LabelConsumerExtension {
 
@@ -15,6 +16,10 @@ public interface LabelConsumerExtension {
     void withLabels(Map<String, String> labels);
 
     void withLabels(LabelSupplierTask task);
+
+    default void withLabels(TaskProvider<? extends LabelSupplierTask> task) {
+        withLabels(task.flatMap(LabelSupplierTask::getLabels));
+    }
 
     static LabelConsumerExtension get(Task task) {
         if (task instanceof LabelConsumerExtension) {
