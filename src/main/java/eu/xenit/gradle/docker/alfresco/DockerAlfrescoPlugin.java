@@ -91,39 +91,50 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
     private static void configureAddWarDockerFile(Project project, String name, TaskProvider<Dockerfile> dockerfile,
             List<TaskProvider<? extends WarLabelOutputTask>> tasks, Provider<Configuration> configuration,
             AlfrescoDockerExtension extension) {
-
         dockerfile.configure(dockerfile1 -> {
-            DockerfileWithWarsExtension withWarsConvention = DockerfileWithWarsExtension.get(dockerfile1);
+            dockerfile1.dependsOn(configuration, tasks);
+        });
 
-            dockerfile1.dependsOn(configuration);
-            withWarsConvention.addWar(name, extension.getLeanImage().flatMap(isLeanImage -> {
-                if (isLeanImage) {
-                    return project.provider(() -> null);
-                }
-                return configuration.map(Configuration::isEmpty).flatMap(isEmpty -> {
-                    if (isEmpty) {
+        // This afterEvaluate is put here so the user can first customize the Dockerfile with their own instructions before addWar instructions get added.
+        // This way, a user can customize the environment if necessary both before and after the WARs are added:
+        // createDockerFile {
+        //      runCommand 'prepare environment before'
+        //      doFirst {
+        //          runCommand 'do some things afterwards'
+        //      }
+        // }
+        project.afterEvaluate(project1 -> {
+            dockerfile.configure(dockerfile1 -> {
+                DockerfileWithWarsExtension withWarsConvention = DockerfileWithWarsExtension.get(dockerfile1);
+                withWarsConvention.addWar(name, extension.getLeanImage().flatMap(isLeanImage -> {
+                    if (isLeanImage) {
                         return project.provider(() -> null);
                     }
-                    return project.getLayout().file(configuration.map(Configuration::getSingleFile));
-                });
-            }));
-
-            tasks.forEach(taskProvider -> {
-                dockerfile1.dependsOn(taskProvider);
-                withWarsConvention.addWar(name, configuration.map(Configuration::isEmpty).flatMap(isEmpty -> {
-                    if (isEmpty) {
-                        return project.provider(() -> null);
-                    }
-                    return taskProvider.flatMap(WarLabelOutputTask::getOutputWar);
+                    return configuration.map(Configuration::isEmpty).flatMap(isEmpty -> {
+                        if (isEmpty) {
+                            return project.provider(() -> null);
+                        }
+                        return project.getLayout().file(configuration.map(Configuration::getSingleFile));
+                    });
                 }));
 
-                LabelConsumerExtension.get(dockerfile1).withLabels(taskProvider);
+                tasks.forEach(taskProvider -> {
+                    withWarsConvention.addWar(name, configuration.map(Configuration::isEmpty).flatMap(isEmpty -> {
+                        if (isEmpty) {
+                            return project.provider(() -> null);
+                        }
+                        return taskProvider.flatMap(WarLabelOutputTask::getOutputWar);
+                    }));
+
+                    LabelConsumerExtension.get(dockerfile1).withLabels(taskProvider);
+                });
             });
         });
     }
 
 
-    private List<TaskProvider<? extends WarLabelOutputTask>> warEnrichmentChain(Project project, final String warName) {
+    private static List<TaskProvider<? extends WarLabelOutputTask>> warEnrichmentChain(Project project,
+            final String warName) {
         Configuration baseWar = project.getConfigurations().getByName("base" + warName + "War");
 
         TaskProvider<? extends WarLabelOutputTask> resolveTask = project.getTasks()
