@@ -31,9 +31,9 @@ public class DockerConfigPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
-        if (GradleVersion.current().compareTo(GradleVersion.version("5.2")) < 0) {
+        if (GradleVersion.current().compareTo(GradleVersion.version("5.6")) < 0) {
             throw new GradleException(
-                    "The "+PLUGIN_ID+" plugin requires at least Gradle 5.2. You are running "
+                    "The " + PLUGIN_ID + " plugin requires at least Gradle 5.6. You are running "
                             + GradleVersion.current());
         }
         // Set up deprecation warnings
