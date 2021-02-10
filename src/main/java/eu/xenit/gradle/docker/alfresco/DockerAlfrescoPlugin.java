@@ -81,50 +81,47 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
             withWarsConvention.getRemoveExistingWar().set(alfrescoExtension.getLeanImage().map(b -> !b));
         });
 
-        project.afterEvaluate(project1 -> {
+        Configuration alfrescoBaseWar = project.getConfigurations().getByName(BASE_ALFRESCO_WAR);
 
-            Configuration alfrescoBaseWar = project1.getConfigurations().getByName(BASE_ALFRESCO_WAR);
-
+        dockerfile.configure(dockerfile1 -> {
+            DockerfileWithWarsExtension withWarsConvention = DockerfileWithWarsExtension.get(dockerfile1);
+            withWarsConvention.addWar("alfresco", alfrescoExtension.getLeanImage().flatMap(isLeanImage -> {
+                if (isLeanImage || alfrescoBaseWar.isEmpty()) {
+                    return project.provider(() -> null);
+                } else {
+                    return project.getLayout().file(project.provider(alfrescoBaseWar::getSingleFile));
+                }
+            }));
+        });
+        alfrescoTasks.forEach(t -> {
             dockerfile.configure(dockerfile1 -> {
                 DockerfileWithWarsExtension withWarsConvention = DockerfileWithWarsExtension.get(dockerfile1);
-                withWarsConvention.addWar("alfresco", alfrescoExtension.getLeanImage().flatMap(isLeanImage -> {
-                    if (isLeanImage || alfrescoBaseWar.isEmpty()) {
-                        return project1.provider(() -> null);
-                    } else {
-                        return project1.getLayout().file(project1.provider(alfrescoBaseWar::getSingleFile));
-                    }
-                }));
+                withWarsConvention.addWar("alfresco",
+                        project.provider(() -> alfrescoBaseWar.isEmpty() ? null : t.getOutputWar().get()));
+                dockerfile1.dependsOn(t);
+                LabelConsumerExtension.get(dockerfile1).withLabels(t);
             });
-            alfrescoTasks.forEach(t -> {
-                dockerfile.configure(dockerfile1 -> {
-                    DockerfileWithWarsExtension withWarsConvention = DockerfileWithWarsExtension.get(dockerfile1);
-                    withWarsConvention.addWar("alfresco",
-                            project1.provider(() -> alfrescoBaseWar.isEmpty() ? null : t.getOutputWar().get()));
-                    dockerfile1.dependsOn(t);
-                    LabelConsumerExtension.get(dockerfile1).withLabels(t);
-                });
-            });
+        });
 
-            Configuration shareBaseWar = project1.getConfigurations().getByName(BASE_SHARE_WAR);
+        Configuration shareBaseWar = project.getConfigurations().getByName(BASE_SHARE_WAR);
 
+        dockerfile.configure(dockerfile1 -> {
+            DockerfileWithWarsExtension withWarsConvention = DockerfileWithWarsExtension.get(dockerfile1);
+            withWarsConvention.addWar("share", alfrescoExtension.getLeanImage().flatMap(isLeanImage -> {
+                if (isLeanImage || shareBaseWar.isEmpty()) {
+                    return project.provider(() -> null);
+                } else {
+                    return project.getLayout().file(project.provider(shareBaseWar::getSingleFile));
+                }
+            }));
+        });
+        shareTasks.forEach(t -> {
             dockerfile.configure(dockerfile1 -> {
                 DockerfileWithWarsExtension withWarsConvention = DockerfileWithWarsExtension.get(dockerfile1);
-                withWarsConvention.addWar("share", alfrescoExtension.getLeanImage().flatMap(isLeanImage -> {
-                    if (isLeanImage || shareBaseWar.isEmpty()) {
-                        return project1.provider(() -> null);
-                    } else {
-                        return project1.getLayout().file(project1.provider(shareBaseWar::getSingleFile));
-                    }
-                }));
-            });
-            shareTasks.forEach(t -> {
-                dockerfile.configure(dockerfile1 -> {
-                    DockerfileWithWarsExtension withWarsConvention = DockerfileWithWarsExtension.get(dockerfile1);
-                    withWarsConvention.addWar("share",
-                            project1.provider(() -> shareBaseWar.isEmpty() ? null : t.getOutputWar().get()));
-                    dockerfile1.dependsOn(t);
-                    LabelConsumerExtension.get(dockerfile1).withLabels(t);
-                });
+                withWarsConvention.addWar("share",
+                        project.provider(() -> shareBaseWar.isEmpty() ? null : t.getOutputWar().get()));
+                dockerfile1.dependsOn(t);
+                LabelConsumerExtension.get(dockerfile1).withLabels(t);
             });
         });
     }
