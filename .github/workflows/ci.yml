@@ -46,6 +46,7 @@ jobs:
         gradle-versions:
           - 5.3,5.6
           - 6.0,6.6
+          - '7.0'
     steps:
       - uses: actions/checkout@v2
         with:
