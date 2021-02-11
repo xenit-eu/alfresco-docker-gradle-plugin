@@ -3,6 +3,7 @@ package eu.xenit.gradle.docker.compose;
 import com.avast.gradle.dockercompose.ComposeExtension;
 import com.avast.gradle.dockercompose.ComposeSettings;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
+import groovy.lang.MissingMethodException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.gradle.api.Project;
@@ -15,6 +16,17 @@ class DockerComposeExtensionOverride extends ComposeExtension implements DockerC
     public DockerComposeExtensionOverride(Project project) {
         super(project);
         dockerComposeConvention = new ReplayableComposeConventionImpl(new DockerComposeConventionImpl(this));
+    }
+
+    @Override
+    public Object methodMissing(String name, Object args) {
+        switch (name) {
+            case "fromProject":
+            case "fromBuildImage":
+                throw new MissingMethodException(name, getClass(), (Object[]) args);
+            default:
+                return super.methodMissing(name, args);
+        }
     }
 
     @Override
