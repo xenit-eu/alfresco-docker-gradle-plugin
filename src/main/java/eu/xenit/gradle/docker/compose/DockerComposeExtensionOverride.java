@@ -30,13 +30,13 @@ class DockerComposeExtensionOverride extends ComposeExtension implements DockerC
     }
 
     @Override
-    public ComposeSettings createNested(String name) {
+    protected ComposeSettings cloneAsNested(String name) {
         DockerComposeSettingsOverride r = new DockerComposeSettingsOverride(getProject(), name, getNestedName());
         DockerComposeConvention convention = new DockerComposeConventionImpl(r);
         dockerComposeConvention.replayChangesInto(convention);
         r.setDockerComposeConvention(convention);
 
-        // Keep in sync with {@link ComposeSettings#createNested(String)}
+        // Keep in sync with {@link ComposeSettings#cloneAsNested(String)}
         r.setBuildBeforeUp(getBuildBeforeUp());
         r.setBuildBeforePull(getBuildBeforePull());
 
@@ -51,8 +51,6 @@ class DockerComposeExtensionOverride extends ComposeExtension implements DockerC
 
         r.setCaptureContainersOutput(this.isCaptureContainersOutput());
 
-        r.setIncludeDependencies(this.isIncludeDependencies());
-
         r.setRemoveOrphans(this.isRemoveOrphans());
         r.setForceRecreate(this.isForceRecreate());
         r.setNoRecreate(this.isNoRecreate());
@@ -60,6 +58,7 @@ class DockerComposeExtensionOverride extends ComposeExtension implements DockerC
         r.setPullAdditionalArgs(new ArrayList<>(this.getPullAdditionalArgs()));
         r.setUpAdditionalArgs(new ArrayList<>(this.getUpAdditionalArgs()));
         r.setDownAdditionalArgs(new ArrayList<>(this.getDownAdditionalArgs()));
+        r.setComposeAdditionalArgs(new ArrayList<>(this.getComposeAdditionalArgs()));
 
         r.setProjectNamePrefix(this.getProjectNamePrefix());
 
@@ -67,6 +66,7 @@ class DockerComposeExtensionOverride extends ComposeExtension implements DockerC
         r.setRemoveContainers(this.isRemoveContainers());
         r.setRemoveImages(this.getRemoveImages());
         r.setRemoveVolumes(this.isRemoveVolumes());
+        r.setIncludeDependencies(this.isIncludeDependencies());
 
         r.setIgnorePullFailure(this.isIgnorePullFailure());
         r.setIgnorePushFailure(this.isIgnorePushFailure());
