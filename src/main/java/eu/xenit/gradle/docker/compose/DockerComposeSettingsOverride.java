@@ -14,7 +14,7 @@ class DockerComposeSettingsOverride extends ComposeSettings implements DockerCom
     }
 
     @Override
-    public ComposeSettings createNested(String name) {
+    public ComposeSettings cloneAsNested(String name) {
         throw new UnsupportedOperationException("Can not create nested docker-compose settings.");
     }
 

@@ -7,6 +7,10 @@
 * [#191](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/191) - dockerCompose fromBuildImage/fromProject silently fail when wrong argument type is provided
 * [#192](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/192) - Deprecated non-annotated properties in prefixXXXLog4j tasks
 
+### Dependencies
+
+* [#203](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/203) - Bump gradle-docker-compose-plugin from 0.14.2 to 0.14.3
+
 ## Version 5.2.0 - 2021-01-22
 
 ### Added
