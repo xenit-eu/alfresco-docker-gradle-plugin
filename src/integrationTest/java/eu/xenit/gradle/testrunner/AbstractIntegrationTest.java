@@ -45,8 +45,8 @@ public abstract class AbstractIntegrationTest {
         }
         return Arrays.asList(new Object[][]{
                 {"7.0"},
-                {"6.8.2"},
-                {"6.7"},
+                {"6.8.3"},
+                {"6.7.1"},
                 {"6.6.1"},
                 {"6.5.1"},
                 {"6.4.1"},
