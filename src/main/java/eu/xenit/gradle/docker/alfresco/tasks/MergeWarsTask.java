@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Map;
 import org.gradle.api.file.CopySpec;
+import org.gradle.api.file.DuplicatesStrategy;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Provider;
@@ -24,6 +25,7 @@ public class MergeWarsTask extends Zip implements LabelConsumerTask, LabelSuppli
                 .set(getProject().getLayout().getBuildDirectory().dir("xenit-gradle-plugins/" + getName()));
         getArchiveBaseName().set(getName());
         childWars = getRootSpec().addChildBeforeSpec(getMainSpec());
+        childWars.setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE);
     }
 
     @Override
@@ -46,19 +48,17 @@ public class MergeWarsTask extends Zip implements LabelConsumerTask, LabelSuppli
      */
     public void addInputWar(Provider<File> inputWar) {
         getInputs().file(inputWar).optional().skipWhenEmpty();
-        childWars.from(getProject().provider(() -> getProject().zipTree(inputWar)));
+        childWars.from(inputWar.map(war -> getProject().zipTree(war)));
     }
 
     public void addInputWar(WarOutputTask inputWar) {
         if (inputWar instanceof WarLabelOutputTask) {
             withLabels((WarLabelOutputTask) inputWar);
         }
-        addInputWar(inputWar.getOutputWar().map(f -> f.getAsFile()));
-        dependsOn(inputWar);
+        addInputWar(inputWar.getOutputWar().getAsFile());
     }
 
     public void addInputWar(TaskProvider<? extends WarOutputTask> inputWarProvider) {
-        dependsOn(inputWarProvider);
         addInputWar(inputWarProvider.flatMap(WarOutputTask::getOutputWar).map(RegularFile::getAsFile));
         withLabels(inputWarProvider.flatMap(t -> {
             if (t instanceof WarLabelOutputTask) {
