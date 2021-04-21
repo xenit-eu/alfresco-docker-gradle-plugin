@@ -20,9 +20,8 @@ sourceCompatibility = 1.8
 configurations {
     packaged
     compileOnly.extendsFrom(packaged)
-    testCompile.extendsFrom(packaged)
-    integrationTestCompile.extendsFrom testCompile
-    integrationTestRuntime.extendsFrom testRuntime
+    testImplementation.extendsFrom(packaged)
+    integrationTestImplementation.extendsFrom testImplementation
 }
 
 sourceSets {
@@ -70,6 +69,7 @@ gradlePlugin {
             implementationClass = "eu.xenit.gradle.docker.compose.DockerComposeAutoPlugin"
         }
     }
+    testSourceSets(sourceSets.test, sourceSets.integrationTest)
 }
 
 pluginBundle {
@@ -122,16 +122,16 @@ repositories {
 dependencies {
     packaged 'org.alfresco:alfresco-mmt:6.0'
     packaged group: 'commons-io', name: 'commons-io', version: '2.8.0'
-    packaged('org.eclipse.jgit:org.eclipse.jgit:5.11.0.202103091610-r'){
+    packaged('org.eclipse.jgit:org.eclipse.jgit:5.11.0.202103091610-r') {
         exclude group: 'org.slf4j'
     }
 
-    compile 'com.bmuschko:gradle-docker-plugin:6.7.0'
-    compile 'com.avast.gradle:gradle-docker-compose-plugin:0.14.3'
-    testCompile group: 'junit', name: 'junit', version: '4.13.2'
-    testCompile gradleTestKit()
-    testCompile "org.mockito:mockito-core:2.+"
-    testCompile 'com.github.stefanbirkner:system-rules:1.19.0'
+    implementation 'com.bmuschko:gradle-docker-plugin:6.7.0'
+    implementation 'com.avast.gradle:gradle-docker-compose-plugin:0.14.3'
+    testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+    testImplementation gradleTestKit()
+    testImplementation "org.mockito:mockito-core:2.+"
+    testImplementation 'com.github.stefanbirkner:system-rules:1.19.0'
 }
 
 
@@ -154,6 +154,10 @@ shadowJar.dependsOn(configureShadowJar)
 jar {
     from zipTree(shadowJar.outputs.files.singleFile)
     dependsOn(shadowJar)
+}
+
+pluginUnderTestMetadata {
+    pluginClasspath.from(configurations.packaged)
 }
 
 import org.gradle.util.GradleVersion

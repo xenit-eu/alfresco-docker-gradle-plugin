@@ -21,8 +21,6 @@ dockerAlfresco {
     }
 }
 
-afterEvaluate {
-    createDockerFile {
-        copyFile './build.gradle', '/tmp/some-file.gradle'
-    }
+createDockerFile {
+    copyFile './build.gradle', '/tmp/some-file.gradle'
 }

@@ -9,7 +9,7 @@ import eu.xenit.gradle.docker.alfresco.tasks.WarLabelOutputTask;
 import eu.xenit.gradle.docker.alfresco.tasks.extension.DockerfileWithWarsExtension;
 import eu.xenit.gradle.docker.alfresco.tasks.extension.LabelConsumerExtension;
 import eu.xenit.gradle.docker.internal.Deprecation;
-import eu.xenit.gradle.docker.tasks.extension.DockerfileWithSmartCopyExtension;
+import eu.xenit.gradle.docker.tasks.extension.internal.DockerfileWithSmartCopyExtensionInternal;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -25,7 +25,6 @@ import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
@@ -54,7 +53,7 @@ public class DockerfileWithWarsExtensionImpl implements DockerfileWithWarsExtens
     }
 
     private final Dockerfile dockerfile;
-    private final DockerfileWithSmartCopyExtension smartCopyExtension;
+    private final DockerfileWithSmartCopyExtensionInternal smartCopyExtension;
     private final LabelConsumerExtension labelConsumerExtension;
     private final Project project;
     private final ObjectFactory objectFactory;
@@ -114,7 +113,7 @@ public class DockerfileWithWarsExtensionImpl implements DockerfileWithWarsExtens
     @Inject
     public DockerfileWithWarsExtensionImpl(Dockerfile dockerfile) {
         this.dockerfile = dockerfile;
-        this.smartCopyExtension = DockerfileWithSmartCopyExtension.get(dockerfile);
+        this.smartCopyExtension = DockerfileWithSmartCopyExtensionInternal.get(dockerfile);
         this.labelConsumerExtension = LabelConsumerExtension.get(dockerfile);
         this.project = dockerfile.getProject();
         this.objectFactory = project.getObjects();
@@ -175,17 +174,7 @@ public class DockerfileWithWarsExtensionImpl implements DockerfileWithWarsExtens
             });
 
         }));
-        ConfigurableFileCollection fc = project.files();
-        fc.from(project.provider(() -> {
-            java.io.File resolvedFile = file.getOrNull();
-            if (resolvedFile == null) {
-                // Return empty collection when we resolved to null, else the FileCollection will throw an exception,
-                // because it tries to unpack the provider with Provider#get()
-                return project.files();
-            }
-            return project.zipTree(resolvedFile);
-        }));
-        smartCopyExtension.smartCopy(fc, getTargetDirectory().map(target -> target + name));
+        smartCopyExtension.smartCopy(file, getTargetDirectory().map(target -> target + name), project::zipTree);
         addedWarNames.add(name);
     }
 

@@ -17,9 +17,11 @@ import eu.xenit.gradle.docker.core.DockerPlugin;
 import java.util.ArrayList;
 import java.util.List;
 import org.alfresco.repo.module.tool.WarHelperImpl;
+import org.gradle.api.NamedDomainObjectProvider;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskProvider;
 
 public class DockerAlfrescoPlugin implements Plugin<Project> {
@@ -39,13 +41,13 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
     private static final String TASK_GROUP = "Alfresco";
 
     public void apply(Project project) {
-        project.getConfigurations().create(BASE_ALFRESCO_WAR);
-        project.getConfigurations().create(ALFRESCO_AMP);
-        project.getConfigurations().create(BASE_SHARE_WAR);
-        project.getConfigurations().create(SHARE_AMP);
-        project.getConfigurations().create(ALFRESCO_DE);
-        project.getConfigurations().create(ALFRESCO_SM);
-        project.getConfigurations().create(SHARE_SM);
+        NamedDomainObjectProvider<Configuration> baseAlfrescoWar = createConfiguration(project, BASE_ALFRESCO_WAR);
+        createConfiguration(project, ALFRESCO_AMP);
+        NamedDomainObjectProvider<Configuration> baseShareWar = createConfiguration(project, BASE_SHARE_WAR);
+        createConfiguration(project, SHARE_AMP);
+        createConfiguration(project, ALFRESCO_DE);
+        createConfiguration(project, ALFRESCO_SM);
+        createConfiguration(project, SHARE_SM);
 
         project.getPluginManager().apply(DockerPlugin.class);
 
@@ -56,8 +58,9 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
 
         project.getPluginManager().apply(DockerAlfrescoLegacyPlugin.class);
 
-        List<WarLabelOutputTask> alfrescoWarEnrichmentTasks = warEnrichmentChain(project, ALFRESCO);
-        List<WarLabelOutputTask> shareEnrichmentTasks = warEnrichmentChain(project, SHARE);
+        List<TaskProvider<? extends WarLabelOutputTask>> alfrescoWarEnrichmentTasks = warEnrichmentChain(project,
+                ALFRESCO);
+        List<TaskProvider<? extends WarLabelOutputTask>> shareEnrichmentTasks = warEnrichmentChain(project, SHARE);
 
         TaskProvider<Dockerfile> createDockerFile = project.getTasks().named("createDockerFile", Dockerfile.class);
 
@@ -66,126 +69,133 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
             DockerfileWithWarsExtensionImpl.applyTo(dockerfile);
             DockerfileWithWarsExtension warsExtension = DockerfileWithWarsExtension.get(dockerfile);
             warsExtension.getBaseImage().set(alfrescoDockerExtension.getBaseImage());
+            warsExtension.getRemoveExistingWar().set(alfrescoDockerExtension.getLeanImage().map(b -> !b));
         });
 
-        configureDockerFileTask(project, createDockerFile, alfrescoWarEnrichmentTasks, shareEnrichmentTasks,
+        configureAddWarDockerFile(project, ALFRESCO.toLowerCase(), createDockerFile, alfrescoWarEnrichmentTasks,
+                baseAlfrescoWar,
                 alfrescoDockerExtension);
+        configureAddWarDockerFile(project, SHARE.toLowerCase(), createDockerFile, shareEnrichmentTasks, baseShareWar,
+                alfrescoDockerExtension);
+
     }
 
-    private void configureDockerFileTask(Project project, TaskProvider<Dockerfile> dockerfile,
-            List<WarLabelOutputTask> alfrescoTasks, List<WarLabelOutputTask> shareTasks,
-            AlfrescoDockerExtension alfrescoExtension) {
+    private static NamedDomainObjectProvider<Configuration> createConfiguration(Project project,
+            String configurationName) {
+        return project.getConfigurations().register(configurationName, config -> {
+            config.setCanBeResolved(true);
+            config.setCanBeConsumed(false);
+        });
+    }
 
+    private static void configureAddWarDockerFile(Project project, String name, TaskProvider<Dockerfile> dockerfile,
+            List<TaskProvider<? extends WarLabelOutputTask>> tasks, Provider<Configuration> configuration,
+            AlfrescoDockerExtension extension) {
         dockerfile.configure(dockerfile1 -> {
-            DockerfileWithWarsExtension withWarsConvention = DockerfileWithWarsExtension.get(dockerfile1);
-            withWarsConvention.getRemoveExistingWar().set(alfrescoExtension.getLeanImage().map(b -> !b));
+            dockerfile1.dependsOn(configuration, tasks);
         });
 
+        // This afterEvaluate is put here so the user can first customize the Dockerfile with their own instructions before addWar instructions get added.
+        // This way, a user can customize the environment if necessary both before and after the WARs are added:
+        // createDockerFile {
+        //      runCommand 'prepare environment before'
+        //      doFirst {
+        //          runCommand 'do some things afterwards'
+        //      }
+        // }
         project.afterEvaluate(project1 -> {
-
-            Configuration alfrescoBaseWar = project1.getConfigurations().getByName(BASE_ALFRESCO_WAR);
-
             dockerfile.configure(dockerfile1 -> {
                 DockerfileWithWarsExtension withWarsConvention = DockerfileWithWarsExtension.get(dockerfile1);
-                withWarsConvention.addWar("alfresco", alfrescoExtension.getLeanImage().flatMap(isLeanImage -> {
-                    if (isLeanImage || alfrescoBaseWar.isEmpty()) {
-                        return project1.provider(() -> null);
-                    } else {
-                        return project1.getLayout().file(project1.provider(alfrescoBaseWar::getSingleFile));
+                withWarsConvention.addWar(name, extension.getLeanImage().flatMap(isLeanImage -> {
+                    if (isLeanImage) {
+                        return project.provider(() -> null);
                     }
+                    return configuration.map(Configuration::isEmpty).flatMap(isEmpty -> {
+                        if (isEmpty) {
+                            return project.provider(() -> null);
+                        }
+                        return project.getLayout().file(configuration.map(Configuration::getSingleFile));
+                    });
                 }));
-            });
-            alfrescoTasks.forEach(t -> {
-                dockerfile.configure(dockerfile1 -> {
-                    DockerfileWithWarsExtension withWarsConvention = DockerfileWithWarsExtension.get(dockerfile1);
-                    withWarsConvention.addWar("alfresco",
-                            project1.provider(() -> alfrescoBaseWar.isEmpty() ? null : t.getOutputWar().get()));
-                    dockerfile1.dependsOn(t);
-                    LabelConsumerExtension.get(dockerfile1).withLabels(t);
-                });
-            });
 
-            Configuration shareBaseWar = project1.getConfigurations().getByName(BASE_SHARE_WAR);
+                tasks.forEach(taskProvider -> {
+                    withWarsConvention.addWar(name, configuration.map(Configuration::isEmpty).flatMap(isEmpty -> {
+                        if (isEmpty) {
+                            return project.provider(() -> null);
+                        }
+                        return taskProvider.flatMap(WarLabelOutputTask::getOutputWar);
+                    }));
 
-            dockerfile.configure(dockerfile1 -> {
-                DockerfileWithWarsExtension withWarsConvention = DockerfileWithWarsExtension.get(dockerfile1);
-                withWarsConvention.addWar("share", alfrescoExtension.getLeanImage().flatMap(isLeanImage -> {
-                    if (isLeanImage || shareBaseWar.isEmpty()) {
-                        return project1.provider(() -> null);
-                    } else {
-                        return project1.getLayout().file(project1.provider(shareBaseWar::getSingleFile));
-                    }
-                }));
-            });
-            shareTasks.forEach(t -> {
-                dockerfile.configure(dockerfile1 -> {
-                    DockerfileWithWarsExtension withWarsConvention = DockerfileWithWarsExtension.get(dockerfile1);
-                    withWarsConvention.addWar("share",
-                            project1.provider(() -> shareBaseWar.isEmpty() ? null : t.getOutputWar().get()));
-                    dockerfile1.dependsOn(t);
-                    LabelConsumerExtension.get(dockerfile1).withLabels(t);
+                    LabelConsumerExtension.get(dockerfile1).withLabels(taskProvider);
                 });
             });
         });
     }
 
-    private List<WarLabelOutputTask> warEnrichmentChain(Project project, final String warName) {
+
+    private static List<TaskProvider<? extends WarLabelOutputTask>> warEnrichmentChain(Project project,
+            final String warName) {
         Configuration baseWar = project.getConfigurations().getByName("base" + warName + "War");
 
-        WarEnrichmentTask resolveTask = project.getTasks()
-                .create("strip" + warName + "War", StripAlfrescoWarTask.class, stripAlfrescoWarTask -> {
+        TaskProvider<? extends WarLabelOutputTask> resolveTask = project.getTasks()
+                .register("strip" + warName + "War", StripAlfrescoWarTask.class, stripAlfrescoWarTask -> {
                     stripAlfrescoWarTask.addPathToCopy(WarHelperImpl.MANIFEST_FILE);
                     stripAlfrescoWarTask.addPathToCopy("WEB-INF/classes/alfresco/module/*/module.properties");
                     stripAlfrescoWarTask.addPathToCopy("WEB-INF/classes/log4j.properties");
                     if (warName.equals(ALFRESCO)) {
                         stripAlfrescoWarTask.addPathToCopy(WarHelperImpl.VERSION_PROPERTIES);
                     }
+                    stripAlfrescoWarTask.setGroup(TASK_GROUP);
+                    stripAlfrescoWarTask.setInputWar(baseWar);
                 });
-        resolveTask.setGroup(TASK_GROUP);
-        resolveTask.setInputWar(baseWar);
 
-        final List<WarEnrichmentTask> tasks = new ArrayList<>();
+        final List<TaskProvider<? extends WarEnrichmentTask>> tasks = new ArrayList<>();
 
         tasks.add(project.getTasks()
-                .create("prefix" + warName + "Log4j", PrefixLog4JWarTask.class,
+                .register("prefix" + warName + "Log4j", PrefixLog4JWarTask.class,
                         prefixLog4JWarTask -> prefixLog4JWarTask.getPrefix().set(warName.toUpperCase()))
         );
 
         tasks.add(project.getTasks()
-                .create("apply" + warName + "SM", InjectFilesInWarTask.class, injectFilesInWarTask -> {
+                .register("apply" + warName + "SM", InjectFilesInWarTask.class, injectFilesInWarTask -> {
                     injectFilesInWarTask.getTargetDirectory().set("/WEB-INF/lib/");
-                    injectFilesInWarTask
-                            .setSourceFiles(project.getConfigurations().getByName(warName.toLowerCase() + "SM"));
+                    injectFilesInWarTask.getSourceFiles()
+                            .from(project.getConfigurations().named(warName.toLowerCase() + "SM"));
                 }));
         if (warName.equals(ALFRESCO)) {
             tasks.add(project.getTasks()
-                    .create("apply" + warName + "DE", InjectFilesInWarTask.class, injectFilesInWarTask -> {
+                    .register("apply" + warName + "DE", InjectFilesInWarTask.class, injectFilesInWarTask -> {
                         injectFilesInWarTask.getTargetDirectory().set("/WEB-INF/classes/dynamic-extensions/bundles/");
-                        injectFilesInWarTask
-                                .setSourceFiles(project.getConfigurations().getByName(warName.toLowerCase() + "DE"));
+                        injectFilesInWarTask.getSourceFiles()
+                                .from(project.getConfigurations().named(warName.toLowerCase() + "DE"));
                     }));
         }
         tasks.add(project.getTasks()
-                .create("apply" + warName + "Amp", InstallAmpsInWarTask.class, installAmpsInWarTask -> {
-                    installAmpsInWarTask
-                            .setSourceFiles(project.getConfigurations().getByName(warName.toLowerCase() + "Amp"));
+                .register("apply" + warName + "Amp", InstallAmpsInWarTask.class, installAmpsInWarTask -> {
+                    installAmpsInWarTask.getSourceFiles()
+                            .from(project.getConfigurations().named(warName.toLowerCase() + "Amp"));
                 }));
 
-        for (WarEnrichmentTask task : tasks) {
-            task.setInputWar(resolveTask);
-            task.setGroup(TASK_GROUP);
+        for (TaskProvider<? extends WarEnrichmentTask> taskProvider : tasks) {
+            taskProvider.configure(task -> {
+                task.dependsOn(resolveTask);
+                task.setInputWar(resolveTask);
+                task.setGroup(TASK_GROUP);
+            });
         }
 
-        List<WarLabelOutputTask> outputTasks = new ArrayList<>(tasks);
+        List<TaskProvider<? extends WarLabelOutputTask>> outputTasks = new ArrayList<>(tasks);
         outputTasks.add(0, resolveTask);
 
-        MergeWarsTask mergeWarsTask = project.getTasks().create(warName.toLowerCase() + "War", MergeWarsTask.class);
-        mergeWarsTask.setGroup(TASK_GROUP);
-
-        mergeWarsTask.addInputWar(project.provider(baseWar::getSingleFile));
-        for (WarLabelOutputTask task : outputTasks) {
-            mergeWarsTask.addInputWar(task);
-        }
+        project.getTasks().register(warName.toLowerCase() + "War", MergeWarsTask.class, mergeWarsTask -> {
+            mergeWarsTask.setGroup(TASK_GROUP);
+            mergeWarsTask.dependsOn(baseWar);
+            mergeWarsTask.addInputWar(project.provider(baseWar::getSingleFile));
+            for (TaskProvider<? extends WarLabelOutputTask> task : outputTasks) {
+                mergeWarsTask.dependsOn(task);
+                mergeWarsTask.addInputWar(task);
+            }
+        });
 
         return outputTasks;
     }

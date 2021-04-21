@@ -2,10 +2,13 @@
 
 ## Unreleased
 
+**This release drops support for Gradle versions before 5.6**
+
 ### Fixed
 
 * [#191](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/191) - dockerCompose fromBuildImage/fromProject silently fail when wrong argument type is provided
 * [#192](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/192) - Deprecated non-annotated properties in prefixXXXLog4j tasks
+* [#204](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/204) - Support Gradle 7.0
 
 ### Dependencies
 
