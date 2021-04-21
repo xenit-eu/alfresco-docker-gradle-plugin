@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## Version 5.3.0 - 2021-04-21
+
 **This release drops support for Gradle versions before 5.6**
 
 ### Fixed
