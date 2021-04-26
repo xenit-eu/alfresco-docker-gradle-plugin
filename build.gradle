@@ -130,7 +130,7 @@ dependencies {
     implementation 'com.avast.gradle:gradle-docker-compose-plugin:0.14.3'
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation gradleTestKit()
-    testImplementation "org.mockito:mockito-core:2.+"
+    testImplementation "org.mockito:mockito-core:3.+"
     testImplementation 'com.github.stefanbirkner:system-rules:1.19.0'
 }
 
