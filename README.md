@@ -5,6 +5,13 @@
 [![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/eu/xenit/docker/eu.xenit.docker.gradle.plugin/maven-metadata.xml.svg?colorB=007ec6&label=eu.xenit.docker)](https://plugins.gradle.org/plugin/eu.xenit.docker)
 [![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v/https/plugins.gradle.org/m2/eu/xenit/docker-compose/eu.xenit.docker-compose.gradle.plugin/maven-metadata.xml.svg?colorB=007ec6&label=eu.xenit.docker-compose)](https://plugins.gradle.org/plugin/eu.xenit.docker-compose)
 
+> [![Xenit Logo](https://xenit.eu/wp-content/uploads/2017/09/XeniT_Website_Logo.png)](https://xenit.eu/open-source)
+>
+> The Alfresco Docker Gradle Plugins are a part of the Xenit Open Source Tooling around Alfresco. Xenit is company with a deep expertise 
+> and a strong team around Alfresco. If you'd like to learn more about our 
+> [tools](https://xenit.eu/open-source), [services](https://xenit.eu/alfresco) and 
+> [products](https://xenit.eu/alfresco-products), please visit our [website](https://xenit.eu).
+
 ## Documentation
 
 * [The user guide](./docs/README.md)
