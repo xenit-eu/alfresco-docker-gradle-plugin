@@ -98,4 +98,14 @@ public class ExampleRunner extends AbstractIntegrationTest {
         testProjectFolder(EXAMPLES.resolve("publish-war"), ":publishToMavenLocal");
     }
 
+    @Test
+    public void log4jPrefix() throws IOException {
+        testProjectFolder(EXAMPLES.resolve("log4j-prefix"), ":functionalTest");
+    }
+
+    @Test
+    public void log4jPrefixDisable() throws IOException {
+        testProjectFolder(EXAMPLES.resolve("log4j-prefix-disable"), ":functionalTest");
+    }
+
 }
