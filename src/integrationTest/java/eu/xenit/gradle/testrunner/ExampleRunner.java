@@ -1,5 +1,8 @@
 package eu.xenit.gradle.testrunner;
 
+import static org.junit.Assume.assumeTrue;
+
+import org.gradle.util.GradleVersion;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -105,6 +108,8 @@ public class ExampleRunner extends AbstractIntegrationTest {
 
     @Test
     public void log4jPrefixDisable() throws IOException {
+        assumeTrue("Gradle 6.2 is required to disable prefixLog4j tasks",
+                GradleVersion.version(gradleVersion).compareTo(GradleVersion.version("6.2")) > 0);
         testProjectFolder(EXAMPLES.resolve("log4j-prefix-disable"), ":functionalTest");
     }
 

@@ -1,5 +1,6 @@
 package eu.xenit.gradle.docker.alfresco.tasks;
 
+import eu.xenit.gradle.docker.internal.GradleVersionRequirement;
 import java.util.Map;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.RegularFileProperty;
@@ -24,7 +25,10 @@ public abstract class AbstractWarEnrichmentTask extends DefaultTask implements W
 
     protected AbstractWarEnrichmentTask() {
         outputWar.set(inputWar.flatMap(_x -> getProject().getLayout().getBuildDirectory()
-                .file("xenit-gradle-plugins/" + getName() + "/" + getName() + ".war")));
+                .file("xenit-gradle-plugins/" + getName() + "/" + getName() + ".war"))
+                .map(outputFile -> isEnabled() ? outputFile
+                        : GradleVersionRequirement.atLeast("6.2", "disable the " + getName() + " task", () -> null))
+        );
     }
 
     @InputFile

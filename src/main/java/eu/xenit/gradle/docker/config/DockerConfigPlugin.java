@@ -6,6 +6,7 @@ import com.bmuschko.gradle.docker.DockerRemoteApiPlugin;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
 import eu.xenit.gradle.docker.compose.DockerComposePlugin;
 import eu.xenit.gradle.docker.internal.Deprecation;
+import eu.xenit.gradle.docker.internal.GradleVersionRequirement;
 import java.io.File;
 import java.util.UUID;
 import org.gradle.api.Action;
@@ -17,7 +18,6 @@ import org.gradle.api.Task;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
 import org.gradle.api.tasks.TaskProvider;
-import org.gradle.util.GradleVersion;
 
 /**
  * Created by thijs on 10/24/16.
@@ -31,11 +31,8 @@ public class DockerConfigPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
-        if (GradleVersion.current().compareTo(GradleVersion.version("5.6")) < 0) {
-            throw new GradleException(
-                    "The " + PLUGIN_ID + " plugin requires at least Gradle 5.6. You are running "
-                            + GradleVersion.current());
-        }
+        GradleVersionRequirement.atLeast("5.6", "use the " + PLUGIN_ID + " plugin");
+
         // Set up deprecation warnings
         Deprecation.setStartParameter(project.getGradle().getStartParameter());
         project.getGradle().projectsEvaluated(g -> {
