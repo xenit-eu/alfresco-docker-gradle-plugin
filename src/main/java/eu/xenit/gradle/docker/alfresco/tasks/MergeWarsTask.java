@@ -25,7 +25,7 @@ public class MergeWarsTask extends Zip implements LabelConsumerTask, LabelSuppli
                 .set(getProject().getLayout().getBuildDirectory().dir("xenit-gradle-plugins/" + getName()));
         getArchiveBaseName().set(getName());
         childWars = getRootSpec().addChildBeforeSpec(getMainSpec());
-        childWars.setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE);
+        childWars.setDuplicatesStrategy(DuplicatesStrategy.INCLUDE);
     }
 
     @Override

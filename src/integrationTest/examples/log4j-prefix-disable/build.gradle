@@ -1,0 +1,58 @@
+plugins {
+    id "eu.xenit.docker-alfresco"
+}
+
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+    }
+}
+
+dependencies {
+    baseAlfrescoWar "org.alfresco:content-services-community:6.0.7-ga@war"
+}
+
+prefixAlfrescoLog4j {
+    enabled = false
+}
+
+dockerBuild {
+    alfresco {
+        baseImage = "tomcat:7-jre8"
+    }
+}
+
+// Check if no log4j changes are applied
+import com.bmuschko.gradle.docker.tasks.container.*
+
+task createContainer(type: DockerCreateContainer) {
+    imageId = buildDockerImage.imageId
+    // Just run a command so the container stays active in the background without starting Alfresco
+    cmd = ["bash", "-c", "while true; do sleep 100; done"]
+    dependsOn(buildDockerImage)
+    hostConfig.autoRemove = true
+}
+
+task startContainer(type: DockerStartContainer) {
+    containerId = createContainer.containerId
+    dependsOn(createContainer)
+}
+
+task checkDefaultLog4J(type: DockerExecContainer) {
+    containerId = createContainer.containerId
+    withCommand(["fgrep", "File", "/usr/local/tomcat/webapps/alfresco/WEB-INF/classes/log4j.properties"])
+    successOnExitCodes.add(0)
+    dependsOn(startContainer)
+}
+
+task terminateContainer(type: DockerKillContainer) {
+    containerId = createContainer.containerId
+    dependsOn(createContainer)
+}
+
+task functionalTest {
+    dependsOn(checkDefaultLog4J)
+    finalizedBy(terminateContainer)
+}

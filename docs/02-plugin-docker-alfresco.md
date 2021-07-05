@@ -211,6 +211,23 @@ baseAlfrescoWar -+--------------------------------------------------------------
 
 </details>
 
+### Disabling log4j modifications
+
+It is possible to disable the `prefixAlfrescoLog4j` or the `prefixShareLog4j` tasks using standard Gradle task management features, like [`enabled`](https://docs.gradle.org/current/dsl/org.gradle.api.Task.html#org.gradle.api.Task:enabled) or [`onlyIf`](https://docs.gradle.org/current/dsl/org.gradle.api.Task.html#org.gradle.api.Task:onlyIf(groovy.lang.Closure)).
+
+```groovy
+prefixAlfrescoLog4j {
+  enabled = false
+}
+
+prefixShareLog4j {
+  onlyIf { myHatColor == "purple" }
+}
+```
+
+> **Warning:** This feature is only supported on Gradle 6.2 and later.
+> It is not possible to disable these tasks on earlier Gradle versions.
+
 ## Example
 
 An example for the usage of this plugin can be found in the [applyamps example](../src/integrationTest/examples/applyamps-example).

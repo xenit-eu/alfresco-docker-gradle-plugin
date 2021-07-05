@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+* [#201](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/201) - Make it possible to disable rewriting log4j.properties
+
 ## Version 5.3.0 - 2021-04-21
 
 **This release drops support for Gradle versions before 5.6**

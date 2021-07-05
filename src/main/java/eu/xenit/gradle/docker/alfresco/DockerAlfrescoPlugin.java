@@ -152,11 +152,6 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         final List<TaskProvider<? extends WarEnrichmentTask>> tasks = new ArrayList<>();
 
         tasks.add(project.getTasks()
-                .register("prefix" + warName + "Log4j", PrefixLog4JWarTask.class,
-                        prefixLog4JWarTask -> prefixLog4JWarTask.getPrefix().set(warName.toUpperCase()))
-        );
-
-        tasks.add(project.getTasks()
                 .register("apply" + warName + "SM", InjectFilesInWarTask.class, injectFilesInWarTask -> {
                     injectFilesInWarTask.getTargetDirectory().set("/WEB-INF/lib/");
                     injectFilesInWarTask.getSourceFiles()
@@ -175,6 +170,11 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
                     installAmpsInWarTask.getSourceFiles()
                             .from(project.getConfigurations().named(warName.toLowerCase() + "Amp"));
                 }));
+
+        tasks.add(project.getTasks()
+                .register("prefix" + warName + "Log4j", PrefixLog4JWarTask.class,
+                        prefixLog4JWarTask -> prefixLog4JWarTask.getPrefix().set(warName.toUpperCase()))
+        );
 
         for (TaskProvider<? extends WarEnrichmentTask> taskProvider : tasks) {
             taskProvider.configure(task -> {
