@@ -127,7 +127,7 @@ dependencies {
     }
 
     implementation 'com.bmuschko:gradle-docker-plugin:6.7.0'
-    implementation 'com.avast.gradle:gradle-docker-compose-plugin:0.14.3'
+    implementation 'com.avast.gradle:gradle-docker-compose-plugin:0.14.6'
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation gradleTestKit()
     testImplementation "org.mockito:mockito-core:3.+"
