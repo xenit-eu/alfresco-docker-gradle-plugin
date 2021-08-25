@@ -10,9 +10,9 @@ import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.TaskProvider;
-import org.gradle.api.tasks.bundling.Zip;
+import org.gradle.api.tasks.bundling.War;
 
-public class MergeWarsTask extends Zip implements LabelConsumerTask, LabelSupplierTask {
+public class MergeWarsTask extends War implements LabelConsumerTask, LabelSupplierTask {
 
     private MapProperty<String, String> labels = getProject().getObjects().mapProperty(String.class, String.class);
 
@@ -20,7 +20,6 @@ public class MergeWarsTask extends Zip implements LabelConsumerTask, LabelSuppli
 
     public MergeWarsTask() {
         super();
-        getArchiveExtension().set("war");
         getDestinationDirectory()
                 .set(getProject().getLayout().getBuildDirectory().dir("xenit-gradle-plugins/" + getName()));
         getArchiveBaseName().set(getName());
