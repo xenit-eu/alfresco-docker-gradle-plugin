@@ -1,0 +1,21 @@
+plugins {
+    id 'eu.xenit.docker-alfresco'
+    id "eu.xenit.alfresco" version "1.1.0"
+}
+
+repositories {
+    mavenCentral()
+    alfrescoPublic()
+}
+
+dependencies {
+    baseAlfrescoWar "org.alfresco:content-services-community:6.0.a@war"
+}
+
+dockerBuild {
+    alfresco {
+        baseImage = "xenit/alfresco-repository-skeleton:6.0"
+        leanImage = true
+    }
+}
+
