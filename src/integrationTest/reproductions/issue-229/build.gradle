@@ -1,0 +1,37 @@
+plugins {
+    id "base"
+    id "eu.xenit.docker-alfresco"
+    id "eu.xenit.alfresco" version "1.1.0"
+}
+
+repositories {
+    mavenCentral()
+    alfrescoPublic()
+}
+
+dependencies {
+    baseAlfrescoWar "org.alfresco:content-services-community:6.1.2-ga@war"
+    alfrescoAmp 'eu.xenit.alfresco:alfresco-hotfix-MNT-20557:1.0.2@amp'
+}
+
+task integrationTest {
+    dependsOn(tasks.alfrescoWar.archiveFile, configurations.alfrescoAmp)
+    doFirst {
+        java.io.File alfrescoJsrApiFile = project.zipTree(tasks.alfrescoWar.archiveFile)
+                .matching {
+                    include("WEB-INF/lib/jsr250-api-1.0.jar")
+                }
+                .singleFile
+
+        java.io.File ampJsrApiFile = project.zipTree(configurations.alfrescoAmp.singleFile)
+                .matching {
+                    include "lib/jsr250-api-1.0.jar"
+                }
+                .singleFile
+
+        println "Alfresco jsr250-api: ${alfrescoJsrApiFile}"
+        println "AMP jsr250-api: ${ampJsrApiFile}"
+
+        assert alfrescoJsrApiFile.bytes == ampJsrApiFile.bytes
+    }
+}
