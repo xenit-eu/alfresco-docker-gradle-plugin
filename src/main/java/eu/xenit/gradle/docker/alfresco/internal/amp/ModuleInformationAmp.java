@@ -10,6 +10,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.function.Function;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.module.tool.ModuleDetailsHelper;
 import org.alfresco.service.cmr.module.ModuleDetails;
 
@@ -57,7 +58,12 @@ class ModuleInformationAmp extends ModuleInformationFromModuleDetails {
                         throw new UncheckedIOException(e);
                     }
                 });
+            } catch(AlfrescoRuntimeException e) {
+                throw new InvalidModuleException(file.toPath(), e);
+            } catch(UncheckedIOException e) {
+                throw new InvalidModuleException(file.toPath(), e);
             } catch (Exception e) {
+                // Do not merge these catch-blocks: they each delegate to a different constructor!
                 throw new InvalidModuleException(file.toPath(), e);
             }
         }
