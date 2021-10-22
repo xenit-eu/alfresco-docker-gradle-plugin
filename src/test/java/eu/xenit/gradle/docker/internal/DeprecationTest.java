@@ -22,7 +22,7 @@ public class DeprecationTest {
         Deprecation.setStartParameter(startParameter);
 
         Deprecation.warnDeprecation("BLABLA");
-        Mockito.verifyZeroInteractions(Deprecation.LOGGER);
+        Mockito.verifyNoMoreInteractions(Deprecation.LOGGER);
 
         Deprecation.printSummary();
         Mockito.verify(Deprecation.LOGGER).warn(Mockito.contains("Deprecated features were used in this build"));
@@ -38,7 +38,7 @@ public class DeprecationTest {
         Mockito.verify(Deprecation.LOGGER).warn(Mockito.contains("BLABLA\t(Run with --stacktrace"));
 
         Deprecation.printSummary();
-        Mockito.verifyZeroInteractions(Deprecation.LOGGER);
+        Mockito.verifyNoMoreInteractions(Deprecation.LOGGER);
     }
 
     @Test
@@ -52,7 +52,7 @@ public class DeprecationTest {
         Mockito.verify(Deprecation.LOGGER).warn(Mockito.eq("BLABLA"), Mockito.any(Deprecation.Warning.class));
 
         Deprecation.printSummary();
-        Mockito.verifyZeroInteractions(Deprecation.LOGGER);
+        Mockito.verifyNoMoreInteractions(Deprecation.LOGGER);
     }
 
     @Test(expected = Warning.class)
@@ -75,6 +75,6 @@ public class DeprecationTest {
                 .contains(getClass().getCanonicalName().toString() + "#testDeprecatedReplacedBy is deprecated"));
 
         Deprecation.printSummary();
-        Mockito.verifyZeroInteractions(Deprecation.LOGGER);
+        Mockito.verifyNoMoreInteractions(Deprecation.LOGGER);
     }
 }
