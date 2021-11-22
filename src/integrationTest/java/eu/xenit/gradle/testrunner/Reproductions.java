@@ -177,4 +177,9 @@ public class Reproductions extends AbstractIntegrationTest {
     public void testIssue191() throws IOException {
         getGradleRunner(REPRODUCTIONS.resolve("issue-191"), ":check").buildAndFail();
     }
+
+    @Test
+    public void testIssue229() throws IOException {
+        testProjectFolder(REPRODUCTIONS.resolve("issue-229"), ":integrationTest");
+    }
 }
