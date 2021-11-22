@@ -182,4 +182,9 @@ public class Reproductions extends AbstractIntegrationTest {
     public void testIssue229() throws IOException {
         testProjectFolder(REPRODUCTIONS.resolve("issue-229"), ":integrationTest");
     }
+
+    @Test
+    public void testIssue230() throws IOException {
+        getGradleRunner(REPRODUCTIONS.resolve("issue-230"), ":buildDockerImage").buildAndFail();
+    }
 }
