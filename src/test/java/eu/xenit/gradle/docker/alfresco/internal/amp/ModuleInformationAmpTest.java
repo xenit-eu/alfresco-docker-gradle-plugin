@@ -1,5 +1,8 @@
 package eu.xenit.gradle.docker.alfresco.internal.amp;
 
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -60,7 +63,10 @@ public class ModuleInformationAmpTest {
         });
 
         assertTrue("Has the JAR file name", exception.getMessage().contains("test-jar.jar"));
-        assertTrue("Has the parent exception message", exception.getMessage().contains("NoSuchFileException: /module.properties"));
+        assertThat(exception.getMessage(), anyOf(
+                containsString("NoSuchFileException: /module.properties"),
+                containsString("NoSuchFileException: module.properties")
+        ));
     }
 
     @Test
