@@ -5,6 +5,7 @@
 ### Added
 
 * [#201](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/201) - Make it possible to disable rewriting log4j.properties
+* [#227](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/227) - Improve message for `xyz.amp is not a valid AMP` exception
 
 ### Fixed
 

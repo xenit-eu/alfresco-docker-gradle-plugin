@@ -1,5 +1,8 @@
 package eu.xenit.gradle.docker.alfresco.internal.amp;
 
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -8,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -58,7 +62,31 @@ public class ModuleInformationAmpTest {
             moduleInformation.getId();
         });
 
-        assertTrue(exception.getMessage().contains("test-jar.jar"));
+        assertTrue("Has the JAR file name", exception.getMessage().contains("test-jar.jar"));
+        assertThat(exception.getMessage(), anyOf(
+                containsString("NoSuchFileException: /module.properties"),
+                containsString("NoSuchFileException: module.properties")
+        ));
+    }
+
+    @Test
+    public void createFromInvalidAmp() throws IOException {
+
+        File jarFile = temporaryFolder.newFile("test-amp.amp");
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(jarFile))) {
+            zipOutputStream.putNextEntry(new ZipEntry("module.properties"));
+            zipOutputStream.write("module.id=test-amp\n".getBytes(StandardCharsets.UTF_8));
+            zipOutputStream.closeEntry();
+        }
+
+        ModuleInformation moduleInformation = new ModuleInformationAmp(jarFile);
+
+        InvalidModuleException exception = assertThrows(InvalidModuleException.class, () -> {
+            moduleInformation.getId();
+        });
+
+        assertTrue("Has the AMP file name", exception.getMessage().contains("test-amp.amp"));
+        assertTrue("Has the error message", exception.getMessage().contains("The following module properties need to be defined"));
     }
 
 }
