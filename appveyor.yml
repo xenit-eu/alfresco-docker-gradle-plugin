@@ -12,6 +12,7 @@ init:
     - cmd: docker  info
 environment:
     DOCKER_HOST: 'npipe:////./pipe/docker_engine'
+    JAVA_HOME: 'C:\\Program Files\\Java\\jdk11'
 install:
     - cmd: choco install docker-compose
 build_script:
