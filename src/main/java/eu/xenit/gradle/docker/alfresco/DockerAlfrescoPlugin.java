@@ -1,6 +1,7 @@
 package eu.xenit.gradle.docker.alfresco;
 
 import com.bmuschko.gradle.docker.tasks.image.Dockerfile;
+import eu.xenit.gradle.docker.alfresco.internal.gradle.backports.JvmEcosystemPluginBackport;
 import eu.xenit.gradle.docker.alfresco.tasks.InjectFilesInWarTask;
 import eu.xenit.gradle.docker.alfresco.tasks.InstallAmpsInWarTask;
 import eu.xenit.gradle.docker.alfresco.tasks.MergeWarsTask;
@@ -14,6 +15,7 @@ import eu.xenit.gradle.docker.alfresco.tasks.extension.internal.DockerfileWithLa
 import eu.xenit.gradle.docker.alfresco.tasks.extension.internal.DockerfileWithWarsExtensionImpl;
 import eu.xenit.gradle.docker.core.DockerExtension;
 import eu.xenit.gradle.docker.core.DockerPlugin;
+import eu.xenit.gradle.docker.internal.GradleVersionRequirement;
 import java.util.ArrayList;
 import java.util.List;
 import org.alfresco.repo.module.tool.WarHelperImpl;
@@ -21,6 +23,7 @@ import org.gradle.api.NamedDomainObjectProvider;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.plugins.JvmEcosystemPlugin;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskProvider;
 
@@ -50,6 +53,11 @@ public class DockerAlfrescoPlugin implements Plugin<Project> {
         createConfiguration(project, SHARE_SM);
 
         project.getPluginManager().apply(DockerPlugin.class);
+        if(GradleVersionRequirement.isAtLeast("6.7.0", "support platform() & enforcedPlatform() in dependencies without hacks")) {
+            project.getPluginManager().apply(JvmEcosystemPlugin.class);
+        } else {
+            project.getPluginManager().apply(JvmEcosystemPluginBackport.class);
+        }
 
         DockerExtension dockerExtension = project.getExtensions().getByType(DockerExtension.class);
         AlfrescoDockerExtension alfrescoDockerExtension = dockerExtension.getExtensions()

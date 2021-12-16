@@ -27,6 +27,11 @@ public class ExampleRunner extends AbstractIntegrationTest {
     }
 
     @Test
+    public void testAlfrescoWarPlatform() throws IOException {
+        testProjectFolder(EXAMPLES.resolve("alfresco-war-platform"));
+    }
+
+    @Test
     public void testAlfrescoWarOnlyLegacy() throws IOException {
         testProjectFolder(EXAMPLES.resolve("alfresco-war-only-legacy"));
     }
