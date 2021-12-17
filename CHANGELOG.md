@@ -2,11 +2,14 @@
 
 ## Unreleased
 
+## Version 5.3.1 - 2021-12-17
+
 ### Added
 
 * [#201](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/201) - Make it possible to disable rewriting log4j.properties
 * [#227](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/227) - Improve message for `xyz.amp is not a valid AMP` exception
 * [#231](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/issues/231) - Support for `platform()` & `enforcedPlatform()` with docker-alfresco plugin
+* [#228](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/228) - Change MergeWarsTask task type to War 
 
 ### Fixed
 
