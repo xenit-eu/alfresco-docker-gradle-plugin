@@ -127,7 +127,7 @@ dependencies {
     }
 
     implementation 'com.bmuschko:gradle-docker-plugin:7.2.0'
-    implementation 'com.avast.gradle:gradle-docker-compose-plugin:0.14.3'
+    implementation 'com.avast.gradle:gradle-docker-compose-plugin:0.15.1'
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation 'org.hamcrest:hamcrest-core:2.2'
     testImplementation gradleTestKit()
