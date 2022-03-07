@@ -126,7 +126,7 @@ dependencies {
         exclude group: 'org.slf4j'
     }
 
-    implementation 'com.bmuschko:gradle-docker-plugin:7.2.0'
+    implementation 'com.bmuschko:gradle-docker-plugin:7.3.0'
     implementation 'com.avast.gradle:gradle-docker-compose-plugin:0.14.3'
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation 'org.hamcrest:hamcrest-core:2.2'
