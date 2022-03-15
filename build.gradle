@@ -155,6 +155,7 @@ shadowJar.dependsOn(configureShadowJar)
 jar {
     from zipTree(shadowJar.outputs.files.singleFile)
     dependsOn(shadowJar)
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 pluginUnderTestMetadata {
