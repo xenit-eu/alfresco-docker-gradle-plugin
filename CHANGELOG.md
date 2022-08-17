@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+* [#275](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/275) - Activate workaround for docker consecutive copy bug by default
+
 ## Version 5.3.1 - 2021-12-17
 
 ### Added

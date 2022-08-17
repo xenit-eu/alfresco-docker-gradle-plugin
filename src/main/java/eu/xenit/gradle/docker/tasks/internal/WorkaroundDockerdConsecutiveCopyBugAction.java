@@ -10,6 +10,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import org.gradle.api.Action;
 import org.gradle.api.NonNullApi;
+import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
@@ -18,14 +19,23 @@ import org.gradle.api.logging.Logging;
 public class WorkaroundDockerdConsecutiveCopyBugAction implements Action<Task> {
 
     private static final Logger LOGGER = Logging.getLogger(WorkaroundDockerdConsecutiveCopyBugAction.class);
-    public static final String FEATURE_FLAG = "eu.xenit.docker.flags.workaround-dockerd-consecutive-copy-bug";
+    private static final String FEATURE_FLAG = "eu.xenit.docker.flags.workaround-dockerd-consecutive-copy-bug";
     private static final String CONSECUTIVE_COPIES_PROP = "eu.xenit.docker.flags.workaround-dockerd-consecutive-copy-bug.maxConsecutiveCopies";
     private static final int DEFAULT_MAX_CONSECUTIVE_COPIES = 6;
+
+    private static boolean isEnabled(Project project) {
+        return Optional.ofNullable(project.findProperty(WorkaroundDockerdConsecutiveCopyBugAction.FEATURE_FLAG))
+                .map(Object::toString)
+                .map(Boolean::parseBoolean)
+                .orElse(true);
+    }
 
     @Override
     public void execute(Task task) {
         if (task instanceof Dockerfile) {
-            execute((Dockerfile) task);
+            if (isEnabled(task.getProject())) {
+                execute((Dockerfile) task);
+            }
         } else {
             throw new IllegalArgumentException(
                     "WorkaroundDockerdConsecutiveCopyBugAction can only be applied to Dockerfile tasks");

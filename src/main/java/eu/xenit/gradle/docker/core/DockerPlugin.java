@@ -30,12 +30,6 @@ public class DockerPlugin implements Plugin<Project> {
         return dockerExtension;
     }
 
-    private static boolean readPropertyFlag(Project project, String property) {
-        return Optional.ofNullable(project.findProperty(property))
-                .map(Object::toString)
-                .map(Boolean::parseBoolean)
-                .orElse(false);
-    }
 
     @Override
     public void apply(Project project) {
@@ -59,9 +53,7 @@ public class DockerPlugin implements Plugin<Project> {
                 .register("createDockerFile", DockerfileWithCopyTask.class, dockerfile -> {
                     dockerfile.setDescription("Create a Dockerfile");
                     dockerfile.setGroup(TASK_GROUP);
-                    if (readPropertyFlag(project, WorkaroundDockerdConsecutiveCopyBugAction.FEATURE_FLAG)) {
-                        dockerfile.doFirst("Mitigate Docker COPY bug", new WorkaroundDockerdConsecutiveCopyBugAction());
-                    }
+                    dockerfile.doFirst("Mitigate Docker COPY bug", new WorkaroundDockerdConsecutiveCopyBugAction());
                     dockerfile.doFirst("Consolidate COPY instructions", new ConsolidateFileCopyInstructionsAction());
                 });
         dockerExtension.getDockerFile().convention(dockerfileProvider.flatMap(Dockerfile::getDestFile));
