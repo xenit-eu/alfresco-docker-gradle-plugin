@@ -133,6 +133,8 @@ dependencies {
     testImplementation gradleTestKit()
     testImplementation "org.mockito:mockito-core:4.+"
     testImplementation 'com.github.stefanbirkner:system-rules:1.19.0'
+
+    integrationTestImplementation 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
 }
 
 
@@ -180,6 +182,9 @@ task integrationTest(type: Test, group: "verification") {
             filter.includeTestsMatching("*[Gradle v${version}.*]")
         })
     }
+    systemProperty "eu.xenit.gradle.integration.majorsOnly", project.findProperty("integrationTestMajorsOnly") ?: "false"
+    systemProperty "eu.xenit.gradle.integration.slice.index", project.findProperty("integrationTestSlice.index") ?: "0"
+    systemProperty "eu.xenit.gradle.integration.slice.total", project.findProperty("integrationTestSlice.total") ?: "1"
     doFirst {
         if (gradle.startParameter.offline) {
             systemProperty "eu.xenit.gradle.integration.useGradleVersion", GradleVersion.current().version
