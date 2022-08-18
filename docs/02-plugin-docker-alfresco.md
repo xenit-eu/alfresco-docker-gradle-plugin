@@ -6,7 +6,7 @@ First, you need to apply the plugin to your `build.gradle`
 
 ```groovy
 plugins {
-    id "eu.xenit.docker-alfresco" version "5.2.0" // See https://plugins.gradle.org/plugin/eu.xenit.docker-alfresco for the latest version
+    id "eu.xenit.docker-alfresco" version "5.3.2" // See https://plugins.gradle.org/plugin/eu.xenit.docker-alfresco for the latest version
 }
 ```
 

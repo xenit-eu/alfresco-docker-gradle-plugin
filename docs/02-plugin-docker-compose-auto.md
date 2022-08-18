@@ -6,6 +6,6 @@ It does not require you to explicitly list which projects you want to depend on.
 
 ```groovy
 plugins {
-    id "eu.xenit.docker-compose.auto" version "5.2.0" // See https://plugins.gradle.org/plugin/eu.xenit.docker-compose.auto for the latest version
+    id "eu.xenit.docker-compose.auto" version "5.3.2" // See https://plugins.gradle.org/plugin/eu.xenit.docker-compose.auto for the latest version
 }
 ```
