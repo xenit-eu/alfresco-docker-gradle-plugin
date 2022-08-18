@@ -5,7 +5,7 @@ to use docker images built with the [`DockerBuildImage`](https://bmuschko.github
 
 ```groovy
 plugins {
-    id "eu.xenit.docker-compose" version "5.2.0" // See https://plugins.gradle.org/plugin/eu.xenit.docker-compose for the latest version
+    id "eu.xenit.docker-compose" version "5.3.2" // See https://plugins.gradle.org/plugin/eu.xenit.docker-compose for the latest version
 }
 ```
 
@@ -49,7 +49,7 @@ task buildXYZDockerImage(type: DockerBuildImage) {
 >
 > ```groovy
 > plugins {
->     id "eu.xenit.docker-compose" version "5.2.0" apply false // See https://plugins.gradle.org/plugin/eu.xenit.docker-compose for the latest version
+>     id "eu.xenit.docker-compose" version "5.3.2" apply false // See https://plugins.gradle.org/plugin/eu.xenit.docker-compose for the latest version
 > }
 > ```
 >
