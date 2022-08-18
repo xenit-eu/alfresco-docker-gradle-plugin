@@ -52,16 +52,16 @@ public abstract class AbstractIntegrationTest {
             });
         }
 
-        boolean majorsOnly = Boolean.getBoolean("eu.xenit.gradle.integration.majorsOnly");
+        int scope = Integer.parseUnsignedInt(System.getProperty("eu.xenit.gradle.integration.scope", "2"));
         List<String[]> versionsToBuild = VersionFetcher.fetchVersionSeries()
                 // Only release versions >= 5.6
                 .map(series -> series.filter(VersionFetcher::isRelease)
                         .filter(VersionFetcher.greaterThanOrEqual("5.6")))
                 .filter(series -> !series.isEmpty())
-                // When selecting only majors, select the series with only the major version component
-                .filter(series -> !majorsOnly || series.getSeriesPriority() == 1)
-                // For series with only the major version component, select the first and last version, for series with the minor version component, only select the last version
-                .flatMap(series -> series.getSeriesPriority() == 1 ? Stream.of(series.getLowestVersion(), series.getHighestVersion()): Stream.of(
+                // Select only the series within a certain scope
+                .filter(series -> series.getSeriesPriority() <= scope)
+                // For series with none, or only the major version component, select the first and last version, for series with the minor version component, only select the last version
+                .flatMap(series -> series.getSeriesPriority() <= 1 ? Stream.of(series.getLowestVersion(), series.getHighestVersion()): Stream.of(
                         series.getHighestVersion()))
                 // Collect to a set to deduplicate versions
                 .collect(Collectors.toSet())

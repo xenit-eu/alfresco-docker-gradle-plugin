@@ -22,6 +22,9 @@ public class GradleVersionSeries {
     }
 
     public int getSeriesPriority() {
+        if(series.isEmpty()) {
+            return 0;
+        }
         return series.split("\\.").length;
     }
 

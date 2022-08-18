@@ -54,8 +54,7 @@ public class VersionFetcher {
         }
 
         return versionSeries.stream()
-                .map(series -> GradleVersionSeries.extract(series, versions))
-                .filter(series -> series.getSeriesPriority() <= 2);
+                .map(series -> GradleVersionSeries.extract(series, versions));
     }
 
 }

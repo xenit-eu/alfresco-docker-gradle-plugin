@@ -33,6 +33,7 @@ public class GradleVersionSpec {
             }
             series.add(serie.substring(0, Math.max(serie.length()-1, 0)));
         }
+        series.add("");
 
         return Collections.unmodifiableSet(series);
     }

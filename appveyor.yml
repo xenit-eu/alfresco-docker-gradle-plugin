@@ -18,4 +18,4 @@ install:
 build_script:
     - cmd: gradlew assemble
 test_script:
-    - cmd: gradlew check -i -PintegrationTestGradleVersions=6.4
+    - cmd: gradlew check -i -PintegrationTestScope=0

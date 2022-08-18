@@ -168,21 +168,14 @@ import org.gradle.util.GradleVersion
 
 task integrationTest(type: Test, group: "verification") {
     useJUnit()
-    if (project.hasProperty("integrationTestGradleVersions")) {
-        // This is used for sharding integration tests across different gradle versions
-        // to avoid a timeout on travis because the total build takes too long.
-        // See also the .travis.yml file
-        project.property("integrationTestGradleVersions").tokenize(",").forEach({ version ->
-            // The versions specified in `integrationTestGradleVersions` are major.minor.
-            // We only want it to match those, and eventual patches to those versions.
-            // In particular, we want 4.1 to match 4.1.2, but not 4.10.
-            // Since there is only one test parameter for every version, either the first
-            // pattern matches major.minor, or the second pattern matches major.minor.patch
-            filter.includeTestsMatching("*[Gradle v${version}]")
-            filter.includeTestsMatching("*[Gradle v${version}.*]")
-        })
-    }
-    systemProperty "eu.xenit.gradle.integration.majorsOnly", project.findProperty("integrationTestMajorsOnly") ?: "false"
+    /**
+     * integrationTestScope selects which Gradle versions get tested against
+     * A scope of 0 only tests the earliest and latest version and gives quick feedback
+     * A scope of 1 additionally tests the earliest and latest version of every major release
+     * A scope of 2 additionally tests the latest version of every minor release
+     * A scope of 3 tests all patch releases"
+     */
+    systemProperty "eu.xenit.gradle.integration.scope", project.findProperty("integrationTestScope") ?: (ci.isCi()?"2":"0")
     systemProperty "eu.xenit.gradle.integration.slice.index", project.findProperty("integrationTestSlice.index") ?: "0"
     systemProperty "eu.xenit.gradle.integration.slice.total", project.findProperty("integrationTestSlice.total") ?: "1"
     doFirst {
