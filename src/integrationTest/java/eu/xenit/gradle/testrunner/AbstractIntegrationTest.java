@@ -3,6 +3,7 @@ package eu.xenit.gradle.testrunner;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import eu.xenit.gradle.testrunner.versions.GradleVersionSeries;
 import eu.xenit.gradle.testrunner.versions.GradleVersionSpec;
 import eu.xenit.gradle.testrunner.versions.VersionFetcher;
 import java.io.File;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
@@ -51,44 +53,28 @@ public abstract class AbstractIntegrationTest {
         }
 
         boolean majorsOnly = Boolean.getBoolean("eu.xenit.gradle.integration.majorsOnly");
-        Comparator<GradleVersionSpec> byVersionNumber = Comparator.comparing(versionSpec -> GradleVersion.version(versionSpec.getVersion()));
-        List<GradleVersionSpec> fetchedVersions = VersionFetcher.fetchVersions()
-                .filter(VersionFetcher::isRelease)
-                .filter(VersionFetcher.greaterThan("5.6"))
-                .sorted(byVersionNumber)
-                .collect(Collectors.toList());
-
-        Map<String, List<GradleVersionSpec>> versionsByMinor = new HashMap<>();
-
-        for (GradleVersionSpec versionSpec : fetchedVersions) {
-            String[] versionParts = GradleVersion.version(versionSpec.getVersion()).getBaseVersion().getVersion().split("\\.");
-            String versionKey = majorsOnly?versionParts[0]:(versionParts[0]+"."+versionParts[1]);
-            if(versionsByMinor.containsKey(versionKey)) {
-                versionsByMinor.get(versionKey).add(versionSpec);
-            } else {
-                versionsByMinor.put(versionKey, new ArrayList<>(Collections.singletonList(versionSpec)));
-                if(majorsOnly) {
-                    versionsByMinor.put(versionKey + "-lowest", Collections.singletonList(versionSpec));
-                }
-            }
-        }
-
-
-        List<String[]> versionsToBuild = versionsByMinor.values()
+        List<String[]> versionsToBuild = VersionFetcher.fetchVersionSeries()
+                // Only release versions >= 5.6
+                .map(series -> series.filter(VersionFetcher::isRelease)
+                        .filter(VersionFetcher.greaterThanOrEqual("5.6")))
+                .filter(series -> !series.isEmpty())
+                // When selecting only majors, select the series with only the major version component
+                .filter(series -> !majorsOnly || series.getSeriesPriority() == 1)
+                // For series with only the major version component, select the first and last version, for series with the minor version component, only select the last version
+                .flatMap(series -> series.getSeriesPriority() == 1 ? Stream.of(series.getLowestVersion(), series.getHighestVersion()): Stream.of(
+                        series.getHighestVersion()))
+                // Collect to a set to deduplicate versions
+                .collect(Collectors.toSet())
                 .stream()
-                .map(versions -> versions.stream()
-                        // Find latest patch version
-                        .sorted(byVersionNumber.reversed())
-                        .findFirst()
-                        .orElse(null)
-                )
-                .filter(Objects::nonNull)
-                .sorted(byVersionNumber)
+                // Re-sort by version number
+                .sorted(GradleVersionSpec.BY_VERSION_NUMBER)
+                // Convert to parameter for junit
                 .map(GradleVersionSpec::getVersion)
                 .map(version -> new String[]{version})
                 .collect(Collectors.toList());
 
         List<String[]> slicedVersions = slice(versionsToBuild);
+
         System.out.println(slicedVersions.stream()
                 .map(i -> i[0])
                 .collect(Collectors.joining(", ", "Running test on versions: ", "")));
