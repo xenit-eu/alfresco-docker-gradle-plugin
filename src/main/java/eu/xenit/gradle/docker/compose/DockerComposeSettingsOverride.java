@@ -3,6 +3,7 @@ package eu.xenit.gradle.docker.compose;
 import com.avast.gradle.dockercompose.ComposeSettings;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
 import java.time.Duration;
+import javax.inject.Inject;
 import org.gradle.api.Project;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.TaskProvider;
@@ -11,6 +12,7 @@ abstract class DockerComposeSettingsOverride extends ComposeSettings implements 
 
     private DockerComposeConvention dockerComposeConvention;
 
+    @Inject
     public DockerComposeSettingsOverride(Project project, String name, String parentName) {
         super(project, name, parentName);
     }
@@ -59,11 +61,6 @@ abstract class DockerComposeSettingsOverride extends ComposeSettings implements 
     @Override
     public void fromProject(String environmentVariable, String projectName) {
         dockerComposeConvention.fromProject(environmentVariable, projectName);
-    }
-
-    @Override
-    public Property<Duration> getDockerComposeStopTimeout(){
-        return null;
     }
 
     void setDockerComposeConvention(DockerComposeConvention dockerComposeConvention) {

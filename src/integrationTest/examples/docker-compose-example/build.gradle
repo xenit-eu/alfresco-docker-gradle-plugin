@@ -6,7 +6,7 @@ dockerCompose {
     fromProject(':subpr1')
     nested {
         fromProject('TEST_IMAGE', ':subpr2')
-        useComposeFiles += ["docker-compose.nested.yml"]
+        useComposeFiles.add("docker-compose.nested.yml")
     }
 }
 
