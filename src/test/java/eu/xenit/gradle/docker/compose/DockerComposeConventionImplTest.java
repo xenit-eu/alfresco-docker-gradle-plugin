@@ -35,7 +35,7 @@ public class DockerComposeConventionImplTest {
     public void setup() {
         project = (ProjectInternal) ProjectBuilder.builder().build();
         dockerBuildImageProvider = createBuildDockerImage(project, DOCKER_IMAGE_ID);
-        DockerComposeExtensionOverride extensionOverride = new DockerComposeExtensionOverride(project);
+        DockerComposeExtensionOverride extensionOverride = project.getExtensions().create("bla", DockerComposeExtensionOverride.class);
         composeSettings = extensionOverride;
         composeConvention = extensionOverride;
     }
@@ -50,7 +50,7 @@ public class DockerComposeConventionImplTest {
     }
 
     private void runSetupImageEnvironmentWithComposeUp() {
-        runSetupImageEnvironment(composeSettings.getUpTask());
+        runSetupImageEnvironment(composeSettings.getTasksConfigurator().getUpTask());
     }
 
     private void runSetupImageEnvironment(TaskProvider<? extends DefaultTask> taskProvider) {
@@ -102,13 +102,13 @@ public class DockerComposeConventionImplTest {
         DockerBuildImage dockerBuildImage = dockerBuildImageProvider.get();
         composeConvention.fromBuildImage(dockerBuildImage);
 
-        assertTaskDependsOn(composeSettings.getUpTask(), dockerBuildImage);
-        assertTaskDependsOn(composeSettings.getBuildTask(), dockerBuildImage);
-        assertTaskDependsOn(composeSettings.getPushTask(), dockerBuildImage);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getUpTask(), dockerBuildImage);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getBuildTask(), dockerBuildImage);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getPushTask(), dockerBuildImage);
 
         runSetupImageEnvironmentWithComposeUp();
 
-        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get("BUILD_DOCKER_IMAGE_DOCKER_IMAGE"));
+        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get().get("BUILD_DOCKER_IMAGE_DOCKER_IMAGE"));
     }
 
     @Test
@@ -116,39 +116,39 @@ public class DockerComposeConventionImplTest {
         DockerBuildImage dockerBuildImage = dockerBuildImageProvider.get();
         composeConvention.fromBuildImage("DOCKER_IMAGE", dockerBuildImage);
 
-        assertTaskDependsOn(composeSettings.getUpTask(), dockerBuildImage);
-        assertTaskDependsOn(composeSettings.getBuildTask(), dockerBuildImage);
-        assertTaskDependsOn(composeSettings.getPushTask(), dockerBuildImage);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getUpTask(), dockerBuildImage);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getBuildTask(), dockerBuildImage);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getPushTask(), dockerBuildImage);
 
         runSetupImageEnvironmentWithComposeUp();
 
-        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get("DOCKER_IMAGE"));
+        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get().get("DOCKER_IMAGE"));
     }
 
     @Test
     public void testFromBuildImageProvider() {
         composeConvention.fromBuildImage(dockerBuildImageProvider);
 
-        assertTaskDependsOn(composeSettings.getUpTask(), dockerBuildImageProvider);
-        assertTaskDependsOn(composeSettings.getBuildTask(), dockerBuildImageProvider);
-        assertTaskDependsOn(composeSettings.getPushTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getUpTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getBuildTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getPushTask(), dockerBuildImageProvider);
 
         runSetupImageEnvironmentWithComposeUp();
 
-        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get("BUILD_DOCKER_IMAGE_DOCKER_IMAGE"));
+        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get().get("BUILD_DOCKER_IMAGE_DOCKER_IMAGE"));
     }
 
     @Test
     public void testFromBuildImageProviderWithEnvironment() {
         composeConvention.fromBuildImage("DOCKER_IMAGE", dockerBuildImageProvider);
 
-        assertTaskDependsOn(composeSettings.getUpTask(), dockerBuildImageProvider);
-        assertTaskDependsOn(composeSettings.getBuildTask(), dockerBuildImageProvider);
-        assertTaskDependsOn(composeSettings.getPushTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getUpTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getBuildTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getPushTask(), dockerBuildImageProvider);
 
         runSetupImageEnvironmentWithComposeUp();
 
-        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get("DOCKER_IMAGE"));
+        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get().get("DOCKER_IMAGE"));
     }
 
     @Test
@@ -156,13 +156,13 @@ public class DockerComposeConventionImplTest {
         composeConvention.fromProject(project);
         TaskCollection<DockerBuildImage> buildImageTaskCollection = project.getTasks().withType(DockerBuildImage.class);
 
-        assertTaskDependsOn(composeSettings.getUpTask(), dockerBuildImageProvider);
-        assertTaskDependsOn(composeSettings.getBuildTask(), dockerBuildImageProvider);
-        assertTaskDependsOn(composeSettings.getPushTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getUpTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getBuildTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getPushTask(), dockerBuildImageProvider);
 
         runSetupImageEnvironmentWithComposeUp();
 
-        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get("BUILD_DOCKER_IMAGE_DOCKER_IMAGE"));
+        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get().get("BUILD_DOCKER_IMAGE_DOCKER_IMAGE"));
     }
 
     @Test
@@ -178,20 +178,20 @@ public class DockerComposeConventionImplTest {
         composeConvention.fromProject(subProject1);
         composeConvention.fromProject(subProject2);
 
-        assertTaskDependsOn(composeSettings.getUpTask(), subProject2BuildDockerImageProvider);
-        assertTaskDependsOn(composeSettings.getBuildTask(), subProject2BuildDockerImageProvider);
-        assertTaskDependsOn(composeSettings.getPushTask(), subProject2BuildDockerImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getUpTask(), subProject2BuildDockerImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getBuildTask(), subProject2BuildDockerImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getPushTask(), subProject2BuildDockerImageProvider);
 
-        assertTaskDependsOn(composeSettings.getUpTask(), subProject1BuildDockerImageProvider);
-        assertTaskDependsOn(composeSettings.getBuildTask(), subProject1BuildDockerImageProvider);
-        assertTaskDependsOn(composeSettings.getPushTask(), subProject1BuildDockerImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getUpTask(), subProject1BuildDockerImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getBuildTask(), subProject1BuildDockerImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getPushTask(), subProject1BuildDockerImageProvider);
 
         runSetupImageEnvironmentWithComposeUp();
 
         assertEquals(DOCKER_IMAGE_ID,
-                composeSettings.getEnvironment().get("SUB_PROJECT2_BUILD_DOCKER_IMAGE_DOCKER_IMAGE"));
+                composeSettings.getEnvironment().get().get("SUB_PROJECT2_BUILD_DOCKER_IMAGE_DOCKER_IMAGE"));
         assertEquals(DOCKER_IMAGE_ID,
-                composeSettings.getEnvironment().get("SUB_PROJECT1_BUILD_DOCKER_IMAGE_DOCKER_IMAGE"));
+                composeSettings.getEnvironment().get().get("SUB_PROJECT1_BUILD_DOCKER_IMAGE_DOCKER_IMAGE"));
     }
 
     @Test
@@ -209,7 +209,7 @@ public class DockerComposeConventionImplTest {
         });
         runSetupImageEnvironmentWithComposeUp();
 
-        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get("SUB_PROJECT1_DOCKER_IMAGE"));
+        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get().get("SUB_PROJECT1_DOCKER_IMAGE"));
     }
 
     @Test
@@ -227,19 +227,19 @@ public class DockerComposeConventionImplTest {
         });
         runSetupImageEnvironmentWithComposeUp();
 
-        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get("SUB_PROJECT1_DOCKER_IMAGE"));
+        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get().get("SUB_PROJECT1_DOCKER_IMAGE"));
     }
 
     @Test
     public void testFromProjectWithEnvironmentVariable() {
         composeConvention.fromProject("TESTNAME", project);
-        assertTaskDependsOn(composeSettings.getUpTask(), dockerBuildImageProvider);
-        assertTaskDependsOn(composeSettings.getBuildTask(), dockerBuildImageProvider);
-        assertTaskDependsOn(composeSettings.getPushTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getUpTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getBuildTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getPushTask(), dockerBuildImageProvider);
 
         runSetupImageEnvironmentWithComposeUp();
 
-        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get("TESTNAME_BUILD_DOCKER_IMAGE"));
+        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get().get("TESTNAME_BUILD_DOCKER_IMAGE"));
     }
 
     @Test
@@ -251,15 +251,15 @@ public class DockerComposeConventionImplTest {
             dockerBuildImage.getImageId().set(DOCKER_IMAGE_ID_2);
         });
         composeConvention.fromProject("TESTNAME2", project);
-        assertTaskDependsOn(composeSettings.getUpTask(), dockerBuildImageProvider);
-        assertTaskDependsOn(composeSettings.getBuildTask(), dockerBuildImageProvider);
-        assertTaskDependsOn(composeSettings.getPushTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getUpTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getBuildTask(), dockerBuildImageProvider);
+        assertTaskDependsOn(composeSettings.getTasksConfigurator().getPushTask(), dockerBuildImageProvider);
 
         runSetupImageEnvironmentWithComposeUp();
 
-        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get("TESTNAME2_BUILD_DOCKER_IMAGE"));
+        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get().get("TESTNAME2_BUILD_DOCKER_IMAGE"));
         assertEquals(DOCKER_IMAGE_ID_2,
-                composeSettings.getEnvironment().get("TESTNAME2_BUILD_DOCKER_IMAGE_ALTERNATIVE"));
+                composeSettings.getEnvironment().get().get("TESTNAME2_BUILD_DOCKER_IMAGE_ALTERNATIVE"));
     }
 
     @Test
@@ -277,7 +277,7 @@ public class DockerComposeConventionImplTest {
         });
         runSetupImageEnvironmentWithComposeUp();
 
-        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get("TESTNAME"));
-        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get("TESTNAME_BUILD_DOCKER_IMAGE"));
+        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get().get("TESTNAME"));
+        assertEquals(DOCKER_IMAGE_ID, composeSettings.getEnvironment().get().get("TESTNAME_BUILD_DOCKER_IMAGE"));
     }
 }
