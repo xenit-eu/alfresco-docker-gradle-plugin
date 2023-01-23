@@ -2,10 +2,8 @@ package eu.xenit.gradle.docker.compose;
 
 import com.avast.gradle.dockercompose.ComposeSettings;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
-import java.time.Duration;
 import javax.inject.Inject;
 import org.gradle.api.Project;
-import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.TaskProvider;
 
 abstract class DockerComposeSettingsOverride extends ComposeSettings implements DockerComposeConvention {
