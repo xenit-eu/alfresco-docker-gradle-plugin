@@ -1,6 +1,5 @@
 package eu.xenit.gradle.docker.alfresco.internal.amp;
 
-import java.io.File;
 import org.alfresco.error.AlfrescoRuntimeException;
 
 public class ModuleInstallationException extends ModuleException {

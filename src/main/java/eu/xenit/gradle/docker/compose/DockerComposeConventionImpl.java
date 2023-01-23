@@ -23,7 +23,7 @@ class DockerComposeConventionImpl implements DockerComposeConvention {
 
     DockerComposeConventionImpl(ComposeSettings composeSettings) {
         this.composeSettings = composeSettings;
-        this.pluginClasspathChecker = new PluginClasspathChecker(composeSettings.getProject());
+        this.pluginClasspathChecker = new PluginClasspathChecker(composeSettings.getTasksConfigurator().getProject());
     }
 
     private void configureComposeDependencies(Object dependencies) {
@@ -33,9 +33,9 @@ class DockerComposeConventionImpl implements DockerComposeConvention {
     }
 
     private void configureComposeTasks(Action<? super Task> action) {
-        composeSettings.getUpTask().configure(action);
-        composeSettings.getBuildTask().configure(action);
-        composeSettings.getPushTask().configure(action);
+        composeSettings.getTasksConfigurator().getUpTask().configure(action);
+        composeSettings.getTasksConfigurator().getBuildTask().configure(action);
+        composeSettings.getTasksConfigurator().getPushTask().configure(action);
     }
 
     private void configureComposeEnvironment(Action<? super DockerBuildImage> action,
@@ -105,12 +105,12 @@ class DockerComposeConventionImpl implements DockerComposeConvention {
 
     @Override
     public void fromProject(String projectName) {
-        fromProject(composeSettings.getProject().project(projectName));
+        fromProject(composeSettings.getTasksConfigurator().getProject().project(projectName));
     }
 
     @Override
     public void fromProject(String environmentVariable, String projectName) {
-        fromProject(environmentVariable, composeSettings.getProject().project(projectName));
+        fromProject(environmentVariable, composeSettings.getTasksConfigurator().getProject().project(projectName));
     }
 
     @Override

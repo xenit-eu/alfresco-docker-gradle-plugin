@@ -4,5 +4,5 @@ plugins {
 
 
 createDockerFile {
-    from('alpine:edge')
+    from('nginx')
 }

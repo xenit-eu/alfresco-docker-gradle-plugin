@@ -2,13 +2,15 @@ package eu.xenit.gradle.docker.compose;
 
 import com.avast.gradle.dockercompose.ComposeSettings;
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage;
+import javax.inject.Inject;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskProvider;
 
-class DockerComposeSettingsOverride extends ComposeSettings implements DockerComposeConvention {
+abstract class DockerComposeSettingsOverride extends ComposeSettings implements DockerComposeConvention {
 
     private DockerComposeConvention dockerComposeConvention;
 
+    @Inject
     public DockerComposeSettingsOverride(Project project, String name, String parentName) {
         super(project, name, parentName);
     }

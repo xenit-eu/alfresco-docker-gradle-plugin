@@ -1,6 +1,5 @@
 package eu.xenit.gradle.docker.alfresco.internal.version;
 
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
