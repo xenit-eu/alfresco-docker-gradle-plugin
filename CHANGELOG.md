@@ -1,6 +1,6 @@
 # Alfresco Docker Gradle Plugins - Changelog
 
-## Version 5.4.0 - 2023-01-23
+## Version 5.4.0 - UNRELEASED
 
 ### Dependencies
 
