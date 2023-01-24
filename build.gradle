@@ -15,7 +15,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocatio
 
 group 'eu.xenit.gradle'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 11
 
 configurations {
     packaged

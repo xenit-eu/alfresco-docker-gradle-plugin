@@ -7,6 +7,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -29,7 +30,7 @@ public class AlfrescoVersion {
 
     @Nullable
     public static AlfrescoVersion fromAlfrescoWar(@Nonnull Path warPath) throws IOException {
-        try(FileSystem zipFs = FileSystems.newFileSystem(warPath, null)) {
+        try(FileSystem zipFs = FileSystems.newFileSystem(warPath, AlfrescoVersion.class.getClassLoader())) {
             Path versionPropertiesPath = zipFs.getPath("/");
             for (String pathComponent : VERSION_PROPERTIES_PATH) {
                 versionPropertiesPath = versionPropertiesPath.resolve(pathComponent);
