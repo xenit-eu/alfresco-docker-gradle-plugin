@@ -3,7 +3,7 @@ plugins {
     id "maven-publish"
     id "idea"
     id "jacoco"
-    id "com.gradle.plugin-publish" version "0.21.0"
+    id "com.gradle.plugin-publish" version "1.1.0"
     id 'org.ajoberstar.reckon' version "0.16.1"
     id 'com.github.johnrengelman.shadow' version '7.1.2' apply false
     id "org.sonarqube" version "3.5.0.2730"
@@ -72,37 +72,37 @@ gradlePlugin {
     testSourceSets(sourceSets.test, sourceSets.integrationTest)
 }
 
-pluginBundle {
+gradlePlugin {
     vcsUrl = "https://github.com/xenit-eu/alfresco-docker-gradle-plugin"
     website = vcsUrl
     description = "A gradle plugin to create Alfresco docker images with extensions"
-    tags = ["alfresco", "docker"]
     plugins {
         dockerAlfresco {
             displayName = "Alfresco docker plugin"
+            tags.set(["alfresco", "docker"])
         }
 
         dockerConfig {
             displayName = "Docker configuration plugin"
+            tags.set(["alfresco", "docker"])
         }
 
         docker {
             displayName = "Docker plugin"
+            tags.set(["alfresco", "docker"])
         }
 
         dockerCompose {
             displayName = "docker-compose plugin"
+            tags.set(["alfresco", "docker"])
         }
 
         dockerComposeAuto {
             displayName = "docker-compose plugin: automatic configuration for all projects"
+            tags.set(["alfresco", "docker"])
         }
     }
 
-    mavenCoordinates {
-        groupId = "eu.xenit.gradle"
-        artifactId = "alfresco-docker-plugin"
-    }
 }
 
 reckon {
