@@ -72,37 +72,37 @@ gradlePlugin {
     testSourceSets(sourceSets.test, sourceSets.integrationTest)
 }
 
-pluginBundle {
+gradlePlugin {
     vcsUrl = "https://github.com/xenit-eu/alfresco-docker-gradle-plugin"
     website = vcsUrl
     description = "A gradle plugin to create Alfresco docker images with extensions"
-    tags = ["alfresco", "docker"]
     plugins {
         dockerAlfresco {
             displayName = "Alfresco docker plugin"
+            tags.set(["alfresco", "docker"])
         }
 
         dockerConfig {
             displayName = "Docker configuration plugin"
+            tags.set(["alfresco", "docker"])
         }
 
         docker {
             displayName = "Docker plugin"
+            tags.set(["alfresco", "docker"])
         }
 
         dockerCompose {
             displayName = "docker-compose plugin"
+            tags.set(["alfresco", "docker"])
         }
 
         dockerComposeAuto {
             displayName = "docker-compose plugin: automatic configuration for all projects"
+            tags.set(["alfresco", "docker"])
         }
     }
 
-    mavenCoordinates {
-        groupId = "eu.xenit.gradle"
-        artifactId = "alfresco-docker-plugin"
-    }
 }
 
 reckon {
