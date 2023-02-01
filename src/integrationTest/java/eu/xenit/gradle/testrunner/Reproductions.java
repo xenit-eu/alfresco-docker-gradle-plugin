@@ -12,6 +12,7 @@ import java.util.Objects;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.BuildTask;
 import org.gradle.testkit.runner.TaskOutcome;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -125,6 +126,7 @@ public class Reproductions extends AbstractIntegrationTest {
     }
 
     @Test
+    @Ignore("Waiting for a fix for https://github.com/bmuschko/gradle-docker-plugin/issues/1158")
     public void testIssue107() throws IOException {
         testProjectFolder(REPRODUCTIONS.resolve("issue-107"), ":functionalTest");
     }
