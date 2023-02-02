@@ -29,3 +29,8 @@
     </tr>
 
 </table>
+
+2. The 5.4 release drops a lot of older Gradle versions. Make sure you upgrade your Gradle wrapper to at least version 6.2:
+```bash
+./gradlew wrapper --gradle-version=7.6
+```
