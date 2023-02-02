@@ -29,7 +29,8 @@ public class AlfrescoVersion {
 
     @Nullable
     public static AlfrescoVersion fromAlfrescoWar(@Nonnull Path warPath) throws IOException {
-        try(FileSystem zipFs = FileSystems.newFileSystem(warPath, null)) {
+        ClassLoader classLoader = null;
+        try(FileSystem zipFs = FileSystems.newFileSystem(warPath, classLoader)) {
             Path versionPropertiesPath = zipFs.getPath("/");
             for (String pathComponent : VERSION_PROPERTIES_PATH) {
                 versionPropertiesPath = versionPropertiesPath.resolve(pathComponent);
