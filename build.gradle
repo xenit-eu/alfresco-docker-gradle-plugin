@@ -51,22 +51,27 @@ gradlePlugin {
         dockerAlfresco {
             id = "eu.xenit.docker-alfresco"
             implementationClass = "eu.xenit.gradle.docker.alfresco.DockerAlfrescoPlugin"
+            description = "Plugin that facilitates the creation of docker images for Alfresco and Share with custom modules"
         }
         dockerConfig {
             id = "eu.xenit.docker-config"
             implementationClass = "eu.xenit.gradle.docker.config.DockerConfigPlugin"
+            description = "Plugin that configures the communication with the docker daemon and registries"
         }
         docker {
             id = "eu.xenit.docker"
             implementationClass = "eu.xenit.gradle.docker.core.DockerPlugin"
+            description = "Plugin that enables you to build docker images"
         }
         dockerCompose {
             id = "eu.xenit.docker-compose"
             implementationClass = "eu.xenit.gradle.docker.compose.DockerComposePlugin"
+            description = "Plugin that enables running docker-compose setups from Gradle"
         }
         dockerComposeAuto {
             id = "eu.xenit.docker-compose.auto"
             implementationClass = "eu.xenit.gradle.docker.compose.DockerComposeAutoPlugin"
+            description = "This plugin is an extension of eu.xenit.docker-compose that automatically uses dockerCompose.fromProject() for all projects in your Gradle build."
         }
     }
     testSourceSets(sourceSets.test, sourceSets.integrationTest)
