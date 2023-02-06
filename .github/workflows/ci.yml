@@ -17,7 +17,8 @@ jobs:
           distribution: 'temurin'
           java-version: '11'
       - name: switch docker
-        run: dir C:\
+        run: |
+          tree C:/ProgramData/docker
       - name: Assemble
         uses: gradle/gradle-build-action@v2.3.3
         with:
