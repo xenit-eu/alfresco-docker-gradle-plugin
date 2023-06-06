@@ -126,7 +126,7 @@ repositories {
 
 dependencies {
     packaged 'org.alfresco:alfresco-mmt:6.0'
-    packaged group: 'commons-io', name: 'commons-io', version: '2.11.0'
+    packaged group: 'commons-io', name: 'commons-io', version: '2.12.0'
     packaged('org.eclipse.jgit:org.eclipse.jgit:6.5.0.202303070854-r') {
         exclude group: 'org.slf4j'
     }
