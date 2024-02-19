@@ -4,7 +4,7 @@ plugins {
     id "idea"
     id "jacoco"
     id "com.gradle.plugin-publish" version "1.2.1"
-    id 'org.ajoberstar.reckon' version "0.18.2"
+    id 'org.ajoberstar.reckon' version "0.18.3"
     id 'com.github.johnrengelman.shadow' version '7.1.2' apply false
     id "org.sonarqube" version "4.4.1.3373"
     id "be.vbgn.ci-detect" version "0.5.0"
