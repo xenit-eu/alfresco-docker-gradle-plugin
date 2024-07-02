@@ -1,5 +1,12 @@
 # Alfresco Docker Gradle Plugins - Changelog
 
+
+## Version 5.5.0 - Unreleased
+
+### Changed
+
+* [#342](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/342) - Support docker compose v2
+
 ## Version 5.4.0 - 2023-02-02
 
 ### Dependencies
