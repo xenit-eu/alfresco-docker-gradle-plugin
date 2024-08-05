@@ -14,6 +14,9 @@
 
 ## Documentation
 
+> [!warning]
+>  Versions prior to `5.3.0` have a dependency on the [gradle-docker-compose-plugin which was published to JCenter](https://github.com/avast/gradle-docker-compose-plugin/commit/82b9e02d5a79dc94ead743f66aeaaa4307df4459), and it is decommisioned now, so these old versions are not available.
+
 * [The user guide](./docs/README.md)
 * [The example projects](./src/integrationTest/examples)
 
