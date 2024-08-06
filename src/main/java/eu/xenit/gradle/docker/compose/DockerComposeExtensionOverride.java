@@ -78,8 +78,9 @@ abstract class DockerComposeExtensionOverride extends ComposeExtension implement
         r.setProjectNamePrefix(this.getProjectNamePrefix());
 
         r.getExecutable().set(this.getExecutable().get());
+        r.getUseDockerComposeV2().set(this.getUseDockerComposeV2().get());
         r.getDockerExecutable().set(this.getDockerExecutable().get());
-        r.getEnvironment().set(new HashMap<String, Object>(this.getEnvironment().get()));
+        r.getEnvironment().set(new HashMap<>(this.getEnvironment().get()));
 
         r.getDockerComposeWorkingDirectory().set(this.getDockerComposeWorkingDirectory().getOrNull());
         r.getDockerComposeStopTimeout().set(this.getDockerComposeStopTimeout().get());
