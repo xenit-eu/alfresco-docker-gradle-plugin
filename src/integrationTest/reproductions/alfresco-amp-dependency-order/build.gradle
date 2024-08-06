@@ -1,6 +1,6 @@
 plugins {
-    id "eu.xenit.amp" version "1.1.0"
-    id "eu.xenit.alfresco" version "1.1.0"
+    id "eu.xenit.amp" version "1.2.0"
+    id "eu.xenit.alfresco" version "1.2.0"
     id "eu.xenit.docker-alfresco"
 }
 
