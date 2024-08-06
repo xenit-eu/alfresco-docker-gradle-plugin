@@ -15,7 +15,11 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocatio
 
 group 'eu.xenit.gradle'
 
-sourceCompatibility = 1.8
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
 
 configurations {
     packaged

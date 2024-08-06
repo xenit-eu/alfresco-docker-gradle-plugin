@@ -7,6 +7,9 @@
 
 * [#342](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/342) - Support docker compose v2
 
+> [!warning]
+> This release drops support for Java < 11
+
 ## Version 5.4.0 - 2023-02-02
 
 ### Dependencies
