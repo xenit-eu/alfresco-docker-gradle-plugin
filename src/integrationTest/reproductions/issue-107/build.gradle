@@ -35,13 +35,14 @@ import com.bmuschko.gradle.docker.tasks.image.*
 
 task saveDockerImage(type: DockerSaveImage) {
     dependsOn(buildDockerImage)
-    image = buildDockerImage.imageId
+    images.add(buildDockerImage.imageId)
     destFile = project.layout.buildDirectory.file("builtImage.tar")
 }
 
 task saveBaseDockerImage(type: DockerSaveImage) {
-    image = dockerAlfresco.baseImage
+    images.add(dockerAlfresco.baseImage)
     destFile = project.layout.buildDirectory.file("originalImage.tar")
+    mustRunAfter(buildDockerImage) // because the build pulls the base image if it does not exist on disk yet
 }
 import java.util.stream.Collectors
 import java.util.stream.Stream
