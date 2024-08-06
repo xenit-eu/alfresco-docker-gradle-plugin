@@ -9,6 +9,7 @@
 
 > [!warning]
 > This release drops support for Java < 11
+> The docker-compose plugins drop support for Gradle < 7.0
 
 ## Version 5.4.0 - 2023-02-02
 
