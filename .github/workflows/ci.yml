@@ -13,7 +13,7 @@ jobs:
     name: "build"
     runs-on: ubuntu-latest
     env:
-      TEST_GRADLE_VERSION: 6.7
+      TEST_GRADLE_VERSION: 8.9
     steps:
       - uses: actions/checkout@v2
         with:
@@ -49,11 +49,9 @@ jobs:
     strategy:
       matrix:
         gradle-versions:
-          - 6.2,6.3,6.4
-          - 6.5,6.6,6.7
-          - 6.8,6.9,7.0
-          - 7.1,7.2,7.3
-          - 7.4,7.5,7.6
+          - 6.2,6.9
+          - 7.0,7.6
+          - 8.0,8.9
     steps:
       - uses: actions/checkout@v2
         with:
