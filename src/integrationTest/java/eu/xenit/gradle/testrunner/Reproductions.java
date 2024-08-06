@@ -84,6 +84,7 @@ public class Reproductions extends AbstractIntegrationTest {
 
     @Test
     public void testAlfrescoAmpDependencyOrder() throws IOException {
+        assumeThat("The amp plugin does not support Gradle 8 yet", GradleVersion.version(gradleVersion), Matchers.lessThan(GradleVersion.version("8.0")));
         testProjectFolder(REPRODUCTIONS.resolve("alfresco-amp-dependency-order"), ":applyAlfrescoAmp");
 
     }
@@ -138,6 +139,7 @@ public class Reproductions extends AbstractIntegrationTest {
 
     @Test
     public void testIssue50() throws IOException {
+        assumeThat("The amp plugin does not support Gradle 8 yet", GradleVersion.version(gradleVersion), Matchers.lessThan(GradleVersion.version("8.0")));
         testProjectFolder(REPRODUCTIONS.resolve("issue-50"), ":alfrescoWar");
     }
 
