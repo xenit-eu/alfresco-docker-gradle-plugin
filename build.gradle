@@ -15,7 +15,11 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocatio
 
 group 'eu.xenit.gradle'
 
-sourceCompatibility = 1.8
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
 
 configurations {
     packaged
@@ -132,7 +136,7 @@ dependencies {
     }
 
     implementation 'com.bmuschko:gradle-docker-plugin:9.3.1'
-    implementation 'com.avast.gradle:gradle-docker-compose-plugin:0.16.12'
+    implementation 'com.avast.gradle:gradle-docker-compose-plugin:0.17.7'
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation 'org.hamcrest:hamcrest-core:2.2'
     testImplementation gradleTestKit()

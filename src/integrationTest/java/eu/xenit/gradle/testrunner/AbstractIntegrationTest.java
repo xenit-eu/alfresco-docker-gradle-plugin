@@ -7,13 +7,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.gradle.testkit.runner.BuildResult;
@@ -44,20 +41,11 @@ public abstract class AbstractIntegrationTest {
             });
         }
         return Arrays.asList(new Object[][]{
-                {"7.6"},
-                {"7.5.1"},
-                {"7.4.2"},
-                {"7.3.3"},
-                {"7.2"},
-                {"7.1.1"},
+                {"8.9"},
+                {"8.0.1"},
+                {"7.6.4"},
                 {"7.0.2"},
                 {"6.9.3"},
-                {"6.8.3"},
-                {"6.7.1"},
-                {"6.6.1"},
-                {"6.5.1"},
-                {"6.4.1"},
-                {"6.3"},
                 {"6.2.2"},
         });
     }

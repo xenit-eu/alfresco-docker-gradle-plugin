@@ -1,8 +1,10 @@
 package eu.xenit.gradle.testrunner;
 
+import static org.junit.Assume.assumeThat;
 import static org.junit.Assume.assumeTrue;
 
 import org.gradle.util.GradleVersion;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -43,26 +45,31 @@ public class ExampleRunner extends AbstractIntegrationTest {
 
     @Test
     public void testExampleDockerPlugin() throws IOException {
+        assumeThat("The docker-compose plugin requires Gradle 7", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.0")));
         testProjectFolder(EXAMPLES.resolve("example-docker-plugin"));
     }
 
     @Test
     public void testExampleDockerPluginLegacy() throws IOException {
+        assumeThat("The docker-compose plugin requires Gradle 7", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.0")));
         testProjectFolder(EXAMPLES.resolve("example-docker-plugin-legacy"));
     }
 
     @Test
     public void testComposeUp() throws IOException {
+        assumeThat("The docker-compose plugin requires Gradle 7", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.0")));
         testProjectFolder(EXAMPLES.resolve("example-docker-plugin"), ":integrationTest");
     }
 
     @Test
     public void testDockerComposeAutoExample() throws IOException {
+        assumeThat("The docker-compose plugin requires Gradle 7", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.0")));
         testProjectFolder(EXAMPLES.resolve("docker-compose-auto-example"), ":integrationTest");
     }
 
     @Test
     public void testDockerComposeExample() throws IOException {
+        assumeThat("The docker-compose plugin requires Gradle 7", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.0")));
         testProjectFolder(EXAMPLES.resolve("docker-compose-example"), ":integrationTest");
     }
 

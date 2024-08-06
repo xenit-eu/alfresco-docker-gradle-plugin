@@ -3,6 +3,7 @@ package eu.xenit.gradle.testrunner;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeThat;
 
 import eu.xenit.gradle.docker.alfresco.tasks.extension.internal.DockerfileWithWarsExtensionImpl;
 import java.io.IOException;
@@ -12,6 +13,8 @@ import java.util.Objects;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.BuildTask;
 import org.gradle.testkit.runner.TaskOutcome;
+import org.gradle.util.GradleVersion;
+import org.hamcrest.Matchers;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -81,6 +84,7 @@ public class Reproductions extends AbstractIntegrationTest {
 
     @Test
     public void testAlfrescoAmpDependencyOrder() throws IOException {
+        assumeThat("The amp plugin requires Gradle 7.1", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.1")));
         testProjectFolder(REPRODUCTIONS.resolve("alfresco-amp-dependency-order"), ":applyAlfrescoAmp");
 
     }
@@ -103,6 +107,7 @@ public class Reproductions extends AbstractIntegrationTest {
 
     @Test
     public void testIssue96() throws IOException {
+        assumeThat("The docker-compose plugin requires Gradle 7", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.0")));
         final String folder = "issue-96";
         final String task = ":buildDockerImage";
 
@@ -116,6 +121,7 @@ public class Reproductions extends AbstractIntegrationTest {
 
     @Test
     public void testIssue104() throws IOException {
+        assumeThat("The docker-compose plugin requires Gradle 7", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.0")));
         final String folder = "issue-104";
         final String task = ":functionalTest";
 
@@ -133,6 +139,7 @@ public class Reproductions extends AbstractIntegrationTest {
 
     @Test
     public void testIssue50() throws IOException {
+        assumeThat("The amp plugin requires Gradle 7.1", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.1")));
         testProjectFolder(REPRODUCTIONS.resolve("issue-50"), ":alfrescoWar");
     }
 
