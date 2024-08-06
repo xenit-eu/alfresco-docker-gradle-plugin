@@ -1,1 +1,12 @@
+plugins {
+    id 'org.ajoberstar.reckon.settings' version "0.18.3"
+}
+
 rootProject.name = 'alfresco-docker-plugin'
+
+reckon {
+    defaultInferredScope = 'patch'
+    snapshots()
+    scopeCalc = calcScopeFromProp()
+    stageCalc = calcStageFromProp()
+}
