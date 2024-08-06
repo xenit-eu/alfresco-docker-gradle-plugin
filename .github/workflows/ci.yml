@@ -13,7 +13,7 @@ jobs:
     name: "build"
     runs-on: ubuntu-latest
     env:
-      TEST_GRADLE_VERSION: 8.9
+      TEST_GRADLE_VERSION: 7.6
     steps:
       - uses: actions/checkout@v2
         with:
