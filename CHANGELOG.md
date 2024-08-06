@@ -1,15 +1,16 @@
 # Alfresco Docker Gradle Plugins - Changelog
 
 
-## Version 5.5.0 - Unreleased
+## Version 5.5.0 - 2024-08-06
+
+> [!warning]
+> This release drops support for Java < 11
+> The docker-compose plugins drop support for Gradle < 7.0
 
 ### Changed
 
 * [#342](https://github.com/xenit-eu/alfresco-docker-gradle-plugin/pull/342) - Support docker compose v2
 
-> [!warning]
-> This release drops support for Java < 11
-> The docker-compose plugins drop support for Gradle < 7.0
 
 ## Version 5.4.0 - 2023-02-02
 
