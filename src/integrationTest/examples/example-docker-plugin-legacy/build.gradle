@@ -11,18 +11,19 @@ dockerFile {
     }
 }
 
-task beforeBuild {
+tasks.register('beforeBuild') {
     doLast {
         println "This runs before build"
     }
 
 }
 
-buildDockerImage.dependsOn beforeBuild
-
-// Remove this when using the plugin
-task integrationTest {
+tasks.named('buildDockerImage') {
+    dependsOn(tasks.named('beforeBuild'))
 }
 
-dockerCompose.isRequiredBy(integrationTest)
+// Remove this when using the plugin
+tasks.register('integrationTest') {
+}
 
+dockerCompose.isRequiredBy(tasks.named('integrationTest'))

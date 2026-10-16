@@ -1,5 +1,15 @@
 # Alfresco Docker Gradle Plugins - Changelog
 
+## Version 6.0.0 - YYYY-MM-DD
+
+> [!warning]
+> This release drops support for Gradle < 7.3 \
+> This release drops support for Java < 17
+
+* Add Support for Gradle 9.8.1
+* Add Support for Gradle 8.14.6
+* Add Support for Java 21
+
 
 ## Version 5.5.0 - 2024-08-06
 

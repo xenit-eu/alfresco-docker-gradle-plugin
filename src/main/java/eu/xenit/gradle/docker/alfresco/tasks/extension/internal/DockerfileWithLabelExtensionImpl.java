@@ -14,9 +14,14 @@ import org.gradle.api.provider.Provider;
 public class DockerfileWithLabelExtensionImpl implements LabelConsumerExtension {
 
     public static void applyTo(Dockerfile task) {
+        applyToAndGet(task);
+    }
+
+    public static DockerfileWithLabelExtensionImpl applyToAndGet(Dockerfile task) {
         DockerfileWithLabelExtensionImpl impl = task.getProject().getObjects()
                 .newInstance(DockerfileWithLabelExtensionImpl.class, task);
-        task.getConvention().getPlugins().put("labels", impl);
+        task.getExtensions().add("labels", impl);
+        return impl;
     }
 
     private final Dockerfile dockerfile;

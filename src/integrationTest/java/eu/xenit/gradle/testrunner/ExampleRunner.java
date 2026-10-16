@@ -16,7 +16,7 @@ import java.nio.file.Paths;
  */
 public class ExampleRunner extends AbstractIntegrationTest {
 
-    private static Path EXAMPLES = Paths.get("src", "integrationTest", "examples");
+    private static final Path EXAMPLES = Paths.get("src", "integrationTest", "examples");
 
     @Test
     public void testAddFilesDockerfile() throws IOException {
@@ -45,31 +45,31 @@ public class ExampleRunner extends AbstractIntegrationTest {
 
     @Test
     public void testExampleDockerPlugin() throws IOException {
-        assumeThat("The docker-compose plugin requires Gradle 7", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.0")));
+        assumeThat("The plugin requires Gradle 7.3 or newer on Java 17", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.3")));
         testProjectFolder(EXAMPLES.resolve("example-docker-plugin"));
     }
 
     @Test
     public void testExampleDockerPluginLegacy() throws IOException {
-        assumeThat("The docker-compose plugin requires Gradle 7", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.0")));
+        assumeThat("The plugin requires Gradle 7.3 or newer on Java 17", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.3")));
         testProjectFolder(EXAMPLES.resolve("example-docker-plugin-legacy"));
     }
 
     @Test
     public void testComposeUp() throws IOException {
-        assumeThat("The docker-compose plugin requires Gradle 7", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.0")));
+        assumeThat("The plugin requires Gradle 7.3 or newer on Java 17", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.3")));
         testProjectFolder(EXAMPLES.resolve("example-docker-plugin"), ":integrationTest");
     }
 
     @Test
     public void testDockerComposeAutoExample() throws IOException {
-        assumeThat("The docker-compose plugin requires Gradle 7", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.0")));
+        assumeThat("The plugin requires Gradle 7.3 or newer on Java 17", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.3")));
         testProjectFolder(EXAMPLES.resolve("docker-compose-auto-example"), ":integrationTest");
     }
 
     @Test
     public void testDockerComposeExample() throws IOException {
-        assumeThat("The docker-compose plugin requires Gradle 7", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.0")));
+        assumeThat("The plugin requires Gradle 7.3 or newer on Java 17", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.3")));
         testProjectFolder(EXAMPLES.resolve("docker-compose-example"), ":integrationTest");
     }
 
@@ -120,8 +120,8 @@ public class ExampleRunner extends AbstractIntegrationTest {
 
     @Test
     public void log4jPrefixDisable() throws IOException {
-        assumeTrue("Gradle 6.2 is required to disable prefixLog4j tasks",
-                GradleVersion.version(gradleVersion).compareTo(GradleVersion.version("6.2")) > 0);
+        assumeTrue("The plugin requires Gradle 7.3 or newer on Java 17",
+                GradleVersion.version(gradleVersion).compareTo(GradleVersion.version("7.3")) >= 0);
         testProjectFolder(EXAMPLES.resolve("log4j-prefix-disable"), ":functionalTest");
     }
 

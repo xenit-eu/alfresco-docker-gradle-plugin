@@ -45,6 +45,9 @@ public interface DockerfileWithWarsExtension {
     }
 
     static DockerfileWithWarsExtension get(Dockerfile task) {
-        return task.getConvention().getPlugin(DockerfileWithWarsExtension.class);
+        if (task instanceof DockerfileWithWarsExtension) {
+            return (DockerfileWithWarsExtension) task;
+        }
+        return task.getExtensions().getByType(DockerfileWithWarsExtension.class);
     }
 }
