@@ -7,6 +7,7 @@ import eu.xenit.gradle.docker.autotag.DockerAutotagPlugin;
 import eu.xenit.gradle.docker.compose.DockerComposePlugin;
 import eu.xenit.gradle.docker.config.DockerConfigPlugin;
 import eu.xenit.gradle.docker.internal.Deprecation;
+import eu.xenit.gradle.docker.internal.GradleVersionRequirement;
 import eu.xenit.gradle.docker.label.DockerLabelExtension;
 import eu.xenit.gradle.docker.label.DockerLabelPlugin;
 import eu.xenit.gradle.docker.tasks.DockerfileWithCopyTask;
@@ -18,6 +19,7 @@ import org.gradle.api.Project;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.tasks.TaskProvider;
+import org.gradle.util.GradleVersion;
 
 public class DockerPlugin implements Plugin<Project> {
 
@@ -72,6 +74,11 @@ public class DockerPlugin implements Plugin<Project> {
 
                     buildImage.getImages().set(dockerExtension.getImages());
                     buildImage.getDockerFile().set(dockerExtension.getDockerFile());
+                    if (GradleVersionRequirement.isAtLeast(
+                            GradleVersion.version("7.3"), null, true)) {
+                        buildImage.doNotTrackState(
+                                "Docker builds produce external images and their context can contain locked Gradle state files");
+                    }
                     buildImage.getInputDir().set(buildImage.getDockerFile().flatMap(dockerFile -> {
                         DirectoryProperty directoryProperty = project.getObjects().directoryProperty();
                         directoryProperty.set(dockerFile.getAsFile().getParentFile());

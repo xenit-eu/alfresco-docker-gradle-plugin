@@ -3,20 +3,20 @@ plugins {
     id "maven-publish"
     id "idea"
     id "jacoco"
-    id "com.gradle.plugin-publish" version "2.0.0"
-    id 'com.github.johnrengelman.shadow' version '7.1.2' apply false
-    id "org.sonarqube" version "7.1.0.6387"
+    id "com.gradle.plugin-publish" version "2.2.1"
+    id 'com.gradleup.shadow' version '9.6.1' apply false
+    id "org.sonarqube" version "7.5.0.8588"
     id "be.vbgn.ci-detect" version "0.5.0"
 }
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+import org.gradle.util.GradleVersion
 
-group 'eu.xenit.gradle'
+group = 'eu.xenit.gradle'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(11)
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
 
@@ -24,7 +24,6 @@ configurations {
     packaged
     compileOnly.extendsFrom(packaged)
     testImplementation.extendsFrom(packaged)
-    integrationTestImplementation.extendsFrom testImplementation
 }
 
 sourceSets {
@@ -41,10 +40,14 @@ sourceSets {
     }
 }
 
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+}
+
 idea {
     module {
-        testSourceDirs += sourceSets.integrationTest.java.sourceDirectories
-        testResourceDirs += sourceSets.integrationTest.resources.srcDirs
+        testSources.from(sourceSets.integrationTest.java.sourceDirectories)
+        testResources.from(sourceSets.integrationTest.resources.srcDirs)
     }
 }
 
@@ -117,47 +120,44 @@ repositories {
     mavenCentral()
     gradlePluginPortal()
     maven {
-        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+        url = "https://artifacts.alfresco.com/nexus/content/groups/public/"
     }
 }
 
 
 dependencies {
-    packaged 'org.alfresco:alfresco-mmt:6.0'
-    packaged group: 'commons-io', name: 'commons-io', version: '2.16.1'
-    packaged('org.eclipse.jgit:org.eclipse.jgit:6.10.0.202406032230-r') {
+    packaged "org.alfresco:alfresco-mmt:6.0"
+    packaged "commons-io:commons-io:2.16.1"
+    packaged("org.eclipse.jgit:org.eclipse.jgit:7.2.1.202505142326-r") {
         exclude group: 'org.slf4j'
     }
 
-    implementation 'com.bmuschko:gradle-docker-plugin:9.3.2'
-    implementation 'com.avast.gradle:gradle-docker-compose-plugin:0.17.7'
-    testImplementation group: 'junit', name: 'junit', version: '4.13.2'
-    testImplementation 'org.hamcrest:hamcrest-core:3.0'
+    implementation "com.bmuschko:gradle-docker-plugin:9.3.2"
+    implementation "com.avast.gradle:gradle-docker-compose-plugin:0.17.7"
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.hamcrest:hamcrest-core:3.0"
     testImplementation gradleTestKit()
     testImplementation "org.mockito:mockito-core:5.+"
-    testImplementation 'com.github.stefanbirkner:system-rules:1.19.0'
+    testImplementation "com.github.stefanbirkner:system-rules:1.19.0"
 }
 
 
-task shadowJar(type: ShadowJar) {
+tasks.register('shadowJar', ShadowJar) {
     from sourceSets.main.output
     configurations = [project.configurations.packaged]
-    archiveClassifier = "shadow"
+    archiveClassifier.set("shadow")
     mergeServiceFiles()
     exclude "META-INF/*.SF"
     exclude "META-INF/*.RSA"
-}
 
-task configureShadowJar(type: ConfigureShadowRelocation) {
-    target = shadowJar
-    prefix = "eu.xenit.gradle.docker.internal.shadow"
+    // Enable auto-relocation natively in the ShadowJar task
+    enableAutoRelocation = true
+    relocationPrefix = "eu.xenit.gradle.docker.internal.shadow"
 }
-
-shadowJar.dependsOn(configureShadowJar)
 
 jar {
-    from zipTree(shadowJar.outputs.files.singleFile)
-    dependsOn(shadowJar)
+    from zipTree(tasks.named('shadowJar').get().outputs.files.singleFile)
+    dependsOn(tasks.named('shadowJar'))
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
@@ -165,9 +165,8 @@ pluginUnderTestMetadata {
     pluginClasspath.from(configurations.packaged)
 }
 
-import org.gradle.util.GradleVersion
-
-task integrationTest(type: Test, group: "verification") {
+tasks.register('integrationTest', Test) {
+    group = "verification"
     useJUnit()
     if (project.hasProperty("integrationTestGradleVersions")) {
         // This is used for sharding integration tests across different gradle versions
@@ -190,14 +189,14 @@ task integrationTest(type: Test, group: "verification") {
     }
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
-    shouldRunAfter(test)
+    shouldRunAfter(tasks.named('test'))
 }
 
 jacocoTestReport {
-    dependsOn(test, integrationTest)
-    executionData(test, integrationTest)
+    dependsOn(tasks.named('test'), tasks.named('integrationTest'))
+    executionData(tasks.named('test').get(), tasks.named('integrationTest').get())
     reports {
-        xml.enabled = true
+        xml.required.set(true)
     }
 }
 
@@ -214,7 +213,7 @@ sonarqube {
     }
 }
 
-check.dependsOn(integrationTest)
+check.dependsOn(tasks.named('integrationTest'))
 reckonTagCreate.dependsOn(check)
 tasks.sonarqube.dependsOn(check, jacocoTestReport)
 

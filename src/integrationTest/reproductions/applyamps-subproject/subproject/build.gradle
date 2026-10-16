@@ -9,7 +9,7 @@ configurations {
 repositories {
     mavenCentral()
     maven {
-        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+        url = "https://artifacts.alfresco.com/nexus/content/groups/public/"
     }
 }
 
@@ -19,7 +19,7 @@ dependencies {
     }
 }
 
-task amp(type: Zip) {
+tasks.register('amp', Zip) {
     from({ zipTree(configurations.runtimeClasspath.singleFile) }) {
         into "/"
     }
@@ -27,5 +27,5 @@ task amp(type: Zip) {
 }
 
 artifacts {
-    amps amp
+    amps tasks.named('amp')
 }

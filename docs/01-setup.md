@@ -1,5 +1,7 @@
 # Setup
 
+This plugin targets Java 17 and requires Gradle 7.3 or newer. Use a Java runtime supported by the Gradle version you run.
+
 ## Install docker & docker-compose
 
 <details>

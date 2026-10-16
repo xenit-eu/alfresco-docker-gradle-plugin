@@ -1,0 +1,2 @@
+# Make sure end-of-lines of sh scripts are always LF
+*.sh text eol=lf

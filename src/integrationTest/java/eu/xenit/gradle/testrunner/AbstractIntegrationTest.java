@@ -41,12 +41,12 @@ public abstract class AbstractIntegrationTest {
             });
         }
         return Arrays.asList(new Object[][]{
+                {"9.8.1"},
+                {"8.14.6"},
                 {"8.9"},
                 {"8.0.1"},
                 {"7.6.4"},
-                {"7.0.2"},
-                {"6.9.3"},
-                {"6.2.2"},
+                {"7.3.3"},
         });
     }
 

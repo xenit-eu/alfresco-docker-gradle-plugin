@@ -5,7 +5,7 @@ plugins {
 repositories {
     mavenCentral()
     maven {
-        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+        url = "https://artifacts.alfresco.com/nexus/content/groups/public/"
     }
 }
 
@@ -23,18 +23,19 @@ dependencies {
     alfrescoAmp "de.fmaul:javascript-console-repo:0.6@amp"
 }
 
-task applyAmps(type: InstallAmpsInWarTask) {
+tasks.register('applyAmps', InstallAmpsInWarTask) {
     inputWar = configurations.baseAlfrescoWar
     sourceFiles = configurations.alfrescoAmp
 }
 
-task createDockerFile(type: DockerfileWithWarsTask) {
+tasks.create('createDockerFile', DockerfileWithWarsTask) {
     baseImage = "tomcat:7-jre8"
-    addWar("alfresco", applyAmps.outputWar)
-    withLabels(applyAmps)
+    addWar("alfresco", tasks.named('applyAmps').get().outputWar)
+    withLabels(tasks.named('applyAmps').get())
 }
 
-task buildDockerImage(type: DockerBuildImage, dependsOn: createDockerFile) {
-    inputDir = createDockerFile.destFile.asFile.get().parentFile
-    dockerFile = createDockerFile.destFile
+tasks.register('buildDockerImage', DockerBuildImage) {
+    dependsOn tasks.named('createDockerFile')
+    inputDir.set(tasks.named('createDockerFile').get().destFile.asFile.get().parentFile)
+    dockerFile.set(tasks.named('createDockerFile').get().destFile)
 }

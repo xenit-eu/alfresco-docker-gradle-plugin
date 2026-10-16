@@ -45,11 +45,16 @@ public class DockerfileWithWarsExtensionImpl implements DockerfileWithWarsExtens
             " # Elidable command from " + DockerfileWithWarsExtensionImpl.class.getCanonicalName();
 
     public static void applyTo(Dockerfile task) {
-        DockerfileWithWarsExtension impl = task.getProject().getObjects()
+        applyToAndGet(task);
+    }
+
+    public static DockerfileWithWarsExtensionImpl applyToAndGet(Dockerfile task) {
+        DockerfileWithWarsExtensionImpl impl = task.getProject().getObjects()
                 .newInstance(DockerfileWithWarsExtensionImpl.class, task);
-        task.getConvention().getPlugins().put("wars", impl);
+        task.getExtensions().add("wars", impl);
         task.doFirst("Remove no-op instructions", new RemoveNoOpInstructionsAction());
         task.doFirst("Elide duplicate version check instructions", new ElideDuplicateVersionChecksAction());
+        return impl;
     }
 
     private final Dockerfile dockerfile;
