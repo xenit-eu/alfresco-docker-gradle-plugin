@@ -83,7 +83,7 @@ public class Reproductions extends AbstractIntegrationTest {
 
     @Test
     public void testAlfrescoAmpDependencyOrder() throws IOException {
-        assumeThat("The amp plugin requires Gradle 7.1", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.1")));
+        assumeThat("The plugin requires Gradle 7.3 or newer on Java 17", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.3")));
         testProjectFolder(REPRODUCTIONS.resolve("alfresco-amp-dependency-order"), ":applyAlfrescoAmp");
 
     }
@@ -106,7 +106,7 @@ public class Reproductions extends AbstractIntegrationTest {
 
     @Test
     public void testIssue96() throws IOException {
-        assumeThat("The docker-compose plugin requires Gradle 7", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.0")));
+        assumeThat("The plugin requires Gradle 7.3 or newer on Java 17", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.3")));
         final String folder = "issue-96";
         final String task = ":buildDockerImage";
 
@@ -120,7 +120,7 @@ public class Reproductions extends AbstractIntegrationTest {
 
     @Test
     public void testIssue104() throws IOException {
-        assumeThat("The docker-compose plugin requires Gradle 7", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.0")));
+        assumeThat("The plugin requires Gradle 7.3 or newer on Java 17", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.3")));
         final String folder = "issue-104";
         final String task = ":functionalTest";
 
@@ -137,7 +137,7 @@ public class Reproductions extends AbstractIntegrationTest {
 
     @Test
     public void testIssue50() throws IOException {
-        assumeThat("The amp plugin requires Gradle 7.1", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.1")));
+        assumeThat("The plugin requires Gradle 7.3 or newer on Java 17", GradleVersion.version(gradleVersion), Matchers.greaterThanOrEqualTo(GradleVersion.version("7.3")));
         testProjectFolder(REPRODUCTIONS.resolve("issue-50"), ":alfrescoWar");
     }
 

@@ -225,7 +225,7 @@ prefixShareLog4j {
 }
 ```
 
-> **Warning:** This feature is only supported on Gradle 6.2 and later.
+> **Warning:** This feature requires Gradle 7.3 or later when using this Java 17 plugin.
 > It is not possible to disable these tasks on earlier Gradle versions.
 
 ## Example

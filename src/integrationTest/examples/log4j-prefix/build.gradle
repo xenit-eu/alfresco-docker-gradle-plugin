@@ -6,7 +6,7 @@ plugins {
 repositories {
     mavenCentral()
     maven {
-        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+        url = "https://artifacts.alfresco.com/nexus/content/groups/public/"
     }
 }
 
@@ -24,7 +24,7 @@ dockerBuild {
 // Check if log4j changes are applied correctly
 import com.bmuschko.gradle.docker.tasks.container.*
 
-task createContainer(type: DockerCreateContainer) {
+tasks.register('createContainer', DockerCreateContainer) {
     imageId = buildDockerImage.imageId
     // Just run a command so the container stays active in the background without starting Alfresco
     cmd = ["bash", "-c", "while true; do sleep 100; done"]
@@ -32,24 +32,24 @@ task createContainer(type: DockerCreateContainer) {
     hostConfig.autoRemove = true
 }
 
-task startContainer(type: DockerStartContainer) {
-    containerId = createContainer.containerId
-    dependsOn(createContainer)
+tasks.register('startContainer', DockerStartContainer) {
+    containerId = tasks.named('createContainer').get().containerId
+    dependsOn(tasks.named('createContainer'))
 }
 
-task checkLog4JApplied(type: DockerExecContainer) {
-    containerId = createContainer.containerId
+tasks.register('checkLog4JApplied', DockerExecContainer) {
+    containerId = tasks.named('createContainer').get().containerId
     withCommand(["fgrep", "[ALFRESCO]", "/usr/local/tomcat/webapps/alfresco/WEB-INF/classes/log4j.properties"])
     successOnExitCodes.add(0)
-    dependsOn(startContainer)
+    dependsOn(tasks.named('startContainer'))
 }
 
-task terminateContainer(type: DockerKillContainer) {
-    containerId = createContainer.containerId
-    dependsOn(createContainer)
+tasks.register('terminateContainer', DockerKillContainer) {
+    containerId = tasks.named('createContainer').get().containerId
+    dependsOn(tasks.named('createContainer'))
 }
 
-task functionalTest {
-    dependsOn(checkLog4JApplied)
-    finalizedBy(terminateContainer)
+tasks.register('functionalTest') {
+    dependsOn(tasks.named('checkLog4JApplied'))
+    finalizedBy(tasks.named('terminateContainer'))
 }

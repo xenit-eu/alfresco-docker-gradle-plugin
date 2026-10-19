@@ -5,7 +5,7 @@ plugins {
 repositories {
     mavenCentral()
     maven {
-        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+        url = "https://artifacts.alfresco.com/nexus/content/groups/public/"
     }
 }
 dependencies {
@@ -31,20 +31,20 @@ createDockerFile {
 
 import com.bmuschko.gradle.docker.tasks.container.*
 
-task createContainer(type: DockerCreateContainer) {
+tasks.register('createContainer', DockerCreateContainer) {
     targetImageId buildDockerImage.imageId
     cmd = ["/test.sh"]
     dependsOn(buildDockerImage)
 }
 
-task startContainer(type: DockerStartContainer) {
-    targetContainerId createContainer.containerId
-    dependsOn(createContainer)
+tasks.register('startContainer', DockerStartContainer) {
+    targetContainerId tasks.named('createContainer').get().containerId
+    dependsOn(tasks.named('createContainer'))
 }
 
-task waitContainer(type: DockerWaitContainer) {
-    targetContainerId createContainer.containerId
-    dependsOn(startContainer)
+tasks.register('waitContainer', DockerWaitContainer) {
+    targetContainerId tasks.named('createContainer').get().containerId
+    dependsOn(tasks.named('startContainer'))
 
     doLast {
         if (exitCode != 0) {

@@ -5,7 +5,7 @@ plugins {
 repositories {
     mavenCentral()
     maven {
-        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+        url = "https://artifacts.alfresco.com/nexus/content/groups/public/"
     }
 }
 
@@ -33,13 +33,13 @@ dockerAlfresco {
 
 import com.bmuschko.gradle.docker.tasks.image.*
 
-task saveDockerImage(type: DockerSaveImage) {
+tasks.register('saveDockerImage', DockerSaveImage) {
     dependsOn(buildDockerImage)
     images.add(buildDockerImage.imageId)
     destFile = project.layout.buildDirectory.file("builtImage.tar")
 }
 
-task saveBaseDockerImage(type: DockerSaveImage) {
+tasks.register('saveBaseDockerImage', DockerSaveImage) {
     images.add(dockerAlfresco.baseImage)
     destFile = project.layout.buildDirectory.file("originalImage.tar")
     mustRunAfter(buildDockerImage) // because the build pulls the base image if it does not exist on disk yet
@@ -58,12 +58,12 @@ def dependencySizes(configs) {
 
 }
 
-task functionalTest {
-    dependsOn(saveDockerImage, saveBaseDockerImage)
+tasks.register('functionalTest') {
+    dependsOn(tasks.named('saveDockerImage'), tasks.named('saveBaseDockerImage'))
     doLast {
         def dependencySize = dependencySizes([configurations.alfrescoAmp, configurations.alfrescoSM, configurations.alfrescoDE, configurations.shareAmp])
         def baseSize = dependencySizes([configurations.baseAlfrescoWar, configurations.baseShareWar])
-        def imageSizeDiff = saveDockerImage.destFile.getAsFile().get().size() - saveBaseDockerImage.destFile.getAsFile().get().size()
+        def imageSizeDiff = tasks.named('saveDockerImage').get().destFile.getAsFile().get().size() - tasks.named('saveBaseDockerImage').get().destFile.getAsFile().get().size()
 
         println([
                 "dependencySize": dependencySize,

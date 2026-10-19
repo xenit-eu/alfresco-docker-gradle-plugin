@@ -67,7 +67,7 @@ public interface DockerfileWithSmartCopyExtension {
         if (dockerfile instanceof DockerfileWithSmartCopyExtension) {
             return (DockerfileWithSmartCopyExtension) dockerfile;
         } else {
-            return dockerfile.getConvention().getPlugin(DockerfileWithSmartCopyExtension.class);
+            return dockerfile.getExtensions().getByType(DockerfileWithSmartCopyExtension.class);
         }
     }
 }

@@ -5,7 +5,7 @@ plugins {
 repositories {
     mavenCentral()
     maven {
-        url "https://artifacts.alfresco.com/nexus/content/groups/public/"
+        url = "https://artifacts.alfresco.com/nexus/content/groups/public/"
     }
 }
 
@@ -33,7 +33,7 @@ dockerAlfresco {
 // Check if modules are applied correctly
 import com.bmuschko.gradle.docker.tasks.container.*
 
-task createContainer(type: DockerCreateContainer) {
+tasks.register('createContainer', DockerCreateContainer) {
     imageId = buildDockerImage.imageId
     // Just run a command so the container stays active in the background without starting Alfresco
     cmd = ["bash", "-c", "while true; do sleep 100; done"]
@@ -41,13 +41,13 @@ task createContainer(type: DockerCreateContainer) {
     hostConfig.autoRemove = true
 }
 
-task startContainer(type: DockerStartContainer) {
-    containerId = createContainer.containerId
-    dependsOn(createContainer)
+tasks.register('startContainer', DockerStartContainer) {
+    containerId = tasks.named('createContainer').get().containerId
+    dependsOn(tasks.named('createContainer'))
 }
 
-task checkAmpApplied(type: DockerExecContainer) {
-    containerId = createContainer.containerId
+tasks.register('checkAmpApplied', DockerExecContainer) {
+    containerId = tasks.named('createContainer').get().containerId
     withCommand(["stat", "/usr/local/tomcat/webapps/alfresco/WEB-INF/classes/alfresco/module/de.fme.alfresco.JavascriptConsole-repo/module.properties"])
     withCommand(["stat", "/usr/local/tomcat/webapps/alfresco/WEB-INF/classes/dynamic-extensions/bundles/care4alf-1.1.0.jar"])
     withCommand(["stat", "/usr/local/tomcat/webapps/alfresco/WEB-INF/lib/care4alf-1.1.0.jar"])
@@ -55,12 +55,12 @@ task checkAmpApplied(type: DockerExecContainer) {
     dependsOn(startContainer)
 }
 
-task terminateContainer(type: DockerKillContainer) {
-    containerId = createContainer.containerId
-    dependsOn(createContainer)
+tasks.register('terminateContainer', DockerKillContainer) {
+    containerId = tasks.named('createContainer').get().containerId
+    dependsOn(tasks.named('createContainer'))
 }
 
-task functionalTest {
-    dependsOn(checkAmpApplied)
-    finalizedBy(terminateContainer)
+tasks.register('functionalTest') {
+    dependsOn(tasks.named('checkAmpApplied'))
+    finalizedBy(tasks.named('terminateContainer'))
 }

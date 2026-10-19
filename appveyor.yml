@@ -12,10 +12,20 @@ init:
     - cmd: docker  info
 environment:
     DOCKER_HOST: 'npipe:////./pipe/docker_engine'
-    JAVA_HOME: 'C:\\Program Files\\Java\\jdk11'
 install:
-    - cmd: choco install docker-compose
+    - cmd: choco install docker-compose temurin17 -y --no-progress
+    - ps: |
+          $jdk = Get-ChildItem 'C:\Program Files\Eclipse Adoptium' -Directory -Filter 'jdk-17*' |
+              Sort-Object LastWriteTime -Descending |
+              Select-Object -First 1
+          if (-not $jdk) { throw 'Installed Temurin JDK 17 not found' }
+          $env:JAVA_HOME = $jdk.FullName
+          $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
 build_script:
+#    - cmd: echo JAVA_HOME=%JAVA_HOME%
+#    - cmd: '"%JAVA_HOME%\bin\java.exe" -version'
+#    - cmd: gradlew --version
+#    - cmd: gradlew assemble --refresh-dependencies --no-daemon --stacktrace
     - cmd: gradlew assemble
 test_script:
-    - cmd: gradlew check -i -PintegrationTestGradleVersions=7.6
+    - cmd: gradlew check -i -PintegrationTestGradleVersions=9.8.1

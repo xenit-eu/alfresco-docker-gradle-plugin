@@ -17,7 +17,7 @@ public interface DockerfileWithSmartCopyExtensionInternal extends DockerfileWith
         if (dockerfile instanceof DockerfileWithSmartCopyExtensionInternal) {
             return (DockerfileWithSmartCopyExtensionInternal) dockerfile;
         } else {
-            return dockerfile.getConvention().getPlugin(DockerfileWithSmartCopyExtensionInternal.class);
+            return dockerfile.getExtensions().getByType(DockerfileWithSmartCopyExtensionInternal.class);
         }
     }
 }
